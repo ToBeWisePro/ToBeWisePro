@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "ToBeWisePro",
-    "slug": "ToBeWisePro",
-    "version": "1.0.0",
+    "name": "ToBeWise",
+    "icon": "./assets/appstore.png",
+    "slug": "ToBeWise",
+    "version": "7.0.2",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/appstore.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,17 +16,22 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.gclark0812.ToBeWisePro"
+      "bundleIdentifier": "com.app.tobewise.proV4"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/appstore.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.gclark0812.ToBeWisePro"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8df7272f-49e3-48ac-ae22-6e7925d69a78"
+      }
     }
   }
 }
