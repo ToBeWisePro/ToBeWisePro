@@ -30,7 +30,7 @@ export interface RouteInterface {
     subjects: string,
     authorLink: string,
     videoLink: string,
-    contributedBy?: string,
+    contributedBy: string,
     favorite: number
 };
 

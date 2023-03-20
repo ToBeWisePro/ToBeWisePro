@@ -14,6 +14,7 @@ export default function App() {
 
   useEffect(() => {
     const data = async () => {
+      console.log("initializing...")
       await dataImporter();
     };
     data();

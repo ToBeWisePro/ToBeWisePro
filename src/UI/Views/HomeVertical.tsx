@@ -38,13 +38,13 @@ export const HomeVertical = ({ navigation, route }: Props) => {
     globalStyles.smallQuoteContainer.paddingTop
   );
 
-  useEffect(() => {
-    // run dataImporter() -> if this is the first time ToBeWise is run, it will build the quote database
-    const setup = async () => {
-      await dataImporter();
-    };
-    setup();
-  }, []);
+  // useEffect(() => {
+  //   // run dataImporter() -> if this is the first time ToBeWise is run, it will build the quote database
+  //   const setup = async () => {
+  //     await dataImporter();
+  //   };
+  //   setup();
+  // }, []);
   useEffect(() => {
     const getQuotes = async () => {
       // If there are quotes that hae already been pulled from somewhere else (like the discover page), use that here. If not, go and fetch with our default query and use that result to build the page
