@@ -10,7 +10,11 @@ import {
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
 import { GRADIENT_START, GRADIENT_END } from "../../../styles/Colors";
-import { NavigationInterface, QuotationInterface, RouteInterface } from "../../res/constants/Interfaces";
+import {
+  NavigationInterface,
+  QuotationInterface,
+  RouteInterface,
+} from "../../res/constants/Interfaces";
 import { dataImporter } from "../../res/functions/DBFunctions";
 import { getShuffledQuotes } from "../../res/functions/DBFunctions";
 import { BottomNav } from "../organisms/BottomNav";
@@ -47,26 +51,34 @@ export const HomeVertical = ({ navigation, route }: Props) => {
   // }, []);
   useEffect(() => {
     const getQuotes = async () => {
-      // If there are quotes that hae already been pulled from somewhere else (like the discover page), use that here. If not, go and fetch with our default query and use that result to build the page
-      try {
-        setQuotes(route.params.currentQuotes);
-        setFilter(route.params.quoteSearch.filter);
-        setQuery(route.params.quoteSearch.query);
-        setTitle(
-          route.params.quoteSearch.filter +
-            ": " +
-            route.params.quoteSearch.query
-        );
-      } catch {
-        setTitle(strings.navbarHomeDefaultText);
-        await getShuffledQuotes(
-          strings.database.defaultQuery,
-          strings.filters.subject
-        ).then((res) => setQuotes(res));
-        setQuery(strings.database.defaultQuery);
-        setFilter(strings.database.defaultFilter);
-      }
+      await dataImporter().then(async () => {
+        try {
+          setQuotes(route.params.currentQuotes);
+          setFilter(route.params.quoteSearch.filter);
+          setQuery(route.params.quoteSearch.query);
+          setTitle(
+            route.params.quoteSearch.filter +
+              ": " +
+              route.params.quoteSearch.query
+          );
+        } catch {
+          setTitle(strings.navbarHomeDefaultText);
+          setQuery(strings.database.defaultQuery);
+          setFilter(strings.database.defaultFilter);
+
+          // call getShuffledQuotes() to get the default quotes and set quotes to the result
+          await getShuffledQuotes(
+            strings.database.defaultQuery,
+            strings.database.defaultFilter
+          ).then((res)=>{
+            console.log("res: ", res)
+            setQuotes(res)  
+          });
+          console.log("Quotes: ", quotes)
+        }
+      });
     };
+
     getQuotes();
     try {
       // If there is a back button function, add in the back button
@@ -119,7 +131,7 @@ const styles = StyleSheet.create({
   container: {
     height: "100%",
     width: "100%",
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
   background: {
     width: "100%",
@@ -127,5 +139,4 @@ const styles = StyleSheet.create({
     height: "92%",
     // backgroundColor: LIGHT,
   },
-  
 });

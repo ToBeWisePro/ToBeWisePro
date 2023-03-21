@@ -15,152 +15,142 @@ export async function dataImporter() {
 */
 
   // Check if our database exists. If not, create it
-db.transaction(tx => {
-  tx.executeSql(`CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite INTEGER);`)
-})
-
-  // import jsonQuotes into our database
-  const quotes: QuotationInterface[] = jsonQuotes.map((quote) => {
-    return {
-      _id: quote._id,
-      quoteText: quote.quoteText,
-      author: quote.author,
-      contributedBy: quote.contributedBy,
-      subjects: quote.subjects,
-      authorLink: quote.authorLink,
-      videoLink: quote.videoLink,
-      favorite: quote.favorite,
-    };
+  db.transaction((tx) => {
+    tx.executeSql(
+      `CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite INTEGER);`
+    );
   });
 
-  const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  // import jsonQuotes into our database if our database is empty
 
-  db.transaction((tx) => {
-    quotes.forEach((quote) => {
-      tx.executeSql(insertQuery, [
-        quote.quoteText,
-        quote.author,
-        quote.contributedBy,
-        quote.subjects,
-        quote.authorLink,
-        quote.videoLink,
-        quote.favorite,
-      ]);
+  const isDbEmpty: boolean = await new Promise<boolean>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT * FROM ${dbName}`,
+        [],
+        (_, result) => {
+          resolve(result.rows.length === 0);
+        },
+        (_, error) => {
+          console.log(error);
+          reject(error);
+        }
+      );
     });
   });
 
+  if (isDbEmpty) {
+    // isDbEmpty will be true if our database is empty
+    const quotes: QuotationInterface[] = jsonQuotes.map((quote) => {
+      return {
+        _id: quote._id,
+        quoteText: quote.quoteText,
+        author: quote.author,
+        contributedBy: quote.contributedBy,
+        subjects: quote.subjects,
+        authorLink: quote.authorLink,
+        videoLink: quote.videoLink,
+        favorite: quote.favorite,
+      };
+    });
+
+    const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    db.transaction((tx) => {
+      quotes.forEach((quote) => {
+        tx.executeSql(insertQuery, [
+          quote.quoteText,
+          quote.author,
+          quote.contributedBy,
+          quote.subjects,
+          quote.authorLink,
+          quote.videoLink,
+          quote.favorite,
+        ]);
+      });
+    });
+  }
+
   // print the length of our database to make sure it's the same length as our jsonQuotes array without using a promise
   db.transaction((tx) => {
-    tx.executeSql(
-      `SELECT * FROM ${dbName}`,
-      [],
-      (_, result) => console.log(result.rows.length),
-      (_, error) => console.log(error)
-    );
-  }
-  );
+    tx.executeSql(`SELECT * FROM ${dbName}`, []);
+  });
 }
 
 export async function getShuffledQuotes(
   key: string,
   filter: string
 ): Promise<QuotationInterface[]> {
-  // given a key (search term) and filter (are we searching authors or subjects?), return a shuffled list of quotes from SQLite that matches those search terms
+  const db = SQLite.openDatabase(dbName);
 
-  // const db = SQLite.openDatabase(dbName);
-  // const safeKey = key.replaceAll("'", strings.database.safeChar);
+  let query = `SELECT * FROM ${dbName}`;
+  if (filter === strings.filters.author) {
+    query += ` WHERE author LIKE '%${key}%' ORDER BY RANDOM()`;
+  } else if (filter === strings.filters.subject) {
+    query += ` WHERE subjects LIKE '%${key}%' ORDER BY RANDOM()`;
+  } else {
+    throw new Error("Invalid filter provided");
+  }
 
-  // let query: string, params: any[];
-  // switch (filter) {
-  //   case strings.filters.author:
-  //     query = `SELECT * FROM ${dbName} WHERE author = ?`;
-  //     params = [safeKey];
-  //     break;
-  //   case strings.filters.subject:
-  //     query = `SELECT * FROM ${dbName} WHERE subjects LIKE '%' || ? || '%'`;
-  //     params = [safeKey];
-  //     break;
-  //   default:
-  //     throw new Error(`Invalid filter: ${filter}`);
-  // }
-
-  // const [result] = await new Promise<SQLite.SQLResultSet>((resolve, reject) => {
-  //   db.transaction((tx) => {
-  //     tx.executeSql(
-  //       query,
-  //       params,
-  //       (_, result) => resolve(result),
-  //       (_, error) => reject(error)
-  //     );
-  //   });
-  // });
-
-  // const unshuffledQuotes: QuotationInterface[] = Array.from(result.rows).map(
-  //   (row) => {
-  //     return {
-  //       _id: row._id,
-  //       quoteText: row.quoteText,
-  //       author: row.author,
-  //       contributedBy: row.contributedBy,
-  //       subjects: row.subjects,
-  //       authorLink: row.authorLink,
-  //       videoLink: row.videoLink,
-  //       favorite: row.favorite,
-  //     };
-  //   }
-  // );
-
-  // return shuffle(unshuffledQuotes);
-  console.log("shuffled quotes");
-}
-
-export const getSubjects = async (): Promise<string[]> => {
-  // get all subjects being used in our quotes database. If the subject has a space in [0], remove it
-  const db = await SQLite.openDatabase(dbName);
-
-  const [result] = await new Promise<SQLite.SQLResultSet>((resolve, reject) => {
+  return new Promise<QuotationInterface[]>((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        `SELECT subjects FROM ${dbName}`,
+        query,
         [],
-        (_, result) => resolve(result),
-        (_, error) => reject(error)
+        (_, result) => {
+          const quotes: QuotationInterface[] = [];
+          for (let i = 0; i < result.rows.length; i++) {
+            quotes.push(result.rows.item(i));
+          }
+          resolve(quotes);
+        },
+        (_, error) => {
+          console.log(error);
+          reject(error);
+        }
       );
     });
   });
+}
 
-  const subjects: string[] = Array.from(result.rows).reduce<string[]>(
-    (acc, row) => {
-      const quoteSubjects = row.subjects
-        .split(",")
-        .map((subject) => subject.trim());
-      return [...new Set([...acc, ...quoteSubjects])];
-    },
-    []
-  );
-
-  const sortedSubjects = subjects.sort((a, b) => a.localeCompare(b));
-
-  return sortedSubjects;
-};
-
-export const getAuthors = async (): Promise<string[]> => {
-  try {
-    const db = await SQLite.openDatabase(dbName);
-    const [result] = await db.executeSql(
-      `SELECT DISTINCT REPLACE(author, "${strings.database.safeChar}", "'") as author FROM ${dbName} ORDER BY author ASC`
-    );
-
-    const authors: string[] = result.rows
-      .raw()
-      .map((row: { author: any }) => row.author);
-
-    return authors;
-  } catch (error) {
-    console.error(error);
-    return [];
+export async function getFromDB(key: string): Promise<string[]> {
+  const db = SQLite.openDatabase(dbName);
+  switch (key) {
+    case strings.filters.author:
+      key = "author";
+      break;
+    case strings.filters.subject:
+      key = "subjects";
+      break;
+    default:
+      throw new Error("Invalid filter provided");
   }
-};
+  const query = `SELECT DISTINCT "${key}" FROM ${dbName} ORDER BY "${key}" ASC`;
+
+  return new Promise<string[]>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        query,
+        [],
+        (_, result) => {
+          const values = [];
+          for (let i = 0; i < result.rows.length; i++) {
+            const row = result.rows.item(i);
+            const value = row[key];
+            if (value) {
+              values.push(value);
+            }
+          }
+          resolve(values.sort());
+        },
+        (_, error) => {
+          console.log(error);
+          reject(error);
+        }
+      );
+    });
+  });
+}
 
 export const getQuoteByID = async (
   _id: number
@@ -243,17 +233,6 @@ export const editQuote = async (quotation: QuotationInterface) => {
     // updt.contributedBy = quotation.contributedBy
   });
 };
-
-// export const deleteQuote = async (quote: QuotationInterface) => {
-//     // Delete a quote
-//     const realm = await Realm.open({
-//         path: "myrealm",
-//         schema: [QuotationSchema],
-//     });
-//     await realm.write(() => {
-//         realm.delete(realm.objectForPrimaryKey(currentQuotationVersion, quote._id))
-//     })
-// }
 
 export const getAllQuotes = async (): Promise<QuotationInterface[]> => {
   const db = await SQLite.openDatabase(dbName);

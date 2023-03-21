@@ -13,11 +13,7 @@ export default function App() {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>([]);
 
   useEffect(() => {
-    const data = async () => {
-      console.log("initializing...")
-      await dataImporter();
-    };
-    data();
+
     getShuffledQuotes(strings.database.defaultQuery, strings.database.defaultFilter).then((res) => {
       setShuffledQuotes(res);
     });

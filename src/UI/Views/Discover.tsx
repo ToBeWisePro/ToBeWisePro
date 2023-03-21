@@ -8,7 +8,6 @@ import { strings } from "../../res/constants/Strings";
 import { maxWindowSize } from "../../res/constants/Values";
 import {AlphabetList, IData} from "react-native-section-alphabet-list";
 import {GRAY_1, GRAY_6, LIGHT, PRIMARY_BLUE} from "../../../styles/Colors";
-import { getAuthors, getSubjects } from "../../res/functions/DBFunctions";
 import { BottomNav } from "../organisms/BottomNav";
 import { DataButton } from "../atoms/DataButton";
 import {DiscoverTile} from "../molecules/DiscoverTile";
@@ -17,6 +16,7 @@ import { globalStyles } from "../../../styles/GlobalStyles";
 import { NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
+import { getFromDB } from "../../res/functions/DBFunctions";
 
 interface Props {
     navigation: NavigationInterface;
@@ -34,11 +34,11 @@ export const Discover = ({navigation}: Props) => {
     useEffect(() => {
        // set authors and subjects
         const load = async () => {
-            await getSubjects().then((res) =>{
+            await getFromDB(strings.filters.subject).then((res) =>{
                 formatDataForAlphabetList(res, setSubjects)
             }
             )
-            await getAuthors().then((res) => {
+            await getFromDB(strings.filters.author).then((res) => {
                 formatDataForAlphabetList(res, setAuthors)
                 formatDataForAlphabetList(res, setTempAuthors)
             })
@@ -111,7 +111,7 @@ export const Discover = ({navigation}: Props) => {
                         buttonText={"Author"}
                         selected={filter == strings.filters.author}
                         onPress={async () => {
-                            await getAuthors().then((res) => formatDataForAlphabetList(res, getAuthors))
+                            await getFromDB(strings.filters.author).then((res) => formatDataForAlphabetList(res, getFromDB(strings.filters.author)))
                             setFilter(strings.filters.author)
                         }}
                     />
@@ -119,7 +119,7 @@ export const Discover = ({navigation}: Props) => {
                         buttonText={"Subject"}
                         selected={filter == strings.filters.subject}
                         onPress={async () => {
-                            await getSubjects().then((res) => {
+                            await getFromDB(strings.filters.subject).then((res) => {
                                 formatDataForAlphabetList(res, setSubjects)
                                 formatDataForAlphabetList(res, setTempSubjects)
                             })
