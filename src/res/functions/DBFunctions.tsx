@@ -22,7 +22,6 @@ export async function dataImporter() {
   });
 
   // import jsonQuotes into our database if our database is empty
-
   const isDbEmpty: boolean = await new Promise<boolean>((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
@@ -152,37 +151,41 @@ export async function getFromDB(key: string): Promise<string[]> {
   });
 }
 
-export const getQuoteByID = async (
-  _id: number
-): Promise<QuotationInterface | undefined> => {
-  try {
-    const db = await SQLite.openDatabase(dbName);
-    // @ts-ignore
-    const [result] = await db.executeSql(
-      `SELECT * FROM ${dbName} WHERE _id = ?`,
-      [_id]
-    );
+export async function getQuoteById(id: number): Promise<QuotationInterface | null> {
+  const db = SQLite.openDatabase(dbName);
 
-    if (result.rows.length > 0) {
-      const row = result.rows.item(0);
-      return {
-        _id: row._id,
-        quoteText: row.quoteText,
-        author: row.author,
-        contributedBy: row.contributedBy,
-        subjects: row.subjects,
-        authorLink: row.authorLink,
-        videoLink: row.videoLink,
-        favorite: row.favorite,
-      };
-    } else {
-      return undefined;
-    }
-  } catch (error) {
-    console.error(error);
-    return undefined;
-  }
-};
+  return new Promise<QuotationInterface | null>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT * FROM ${dbName} WHERE _id = ?`,
+        [id],
+        (_, result) => {
+          if (result.rows.length === 0) {
+            resolve(null);
+          } else {
+            const quoteRow = result.rows.item(0);
+            const quote: QuotationInterface = {
+              _id: quoteRow._id,
+              quoteText: quoteRow.quoteText,
+              author: quoteRow.author,
+              contributedBy: quoteRow.contributedBy,
+              subjects: quoteRow.subjects,
+              authorLink: quoteRow.authorLink,
+              videoLink: quoteRow.videoLink,
+              favorite: quoteRow.favorite,
+            };
+            resolve(quote);
+          }
+        },
+        (_, error) => {
+          console.log(error);
+          reject(error);
+        }
+      );
+    });
+  });
+}
+
 
 export const addQuote = async (quotation: QuotationInterface) => {
   const db = SQLite.openDatabase("myrealm");
@@ -292,61 +295,31 @@ export const getFavoriteQuotes = async (): Promise<QuotationInterface[]> => {
   });
 };
 
-export const getQuoteCount = async (query: string, filter: string) => {
-  const db = SQLite.openDatabase(dbName);
+export async function getQuoteCount(key: string, filter: string): Promise<number> {
+  const db = await SQLite.openDatabase(dbName);
 
-  return new Promise<number>((resolve, reject) => {
+  let query = '';
+  let params: any[] = [];
+
+  if (filter === strings.filters.author) {
+    query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE author = ?`;
+    params = [key];
+  } else if (filter === strings.filters.subject) {
+    query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE subjects LIKE ?`;
+    params = [`%${key}%`];
+  }
+
+  return new Promise((resolve, reject) => {
     db.transaction((tx) => {
-      let sql = "";
-      let params: (string | number | null)[] | undefined = [];
-
-      switch (query) {
-        case strings.customDiscoverHeaders.all:
-          sql = "SELECT COUNT(*) FROM Quotation";
-          break;
-        case strings.customDiscoverHeaders.addedByMe:
-          sql = "SELECT COUNT(*) FROM Quotation WHERE addedByMe = 1";
-          break;
-        case strings.customDiscoverHeaders.favorites:
-          sql = "SELECT COUNT(*) FROM Quotation WHERE isFavorite = 1";
-          break;
-        case strings.customDiscoverHeaders.top100:
-          sql =
-            "SELECT COUNT(*) FROM Quotation WHERE version = ? AND subjects LIKE ? ORDER BY RANDOM() LIMIT 100";
-          params = [dbName, `%${strings.filters.subject}%`];
-          break;
-        default:
-          const safeQuery = query.replaceAll("'", strings.database.safeChar);
-
-          if (filter === strings.filters.author) {
-            sql =
-              "SELECT COUNT(*) FROM Quotation WHERE version = ? AND author = ?";
-            params = [dbName, safeQuery];
-          } else if (filter === strings.filters.subject) {
-            sql =
-              "SELECT COUNT(*) FROM Quotation WHERE version = ? AND subjects LIKE ?";
-            params = [dbName, `%${safeQuery}%`];
-          } else {
-            reject(new Error("Invalid query and filter"));
-            return;
-          }
-          break;
-      }
-
-      tx.executeSql(
-        sql,
-        params,
-        (txObj, { rows }) => {
-          const count = rows.item(0)["COUNT(*)"];
-          resolve(count);
-        },
-        (txObj, error) => {
-          reject(error);
-        }
-      );
+      tx.executeSql(query, params, (_, result) => {
+        resolve(result.rows.item(0).count);
+      }, (_, error) => {
+        console.log(error);
+        reject(error);
+      });
     });
   });
-};
+}
 
 export const updateQuoteContainer = (
   quote: QuotationInterface,
@@ -356,7 +329,7 @@ export const updateQuoteContainer = (
   setInterval(async () => {
     try {
       // every 1/10 of a second, get the selected quote and make sure that the info that we're displaying to the user is correct. This makes sure that edits are displayed
-      const mostUpToDateQuote: QuotationInterface = await getQuoteByID(
+      const mostUpToDateQuote: QuotationInterface = await getQuoteById(
         quote._id
       );
       setQuote(mostUpToDateQuote);

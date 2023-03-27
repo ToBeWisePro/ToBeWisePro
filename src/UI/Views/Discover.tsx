@@ -17,6 +17,7 @@ import { NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
 import { getFromDB } from "../../res/functions/DBFunctions";
+import { AlphabetListSection } from "../organisms/DiscoverTileAlphabetList";
 
 interface Props {
     navigation: NavigationInterface;
@@ -127,38 +128,8 @@ export const Discover = ({navigation}: Props) => {
                         }}
                     />
                 </View>
-                    <AlphabetList
-                        style={styles.scrollView}
-                        // TODO check this
-                        contentContainerStyle={globalStyles.fullPageScrollView}
-                        data={filter == strings.filters.author ? tempAuthors : tempSubjects}
-                       
-                        uncategorizedAtTop={true}
-                        // renderCustomIndexLetter={({ item, index, onPress }: IIndexLetterProps) =>{
-                        //     return(
-                        //         <TouchableOpacity onPress={()=> onPress} >
-                        //             <AppText style={styles.indexLeterText}>{item}</AppText>
-                        //         </TouchableOpacity>
-                        //     )
-                        // }}
-                      
-                        indexLetterStyle = {styles.indexLeterText}
-                        renderCustomItem={(item: IData) => {
-                            return (
-                                <DiscoverTile
-                                    key={Math.random()}
-                                    // @ts-ignore
-                                    text={item.value}
-                                    navigation={navigation}
-                                    filter={filter}
-                                    query={item.value}
-                                />
-                            );
-                        }}
-                        renderCustomSectionHeader={(section) => (
-                            <DiscoverSectionHeader label={section.title}/>
-                        )}                      
-                    />
+                <AlphabetListSection navigation={navigation} data={filter == strings.filters.author ? tempAuthors : tempSubjects} filter={filter} setFilter={setFilter} search={search}/>
+
 
 
             </View>

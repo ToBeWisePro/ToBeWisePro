@@ -153,7 +153,7 @@ export const AutoScrollingQuoteList = ({
 };
 const styles = StyleSheet.create({
   container: {
-    height: "100%",
+    height: Dimensions.get('screen').height - globalStyles.navbar.height - globalStyles.scrollButtonBar.height,
     width: "100%",
     // backgroundColor: PRIMARY_BLUE,
     marginBottom: globalStyles.navbar.height * 2.5,

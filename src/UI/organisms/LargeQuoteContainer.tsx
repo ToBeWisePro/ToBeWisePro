@@ -72,7 +72,7 @@ export const LargeQuoteContainer: React.FC<Props> = ({ passedInQuote, navigation
 
 const styles = StyleSheet.create({
   container: {
-    height: "97%",
+    height: "70%",
     width: globalStyles.largeQuoteContainer.width,
     justifyContent: "flex-end",
     marginLeft: globalStyles.largeQuoteContainer.marginLeft,
