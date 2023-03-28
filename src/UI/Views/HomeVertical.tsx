@@ -71,10 +71,8 @@ export const HomeVertical = ({ navigation, route }: Props) => {
             strings.database.defaultQuery,
             strings.database.defaultFilter
           ).then((res)=>{
-            console.log("res: ", res)
             setQuotes(res)  
           });
-          console.log("Quotes: ", quotes)
         }
       });
     };

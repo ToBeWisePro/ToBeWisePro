@@ -6,13 +6,10 @@ import {
 import {TopNav} from "../molecules/TopNav";
 import { strings } from "../../res/constants/Strings";
 import { maxWindowSize } from "../../res/constants/Values";
-import {AlphabetList, IData} from "react-native-section-alphabet-list";
+import {IData} from "react-native-section-alphabet-list";
 import {GRAY_1, GRAY_6, LIGHT, PRIMARY_BLUE} from "../../../styles/Colors";
 import { BottomNav } from "../organisms/BottomNav";
 import { DataButton } from "../atoms/DataButton";
-import {DiscoverTile} from "../molecules/DiscoverTile";
-import { DiscoverSectionHeader } from "../atoms/DiscoverSectionHeader";
-import { globalStyles } from "../../../styles/GlobalStyles";
 import { NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
@@ -67,34 +64,42 @@ export const Discover = ({navigation}: Props) => {
         setFunction(dataObjects);
     })
 
-    useEffect(()=>{
-        const filterList = (list: IData[], filter: string) => {
-            let newList: IData[] = []
-            list.forEach(listItem => {
-                if(listItem.value.toLowerCase().includes(search.toLowerCase())){
-                    newList.push(listItem)
-                }
-            })
-            if(filter == strings.filters.author){
-                setTempAuthors(newList)
-            } else if (filter == strings.filters.subject){
-                setTempSubjects((newList))
-            } else {
-                console.log("Error setting temp ", filter)
-            }
-        }
+/**
+ * This function updates the temporary list of authors and subjects based on the search text entered by the user.
+ * If the search text is empty, the temporary lists are reset to the original authors and subjects.
+ * If the filter is "author", the function filters the temporary authors list and updates it.
+ * If the filter is "subject", the function filters the temporary subjects list and updates it.
 
-        if(search.length == 0){
-            setTempAuthors(authors)
-            setTempSubjects(subjects)
-        } else if (filter == strings.filters.author) {
-            filterList(tempAuthors, strings.filters.author)
-        } else if (filter == strings.filters.subject){
-            filterList(tempSubjects, strings.filters.author)
+ */
+useEffect(()=>{
+    const filterList = (list: IData[], filter: string) => {
+        let newList: IData[] = []
+        list.forEach(listItem => {
+            if(listItem.value.toLowerCase().includes(search.toLowerCase())){
+                newList.push(listItem)
+            }
+        })
+        if(filter === strings.filters.author){
+            setTempAuthors(newList)
+        } else if (filter === strings.filters.subject){
+            setTempSubjects(newList)
         } else {
-            console.log("Error handling search bar text")
+            console.log("Error setting temp ", filter)
         }
-    },[search])
+    }
+
+    if(search.length === 0){
+        setTempAuthors(authors)
+        setTempSubjects(subjects)
+    } else if (filter === strings.filters.author) {
+        filterList(tempAuthors, strings.filters.author)
+    } else if (filter === strings.filters.subject){
+        filterList(tempSubjects, strings.filters.subject)
+    } else {
+        console.log("Error handling search bar text")
+    }
+},[search])
+
 
     
 

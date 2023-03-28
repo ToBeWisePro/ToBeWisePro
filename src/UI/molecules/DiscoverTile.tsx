@@ -19,14 +19,14 @@ export const DiscoverTile: React.FC<Props> = ({
   navigation,
   filter,
 }: Props) => {
-  const [count, setCount] = useState<number>(-1)
+  const [count, setCount] = useState<string>("loading...")
 
   useEffect(()=>{
   
     const getCountForComponent = async (value: string, filter: string)=>{
       await getQuoteCount(value, filter).then((res: React.SetStateAction<number>)=>{
         // console.log(query, ": ", res)
-        setCount(res)}
+        setCount(res.toString())}
         )
   }
   getCountForComponent(query, filter)

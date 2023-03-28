@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { AlphabetList, IData } from "react-native-section-alphabet-list";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
-import { getFromDB } from "../../res/functions/DBFunctions";
-import { DataButton } from "../atoms/DataButton";
+import { getFromDB, getQuoteCount } from "../../res/functions/DBFunctions";
 import { DiscoverSectionHeader } from "../atoms/DiscoverSectionHeader";
-import { SearchBar } from "../molecules/SearchBar";
 import { DiscoverTile } from '../molecules/DiscoverTile';
 import { maxWindowSize } from "../../res/constants/Values";
 import { NavigationInterface } from "../../res/constants/Interfaces";
+import { ScrollView } from "react-native-gesture-handler";
 
 interface Props {
   filter: string;
@@ -38,6 +37,31 @@ export const AlphabetListSection = ({ filter, setFilter, navigation, search }: P
 
     load();
   }, []);
+useEffect(() => {
+  const filterData = (data: IData[], filter: string) => {
+    const filteredData = data.filter((item) =>
+      item.value.toLowerCase().includes(search.toLowerCase())
+    );
+    if (filter === strings.filters.author) {
+      setTempAuthors(filteredData);
+    } else if (filter === strings.filters.subject) {
+      setTempSubjects(filteredData);
+    } else {
+      console.log("Error setting temp ", filter);
+    }
+  };
+
+  if (search.length === 0) {
+    setTempAuthors(authors);
+    setTempSubjects(subjects);
+  } else if (filter === strings.filters.author) {
+    filterData(tempAuthors, strings.filters.author);
+  } else if (filter === strings.filters.subject) {
+    filterData(tempSubjects, strings.filters.subject);
+  } else {
+    console.log("Error handling search bar text");
+  }
+}, [search]);
 
   const formatDataForAlphabetList = (
     (data: String[], setFunction: (arg: IData[]) => void) => {
@@ -66,34 +90,8 @@ export const AlphabetListSection = ({ filter, setFilter, navigation, search }: P
     }
   );
 
-  useEffect(() => {
-    const filterList = (list: IData[], filter: string) => {
-      let newList: IData[] = [];
-      list.forEach((listItem) => {
-        if (listItem.value.toLowerCase().includes(search.toLowerCase())) {
-          newList.push(listItem);
-        }
-      });
-      if (filter == strings.filters.author) {
-        setTempAuthors(newList);
-      } else if (filter == strings.filters.subject) {
-        setTempSubjects(newList);
-      } else {
-        console.log("Error setting temp ", filter);
-      }
-    };
 
-    if (search.length == 0) {
-      setTempAuthors(authors);
-      setTempSubjects(subjects);
-    } else if (filter == strings.filters.author) {
-      filterList(tempAuthors, strings.filters.author);
-    } else if (filter == strings.filters.subject) {
-      filterList(tempSubjects, strings.filters.author);
-    } else {
-      console.log("Error handling search bar text");
-    }
-  }, [search]);
+ 
   return (
     <AlphabetList
       style={styles.scrollView}
@@ -101,19 +99,11 @@ export const AlphabetListSection = ({ filter, setFilter, navigation, search }: P
       contentContainerStyle={globalStyles.fullPageScrollView}
       data={filter == strings.filters.author ? tempAuthors : tempSubjects}
       uncategorizedAtTop={true}
-      // renderCustomIndexLetter={({ item, index, onPress }: IIndexLetterProps) =>{
-      //     return(
-      //         <TouchableOpacity onPress={()=> onPress} >
-      //             <AppText style={styles.indexLeterText}>{item}</AppText>
-      //         </TouchableOpacity>
-      //     )
-      // }}
-
       indexLetterStyle={styles.indexLeterText}
       renderCustomItem={(item: IData) => {
         return (
           <DiscoverTile
-            key={Math.random()}
+            key={item.key}
             // @ts-ignore
             text={item.value}
             navigation={navigation}
