@@ -14,7 +14,7 @@ import { NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
 import { getFromDB } from "../../res/functions/DBFunctions";
-import { AlphabetListSection } from "../organisms/DiscoverTileAlphabetList";
+import { AlphabetListSection } from "../organisms/AlphabetListSection";
 
 interface Props {
     navigation: NavigationInterface;
@@ -112,31 +112,8 @@ useEffect(()=>{
             />
             <View style={styles.background}>
                     <SearchBar state={search} setState={setSearch}/>
-                <View style={styles.dataSelector}>
-                    <DataButton
-                        buttonText={"Author"}
-                        selected={filter == strings.filters.author}
-                        onPress={async () => {
-                            await getFromDB(strings.filters.author).then((res) => formatDataForAlphabetList(res, getFromDB(strings.filters.author)))
-                            setFilter(strings.filters.author)
-                        }}
-                    />
-                    <DataButton
-                        buttonText={"Subject"}
-                        selected={filter == strings.filters.subject}
-                        onPress={async () => {
-                            await getFromDB(strings.filters.subject).then((res) => {
-                                formatDataForAlphabetList(res, setSubjects)
-                                formatDataForAlphabetList(res, setTempSubjects)
-                            })
-                            setFilter(strings.filters.subject)
-                        }}
-                    />
-                </View>
+               
                 <AlphabetListSection navigation={navigation} data={filter == strings.filters.author ? tempAuthors : tempSubjects} filter={filter} setFilter={setFilter} search={search}/>
-
-
-
             </View>
             <BottomNav navigation={navigation} screen={strings.screenName.discover} whatToInclude={IncludeInBottomNav.Nothing}/>
         </View>
@@ -160,13 +137,7 @@ const styles = StyleSheet.create({
         height: maxWindowSize - 51 - 32 - 33 - 35 - 115,
         // maxWindowSize - search bar height - data button height - search bar padding - data selector padding - add'l value
     },
-    dataSelector: {
-        flexDirection: "row",
-        marginTop: 18,
-        justifyContent: "space-between",
-        width: 224,
-        marginBottom: 17,
-    },
+
     searchContainer: {
         height: "100%",
         width: "100%",
@@ -176,12 +147,6 @@ const styles = StyleSheet.create({
         fontSize: 10,
         color: PRIMARY_BLUE
     },
-    indexLeterText: {
-        fontWeight: "800",
-        fontSize: 12,
-        color: GRAY_1,
-        // paddingRight: 10, 
-        // paddingTop: 10
-    }
+
 
 });
