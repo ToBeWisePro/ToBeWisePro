@@ -21,30 +21,28 @@ interface Props {
 
 const formatDataForAlphabetList = (
   (data: String[], setFunction: (arg: IData[]) => void) => {
-    // AlphabetList requires {key, value} so we have to take our strings and convert them to key value pairs
-    const dataObjects: IData[] = [];
+    const subjectsSet = new Set<string>();
     data.forEach((string) => {
-      // @ts-ignore
-      dataObjects.push({ key: Math.random().toString(), value: string });
-    });
-    dataObjects.push({ key: "a", value: strings.customDiscoverHeaders.all });
-    dataObjects.push({
-      key: "b",
-      value: strings.customDiscoverHeaders.addedByMe,
-    });
-    // dataObjects.push({key:"e", value: strings.customDiscoverHeaders.deleted})
-    dataObjects.push({
-      key: "d",
-      value: strings.customDiscoverHeaders.favorites,
-    });
-    dataObjects.push({
-      key: "c",
-      value: strings.customDiscoverHeaders.top100,
+      const subjectArr = string.split(",");
+      subjectArr.forEach((subject) => {
+        subjectsSet.add(subject.trim());
+      });
     });
 
-    setFunction(dataObjects);
+    const subjectsArr = Array.from(subjectsSet).sort().map((subject) => {
+      return { key: Math.random().toString(), value: subject };
+    });
+
+    setFunction([
+      ...subjectsArr,
+      { key: "a", value: strings.customDiscoverHeaders.all },
+      { key: "b", value: strings.customDiscoverHeaders.addedByMe },
+      { key: "d", value: strings.customDiscoverHeaders.favorites },
+      { key: "c", value: strings.customDiscoverHeaders.top100 },
+    ]);
   }
 );
+
 
 export const AlphabetListSection = ({ filter, setFilter, navigation, search }: Props) => {
   const [subjects, setSubjects] = useState<IData[]>([]);

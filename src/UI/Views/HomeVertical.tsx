@@ -34,7 +34,7 @@ export const HomeVertical = ({ navigation, route }: Props) => {
   const [quotes, setQuotes] = useState<QuotationInterface[]>([]);
   const [filter, setFilter] = useState("");
   const [query, setQuery] = useState("");
-  const [playPressed, setPlayPressed] = useState<boolean>(false);
+  const [playPressed, setPlayPressed] = useState<boolean>(true);
   const [scrollSpeed, setScrollSpeed] = useState<number>(
     autoScrollIntervalTime
   );
