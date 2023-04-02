@@ -338,3 +338,22 @@ export const updateQuoteContainer = (
     }
   }, refreshRate);
 };
+
+export const saveQuote = async (quote: QuotationInterface, existingQuote: boolean) => {
+  const tempQuote = {
+    _id: quote._id,
+    quoteText: quote.quoteText,
+    author: quote.author,
+    authorLink: quote.authorLink,
+    videoLink: quote.videoLink,
+    subjects: quote.subjects,
+    favorite: quote.favorite,
+    contributedBy: defaultUsername,
+  };
+  if (existingQuote) {
+    await editQuote(tempQuote);
+  } else {
+    await addQuote(tempQuote);
+  }
+  return tempQuote;
+};

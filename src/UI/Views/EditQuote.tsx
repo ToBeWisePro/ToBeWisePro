@@ -14,7 +14,16 @@ import {
   QuotationInterface,
   RouteInterface,
 } from "../../res/constants/Interfaces";
-import { LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
+import {
+  GRAY_1,
+  GRAY_4,
+  GRAY_5,
+  GRAY_6,
+  LIGHT,
+  PRIMARY_BLUE,
+  PRIMARY_GREEN,
+  PRIMARY_RED,
+} from "../../../styles/Colors";
 import { SaveButton } from "../atoms/SaveButton";
 import {
   TextInputField,
@@ -22,7 +31,13 @@ import {
   TextInputSize,
 } from "../atoms/TextInputField";
 import { TopNav } from "../molecules/TopNav";
-import { addQuote, editQuote, getQuoteByID } from "../../res/functions/DBFunctions";
+import {
+  addQuote,
+  editQuote,
+  getQuoteById,
+  saveQuote,
+} from "../../res/functions/DBFunctions";
+import { AppText } from "../atoms/AppText";
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;
@@ -109,43 +124,17 @@ export const EditQuotes = ({ navigation, route }: Props) => {
     setCanSave(false);
   }, [quoteInEditing]);
 
-  useEffect(()=>{
-      if (
-        quoteText.length > 0 &&
-        subjects.length > 0 &&
-        author.length > 0
-      ) {
-        setCanSave(true);
-      }
-  },[author, quoteText, subjects])
+  useEffect(() => {
+    if (quoteText.length > 0 && subjects.length > 0 && author.length > 0) {
+      setCanSave(true);
+    }
+  }, [author, quoteText, subjects]);
 
-  useEffect(
-    () =>{
-      route.params.editingQuote.quoteText.length > 0
-        ? setIsExistingQuote(true)
-        : setIsExistingQuote(false)
-    },
-    []
-  );
-
-  const saveEdit = async () => {
-    setCanSave(true);
-    const tempQuote: QuotationInterface = {
-      _id: route.params.editingQuote._id,
-      quoteText: quoteText,
-      author: author,
-      authorLink: authorLink,
-      videoLink: videoLink,
-      subjects: subjects,
-      favorite: route.params.editingQuote.favorite,
-      contributedBy: defaultUsername,
-    };
-    if (existingQuote) {
-      await editQuote(tempQuote);
-    } else await addQuote(tempQuote);
-
-    setQuoteInEditing(tempQuote);
-  };
+  useEffect(() => {
+    route.params.editingQuote.quoteText.length > 0
+      ? setIsExistingQuote(true)
+      : setIsExistingQuote(false);
+  }, []);
 
   const getTitle = () => {
     if (existingQuote) {
@@ -172,18 +161,22 @@ export const EditQuotes = ({ navigation, route }: Props) => {
             width: "100%",
           }}
         >
-          <View style={styles.spacingView} >
-            <View style={styles.textInputView} >
+          <View style={styles.spacingView}>
+            <View style={styles.textInputView}>
               {textInputFields.map((textInputField) => (
-                <View style={styles.shadowContainer} >
-                  <TextInputField
-                    placeholderText={textInputField.placeholderText}
-                    size={textInputField.size}
-                    label={textInputField.label}
-                    state={textInputField.state}
-                    setState={(e)=> {textInputField.setState(e)}}
-                    // key={Math.random().toString()}
-                  />
+                <View>
+                  <AppText style={styles.textLabel}>{textInputField.label}</AppText>
+                  <View style={styles.outlinedTextContainer}>
+                    <TextInputField
+                      placeholderText={textInputField.placeholderText}
+                      size={textInputField.size}
+                      state={textInputField.state}
+                      setState={(e) => {
+                        textInputField.setState(e);
+                      }}
+                      // key={Math.random().toString()}
+                    />
+                  </View>
                 </View>
               ))}
             </View>
@@ -191,8 +184,8 @@ export const EditQuotes = ({ navigation, route }: Props) => {
               route={route}
               newQuote={existingQuote}
               pressFunction={() => {
-                saveEdit().then(async () => {
-                  const quote: QuotationInterface = await getQuoteByID(
+                saveQuote(quoteInEditing, existingQuote).then(async () => {
+                  const quote: QuotationInterface = await getQuoteById(
                     quoteInEditing._id
                   );
                   setQuoteInEditing(quote);
@@ -211,7 +204,7 @@ export const EditQuotes = ({ navigation, route }: Props) => {
 const styles = StyleSheet.create({
   container: {
     height: "100%",
-    width: Dimensions.get("window").width,
+    width: "100%",
     alignItems: "center",
     backgroundColor: PRIMARY_BLUE,
   },
@@ -229,7 +222,7 @@ const styles = StyleSheet.create({
     paddingBottom: 400,
     width: "100%",
     paddingHorizontal: 10,
-    backgroundColor: LIGHT,
+    backgroundColor: GRAY_5,
     alignSelf: "center",
     justifyContent: "space-between",
     alignItems: "center",
@@ -239,16 +232,14 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
   },
-  shadowContainer: {
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowRadius: 3.84,
-    elevation: 5,
+  outlinedTextContainer: {
+    backgroundColor: LIGHT,
+    borderRadius: 5,
+    padding: 5,
     marginTop: 5,
     marginVertical: 10,
   },
+  textLabel: {
+    fontWeight: "bold",
+  }
 });
