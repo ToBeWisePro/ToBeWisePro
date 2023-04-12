@@ -98,6 +98,8 @@ export const AlphabetListSection = ({ filter, setFilter, navigation, search }: P
       </View>
       <AlphabetList
         style={styles.scrollView}
+        indexLetterContainerStyle={{width: "100%"}}
+        indexContainerStyle={{width: 30}}
         contentContainerStyle={globalStyles.fullPageScrollView}
         data={data}
         uncategorizedAtTop={true}
