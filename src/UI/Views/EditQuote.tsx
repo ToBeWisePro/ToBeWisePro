@@ -1,29 +1,18 @@
 import React, { useEffect, useState } from "react";
 import {
-  Dimensions,
   Keyboard,
   ScrollView,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { defaultUsername } from "../../res/constants/Values";
 import { strings } from "../../res/constants/Strings";
 import {
   NavigationInterface,
   QuotationInterface,
   RouteInterface,
 } from "../../res/constants/Interfaces";
-import {
-  GRAY_1,
-  GRAY_4,
-  GRAY_5,
-  GRAY_6,
-  LIGHT,
-  PRIMARY_BLUE,
-  PRIMARY_GREEN,
-  PRIMARY_RED,
-} from "../../../styles/Colors";
+import { GRAY_5, LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
 import { SaveButton } from "../atoms/SaveButton";
 import {
   TextInputField,
@@ -32,10 +21,8 @@ import {
 } from "../atoms/TextInputField";
 import { TopNav } from "../molecules/TopNav";
 import {
-  addQuote,
-  editQuote,
   getQuoteById,
-  saveQuote,
+  saveOrUpdateQuote,
 } from "../../res/functions/DBFunctions";
 import { AppText } from "../atoms/AppText";
 interface Props {
@@ -44,32 +31,24 @@ interface Props {
 }
 
 export const EditQuotes = ({ navigation, route }: Props) => {
-  const [canSave, setCanSave] = useState(false);
-  const [quoteInEditing, setQuoteInEditing] = useState(
-    route.params.editingQuote
-  );
-  const [quoteText, setQuoteText] = useState(
-    route.params.editingQuote.quoteText
-  );
-  const [author, setAuthor] = useState(route.params.editingQuote.author);
-  const [subjects, setSubjects] = useState(route.params.editingQuote.subjects);
-  const [authorLink, setAuthorLink] = useState(
-    route.params.editingQuote.authorLink
-  );
-  const [videoLink, setVideoLink] = useState(
-    route.params.editingQuote.videoLink
-  );
-  const [existingQuote, setIsExistingQuote] = useState(
-    route.params.editingQuote.quoteText.length > 0
-  );
+  const editingQuote = route.params.editingQuote || {};
+  const isExistingQuote = Boolean(editingQuote);
+  const initialQuote = {
+    ...editingQuote,
+    quoteText: editingQuote.quoteText || "",
+    author: editingQuote.author || "",
+    subjects: editingQuote.subjects || "",
+    authorLink: editingQuote.authorLink || "",
+    videoLink: editingQuote.videoLink || "",
+  };
 
-  useEffect(() => {
-    setQuoteText(route.params.editingQuote.quoteText);
-    setAuthor(route.params.editingQuote.author);
-    setSubjects(route.params.editingQuote.subjects);
-    setAuthorLink(route.params.editingQuote.authorLink);
-    setVideoLink(route.params.editingQuote.videoLink);
-  }, []);
+  const [quoteInEditing, setQuoteInEditing] = useState(initialQuote);
+  const [canSave, setCanSave] = useState(false);
+  const [quoteText, setQuoteText] = useState(initialQuote.quoteText);
+  const [author, setAuthor] = useState(initialQuote.author);
+  const [subjects, setSubjects] = useState(initialQuote.subjects);
+  const [authorLink, setAuthorLink] = useState(initialQuote.authorLink);
+  const [videoLink, setVideoLink] = useState(initialQuote.videoLink);
 
   const textInputFields: TextInputProps[] = [
     {
@@ -78,7 +57,7 @@ export const EditQuotes = ({ navigation, route }: Props) => {
       size: TextInputSize.Large,
       label: strings.labels.quote,
       state: quoteText,
-      setState: (e) => setQuoteText(e),
+      setState: setQuoteText,
     },
     {
       id: 1,
@@ -86,7 +65,7 @@ export const EditQuotes = ({ navigation, route }: Props) => {
       size: TextInputSize.Small,
       label: strings.labels.author,
       state: author,
-      setState: (e) => setAuthor(e),
+      setState: setAuthor,
     },
     {
       id: 2,
@@ -94,61 +73,43 @@ export const EditQuotes = ({ navigation, route }: Props) => {
       size: TextInputSize.Small,
       label: strings.labels.subjects,
       state: subjects,
-      setState: (e) => setSubjects(e),
+      setState: setSubjects,
     },
     {
-      id: 4,
+      id: 3,
       placeholderText: strings.placeholderText.videoLink,
       size: TextInputSize.Small,
       label: strings.labels.videoLink,
       state: videoLink,
-      setState: (e) => setVideoLink(e),
+      setState: setVideoLink,
     },
     {
-      id: 5,
+      id: 4,
       placeholderText: strings.placeholderText.authorLink,
       size: TextInputSize.Small,
       label: strings.labels.authorLink,
       state: authorLink,
-      setState: (e) => setAuthorLink(e),
+      setState: setAuthorLink,
     },
   ];
 
   useEffect(() => {
-    // every time a field is edited, update the text fields to display the changes
-    setQuoteText(quoteInEditing.quoteText);
-    setSubjects(quoteInEditing.subjects);
-    setAuthorLink(quoteInEditing.authorLink);
-    setAuthor(quoteInEditing.author);
-    setVideoLink(quoteInEditing.videoLink);
-    setCanSave(false);
-  }, [quoteInEditing]);
+    const shouldEnableSave =
+      quoteText.length > 0 && subjects.length > 0 && author.length > 0;
+    setCanSave(shouldEnableSave);
+  }, [quoteText, author, subjects]);
 
-  useEffect(() => {
-    if (quoteText.length > 0 && subjects.length > 0 && author.length > 0) {
-      setCanSave(true);
-    }
-  }, [author, quoteText, subjects]);
-
-  useEffect(() => {
-    route.params.editingQuote.quoteText.length > 0
-      ? setIsExistingQuote(true)
-      : setIsExistingQuote(false);
-  }, []);
-
-  const getTitle = () => {
-    if (existingQuote) {
-      return strings.copy.editQuoteTitle;
-    } else return strings.copy.editQuoteTitleBlank;
-    // if there's a quote, set to "Edit Quote". Otherwise, set to "Add Quote"
-  };
+  const getTitle = () =>
+    isExistingQuote
+      ? strings.copy.editQuoteTitle
+      : strings.copy.editQuoteTitleBlank;
 
   return (
     <View style={styles.container}>
       <TopNav
-        backButton={true}
+        backButton
         title={getTitle()}
-        stickyHeader={true}
+        stickyHeader
         backFunction={() => navigation.goBack()}
       />
       <TouchableWithoutFeedback style={styles.form} onPress={Keyboard.dismiss}>
@@ -164,17 +125,16 @@ export const EditQuotes = ({ navigation, route }: Props) => {
           <View style={styles.spacingView}>
             <View style={styles.textInputView}>
               {textInputFields.map((textInputField) => (
-                <View>
-                  <AppText style={styles.textLabel}>{textInputField.label}</AppText>
+                <View key={textInputField.id}>
+                  <AppText style={styles.textLabel}>
+                    {textInputField.label}
+                  </AppText>
                   <View style={styles.outlinedTextContainer}>
                     <TextInputField
                       placeholderText={textInputField.placeholderText}
                       size={textInputField.size}
                       state={textInputField.state}
-                      setState={(e) => {
-                        textInputField.setState(e);
-                      }}
-                      // key={Math.random().toString()}
+                      setState={textInputField.setState}
                     />
                   </View>
                 </View>
@@ -182,14 +142,16 @@ export const EditQuotes = ({ navigation, route }: Props) => {
             </View>
             <SaveButton
               route={route}
-              newQuote={existingQuote}
-              pressFunction={() => {
-                saveQuote(quoteInEditing, existingQuote).then(async () => {
-                  const quote: QuotationInterface = await getQuoteById(
-                    quoteInEditing._id
-                  );
-                  setQuoteInEditing(quote);
-                });
+              newQuote={isExistingQuote}
+              pressFunction={async () => {
+                await saveOrUpdateQuote(quoteInEditing, isExistingQuote).then(
+                  async () => {
+                    const quote: QuotationInterface = await getQuoteById(
+                      quoteInEditing._id
+                    );
+                    setQuoteInEditing(quote);
+                  }
+                );
               }}
               active={canSave}
               navigation={navigation}
@@ -241,5 +203,5 @@ const styles = StyleSheet.create({
   },
   textLabel: {
     fontWeight: "bold",
-  }
+  },
 });

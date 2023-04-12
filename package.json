@@ -8,7 +8,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@react-native-community/datetimepicker": "^6.7.5",
+    "@react-native-community/datetimepicker": "^7.0.1",
     "@react-navigation/native": "^6.1.6",
     "@react-navigation/stack": "^6.3.16",
     "eas-cli": "^3.8.0",
@@ -16,9 +16,10 @@
     "expo-splash-screen": "~0.18.1",
     "expo-sqlite": "^11.1.1",
     "expo-status-bar": "~1.4.4",
+    "expo-updates": "~0.16.4",
     "react": "18.2.0",
     "react-localization": "^1.0.19",
-    "react-native": "0.71.3",
+    "react-native": "0.71.6",
     "react-native-elements": "^3.4.3",
     "react-native-gesture-handler": "^2.9.0",
     "react-native-inappbrowser-reborn": "^3.7.0",

@@ -31,7 +31,8 @@ export interface RouteInterface {
     authorLink: string,
     videoLink: string,
     contributedBy: string,
-    favorite: number
+    favorite: number,
+    deleted: boolean
 };
 
 export interface NotificationsMenuOptionProps {

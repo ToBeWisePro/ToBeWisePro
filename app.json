@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "ToBeWise",
+    "name": "ToBeWise Pro",
     "icon": "./assets/appstore.png",
     "slug": "ToBeWise",
-    "version": "7.1.4",
+    "version": "7.1.7",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.app.tobewise.proV4"
+      "bundleIdentifier": "com.app.tobewise.pro"
     },
     "android": {
       "adaptiveIcon": {
@@ -32,6 +32,10 @@
       "eas": {
         "projectId": "8df7272f-49e3-48ac-ae22-6e7925d69a78"
       }
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/8df7272f-49e3-48ac-ae22-6e7925d69a78"
     }
   }
 }

@@ -4,7 +4,6 @@ import { strings } from "../../res/constants/Strings";
 import { NavigationInterface, RouteInterface } from "../../res/constants/Interfaces";
 import {GRAY_2, LIGHT, PRIMARY_GREEN} from "../../../styles/Colors";
 import {AppText} from "./AppText";
-import { getQuoteByID } from "../../res/functions/DBFunctions";
 
 interface Props {
     pressFunction: () => void
@@ -19,12 +18,7 @@ export const SaveButton: React.FC<Props> = ({active, pressFunction, navigation, 
     useEffect(()=>setIsNewQuote(newQuote),[])
     const onPressFunction = async () => {
         if (active) {
-            await pressFunction()
-            Alert.alert("Updates Saved", "Your updates have been saved to your phone", [{
-                text: "Stay here",
-                onPress: async () => console.log(await getQuoteByID(route.params.editingQuote._id)),
-                style: "cancel"
-            }, {text: "Go back", onPress: () => navigation.goBack()},])
+            navigation.goBack()
         }
     }
 

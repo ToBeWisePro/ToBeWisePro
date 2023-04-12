@@ -8,20 +8,15 @@ import * as SQLite from "expo-sqlite";
 
 export async function dataImporter() {
   const db = SQLite.openDatabase(dbName);
-  /*
-1. Check if our database exists. If not, create it
-2. Import our data into the database
-3. Make sure the import worked. If not, log an error 
-*/
 
   // Check if our database exists. If not, create it
   db.transaction((tx) => {
     tx.executeSql(
-      `CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite INTEGER);`
+      `CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite BOOLEAN, deleted BOOLEAN);`
     );
   });
 
-  // import jsonQuotes into our database if our database is empty
+  // Check if the database is empty
   const isDbEmpty: boolean = await new Promise<boolean>((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
@@ -39,7 +34,6 @@ export async function dataImporter() {
   });
 
   if (isDbEmpty) {
-    // isDbEmpty will be true if our database is empty
     const quotes: QuotationInterface[] = jsonQuotes.map((quote) => {
       return {
         _id: quote._id,
@@ -49,11 +43,12 @@ export async function dataImporter() {
         subjects: quote.subjects,
         authorLink: quote.authorLink,
         videoLink: quote.videoLink,
-        favorite: quote.favorite,
+        favorite: false,
+        deleted: false,
       };
     });
 
-    const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
     db.transaction((tx) => {
       quotes.forEach((quote) => {
@@ -65,16 +60,18 @@ export async function dataImporter() {
           quote.authorLink,
           quote.videoLink,
           quote.favorite,
+          quote.deleted,
         ]);
       });
     });
   }
 
-  // print the length of our database to make sure it's the same length as our jsonQuotes array without using a promise
+  // Print the length of our database to make sure it's the same length as our jsonQuotes array without using a promise
   db.transaction((tx) => {
     tx.executeSql(`SELECT * FROM ${dbName}`, []);
   });
 }
+
 
 export async function getShuffledQuotes(
   key: string,
@@ -165,13 +162,7 @@ export async function getQuoteById(id: number): Promise<QuotationInterface | nul
           } else {
             const quoteRow = result.rows.item(0);
             const quote: QuotationInterface = {
-              _id: quoteRow._id,
-              quoteText: quoteRow.quoteText,
-              author: quoteRow.author,
-              contributedBy: quoteRow.contributedBy,
-              subjects: quoteRow.subjects,
-              authorLink: quoteRow.authorLink,
-              videoLink: quoteRow.videoLink,
+              ...quoteRow,
               favorite: quoteRow.favorite,
             };
             resolve(quote);
@@ -186,56 +177,57 @@ export async function getQuoteById(id: number): Promise<QuotationInterface | nul
   });
 }
 
+export const saveOrUpdateQuote = async (quote: QuotationInterface, existingQuote: boolean) => {
+  const db = SQLite.openDatabase(dbName);
 
-export const addQuote = async (quotation: QuotationInterface) => {
-  const db = SQLite.openDatabase("myrealm");
+  const query = existingQuote
+    ? `UPDATE ${dbName} SET quoteText = ?, author = ?, subjects = ?, authorLink = ?, videoLink = ?, contributedBy = ?, favorite = ?, deleted = ? WHERE _id = ?`
+    : `INSERT INTO ${dbName} (quoteText, author, subjects, authorLink, videoLink, contributedBy, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  await new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `INSERT INTO ${dbName} 
-            (_id, quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          quotation._id,
-          quotation.quoteText,
-          quotation.author,
-          quotation.contributedBy,
-          quotation.subjects,
-          quotation.authorLink,
-          quotation.videoLink,
-          0,
-        ],
-        (_, result) => {
-          resolve(result);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
-  });
-};
+  const queryParams = [
+    quote.quoteText,
+    quote.author,
+    quote.subjects,
+    quote.authorLink,
+    quote.videoLink,
+    quote.contributedBy,
+    quote.favorite,
+    quote.deleted,
+  ];
 
-export const editQuote = async (quotation: QuotationInterface) => {
-  // Edit a quote to match the quote passed in
-  const realm = await Realm.open({
-    path: "myrealm",
-    schema: [QuotationSchema],
-  });
-  await realm.write(async () => {
-    const updt: QuotationInterface = realm.objectForPrimaryKey(
-      dbName,
-      quotation._id
+  if (existingQuote) {
+    queryParams.push(quote._id);
+  }
+
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          query,
+          queryParams,
+          async (_, result) => {
+            const fetchedQuote = await getQuoteById(quote._id);
+            const isQuoteEqual = JSON.stringify(quote) === JSON.stringify(fetchedQuote);
+
+            if (isQuoteEqual) {
+              console.log("Quote saved or updated successfully");
+              resolve(result);
+            } else {
+              console.log("Error: Fetched quote does not match the input quote");
+              reject(new Error("Fetched quote does not match the input quote"));
+            }
+          },
+          (_, error) => {
+            console.log("Error saving or updating quote:", error);
+            reject(error);
+          }
+        );
+      }
     );
-    updt.quoteText = quotation.quoteText;
-    updt.author = quotation.author;
-    updt.videoLink = quotation.videoLink;
-    updt.authorLink = quotation.authorLink;
-    updt.subjects = quotation.subjects;
-    // updt.contributedBy = quotation.contributedBy
   });
 };
+
+
 
 export const getAllQuotes = async (): Promise<QuotationInterface[]> => {
   const db = await SQLite.openDatabase(dbName);
@@ -339,21 +331,3 @@ export const updateQuoteContainer = (
   }, refreshRate);
 };
 
-export const saveQuote = async (quote: QuotationInterface, existingQuote: boolean) => {
-  const tempQuote = {
-    _id: quote._id,
-    quoteText: quote.quoteText,
-    author: quote.author,
-    authorLink: quote.authorLink,
-    videoLink: quote.videoLink,
-    subjects: quote.subjects,
-    favorite: quote.favorite,
-    contributedBy: defaultUsername,
-  };
-  if (existingQuote) {
-    await editQuote(tempQuote);
-  } else {
-    await addQuote(tempQuote);
-  }
-  return tempQuote;
-};

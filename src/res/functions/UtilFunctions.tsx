@@ -89,12 +89,10 @@ export const scrollToNextQuote = (
   offset: number,
   setOffset: (x: number) => void
 ) => {
-  // This function will scroll to the next function automatically
-  // USAGE: This function should live inside of a useTimeout
   if (playPressed) {
-    try {
-      if (currentQuoteIndex < quotes.length - 1) {
-        const newIndex: number = currentQuoteIndex + 1;
+    if (currentQuoteIndex < quotes.length - 1) {
+      const newIndex: number = currentQuoteIndex + 1;
+      if (!isNaN(newIndex) && newIndex >= 0 && newIndex < quotes.length) { // Add this line
         flatListRef.current?.scrollToIndex({
           index: newIndex,
           animated: true,
@@ -105,19 +103,16 @@ export const scrollToNextQuote = (
           globalStyles.smallQuoteContainer.height +
           globalStyles.smallQuoteContainer.marginBottom;
         setOffset(newOffset);
-        if (!(newIndex > quotes.length - 1)) {
-          setCurrentQuoteIndex(newIndex);
-        }
+        setCurrentQuoteIndex(newIndex);
       } else {
-        console.log("Quotes.length: ", quotes.length);
-        console.log("Current index: ", currentQuoteIndex);
-        console.log("setting playPressed to false");
-        // This will stop it from going out of bounds
-        setPlayPressed(false);
+        console.warn("Invalid newIndex:", newIndex); // Add this line
       }
-    } catch (e) {
-      console.log(e);
+    } else {
+      // This will stop it from going out of bounds
+      setPlayPressed(false);
     }
   }
 };
+
+
 
