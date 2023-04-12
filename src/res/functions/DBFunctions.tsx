@@ -227,8 +227,6 @@ export const saveOrUpdateQuote = async (quote: QuotationInterface, existingQuote
   });
 };
 
-
-
 export const getAllQuotes = async (): Promise<QuotationInterface[]> => {
   const db = await SQLite.openDatabase(dbName);
 

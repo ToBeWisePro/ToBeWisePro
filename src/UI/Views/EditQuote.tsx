@@ -144,10 +144,18 @@ export const EditQuotes = ({ navigation, route }: Props) => {
               route={route}
               newQuote={isExistingQuote}
               pressFunction={async () => {
-                await saveOrUpdateQuote(quoteInEditing, isExistingQuote).then(
+                const updatedQuote = {
+                  ...quoteInEditing,
+                  quoteText,
+                  author,
+                  subjects,
+                  authorLink,
+                  videoLink,
+                };
+                await saveOrUpdateQuote(updatedQuote, isExistingQuote).then(
                   async () => {
                     const quote: QuotationInterface = await getQuoteById(
-                      quoteInEditing._id
+                      updatedQuote._id
                     );
                     setQuoteInEditing(quote);
                   }
