@@ -24,11 +24,11 @@ interface Button {
 export const Settings = ({ navigation }: Props) => {
 
   const buttons: Button[] = [
-    // {
-    //   icon: "notifications",
-    //   title: "Schedule Notifications",
-    //   onPress: ()=> navigation.navigate(strings.screenName.notificationsScreen)
-    // },
+    {
+      icon: "notifications",
+      title: "Schedule Notifications",
+      onPress: ()=> navigation.navigate(strings.screenName.notificationsScreen)
+    },
     {
       icon: "info",
       title: "About",

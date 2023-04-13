@@ -90,8 +90,6 @@ export const BottomNav: React.FC<Props> = ({
       )}
       {whatToInclude == IncludeInBottomNav.PlayButton && (
         <View style={styles.scrollButtonViewNoSlidebar}>
-          
-          
           <PlayButtonBar
             setPlayPressed={setPlayPressed}
             playPressed={playPressed}

@@ -25,7 +25,6 @@ export const DiscoverTile: React.FC<Props> = ({
   
     const getCountForComponent = async (value: string, filter: string)=>{
       await getQuoteCount(value, filter).then((res: React.SetStateAction<number>)=>{
-        // console.log(query, ": ", res)
         setCount(res.toString())}
         )
   }

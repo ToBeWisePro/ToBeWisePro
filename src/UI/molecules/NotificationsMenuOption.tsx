@@ -6,7 +6,7 @@ import {
 import { GRAY_4, GRAY_5, LIGHT, PRIMARY_GREEN } from "../../../styles/Colors";
 import { AppText } from "../atoms/AppText";
 import { Switch } from "react-native";
-import { CustomTimeInput } from "../atoms/TimeInput";
+import { CustomTimeInput } from "../atoms/CustomTimeInput";
 import { NotificationFrequencySelector } from "../atoms/NotificationFrequencySelector";
 import { NotificationsMenuOptionEnum } from "../../res/constants/Enums";
 import { NotificationsMenuOptionProps } from '../../res/constants/Interfaces';

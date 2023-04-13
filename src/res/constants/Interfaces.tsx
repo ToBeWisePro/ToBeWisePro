@@ -31,7 +31,7 @@ export interface RouteInterface {
     authorLink: string,
     videoLink: string,
     contributedBy: string,
-    favorite: number,
+    favorite: boolean,
     deleted: boolean
 };
 

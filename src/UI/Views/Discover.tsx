@@ -9,7 +9,6 @@ import { maxWindowSize } from "../../res/constants/Values";
 import {IData} from "react-native-section-alphabet-list";
 import {GRAY_1, GRAY_6, LIGHT, PRIMARY_BLUE} from "../../../styles/Colors";
 import { BottomNav } from "../organisms/BottomNav";
-import { DataButton } from "../atoms/DataButton";
 import { NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
@@ -100,9 +99,6 @@ useEffect(()=>{
     }
 },[search])
 
-
-    
-
     return (
         <View style={styles.container}>
             <TopNav
@@ -112,7 +108,6 @@ useEffect(()=>{
             />
             <View style={styles.background}>
                     <SearchBar state={search} setState={setSearch}/>
-               
                 <AlphabetListSection navigation={navigation} data={filter == strings.filters.author ? tempAuthors : tempSubjects} filter={filter} setFilter={setFilter} search={search}/>
             </View>
             <BottomNav navigation={navigation} screen={strings.screenName.discover} whatToInclude={IncludeInBottomNav.Nothing}/>
@@ -147,6 +142,4 @@ const styles = StyleSheet.create({
         fontSize: 10,
         color: PRIMARY_BLUE
     },
-
-
 });

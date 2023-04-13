@@ -286,7 +286,7 @@ export const getFavoriteQuotes = async (): Promise<QuotationInterface[]> => {
 };
 
 export async function getQuoteCount(key: string, filter: string): Promise<number> {
-  const db = await SQLite.openDatabase(dbName);
+  const db = SQLite.openDatabase(dbName);
 
   let query = '';
   let params: any[] = [];

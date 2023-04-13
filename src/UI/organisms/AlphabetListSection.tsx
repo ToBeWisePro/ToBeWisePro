@@ -3,12 +3,11 @@ import { StyleSheet, View, ViewComponent } from "react-native";
 import { AlphabetList, IData } from "react-native-section-alphabet-list";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
-import { getFromDB, getQuoteCount } from "../../res/functions/DBFunctions";
+import { getFromDB } from "../../res/functions/DBFunctions";
 import { DiscoverSectionHeader } from "../atoms/DiscoverSectionHeader";
 import { DiscoverTile } from '../molecules/DiscoverTile';
 import { maxWindowSize } from "../../res/constants/Values";
 import { NavigationInterface } from "../../res/constants/Interfaces";
-import { ScrollView } from "react-native-gesture-handler";
 import { GRAY_1 } from "../../../styles/Colors";
 import { DataButton } from "../atoms/DataButton";
 
@@ -59,7 +58,6 @@ export const AlphabetListSection = ({ filter, setFilter, navigation, search }: P
       });
     };
     setFilter(strings.filters.author);
-
     load();
   }, []);
 
