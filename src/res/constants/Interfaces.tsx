@@ -10,6 +10,8 @@ export interface RouteInterface {
       };
       showBackButton: boolean;
       backButtonNavigationFunction: BackButtonNavEnum;
+      notificationKey: string;
+      notificationFilter: string;
     };
   }
   
@@ -39,10 +41,12 @@ export interface NotificationsMenuOptionProps {
   notificationsMenuOptionEnum: NotificationsMenuOptionEnum;
   label: string;
   state: any;
-  setState?: (x: any) => void;
-  toggleFunction?: () => void;
+  setState?: any;
+  toggleFunction?: any;
   bottomLine: boolean;
+  errorMessage?: string | null;
 }
+
 
 export interface NavButtonInterface {
   buttonText: string;

@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  FlatList,
-  Dimensions,
-} from "react-native";
+import { View, StyleSheet, Dimensions } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
 import { GRADIENT_START, GRADIENT_END } from "../../../styles/Colors";
@@ -42,13 +35,6 @@ export const HomeVertical = ({ navigation, route }: Props) => {
     globalStyles.smallQuoteContainer.paddingTop
   );
 
-  // useEffect(() => {
-  //   // run dataImporter() -> if this is the first time ToBeWise is run, it will build the quote database
-  //   const setup = async () => {
-  //     await dataImporter();
-  //   };
-  //   setup();
-  // }, []);
   useEffect(() => {
     const getQuotes = async () => {
       await dataImporter().then(async () => {
@@ -70,8 +56,8 @@ export const HomeVertical = ({ navigation, route }: Props) => {
           await getShuffledQuotes(
             strings.database.defaultQuery,
             strings.database.defaultFilter
-          ).then((res)=>{
-            setQuotes(res)  
+          ).then((res) => {
+            setQuotes(res);
           });
         }
       });
@@ -134,7 +120,7 @@ const styles = StyleSheet.create({
   background: {
     width: "100%",
     alignItems: "center",
-    height: "92%",
+    height: Dimensions.get("window").height - globalStyles.navbar.height -globalStyles.scrollButtonBar.height - 35
     // backgroundColor: LIGHT,
   },
 });

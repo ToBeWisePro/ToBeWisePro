@@ -155,7 +155,7 @@ useEffect(() => {
   };
   const styles = StyleSheet.create({
     container: {
-      height: Dimensions.get('screen').height - globalStyles.navbar.height - globalStyles.scrollButtonBar.height,
+      height: "100%",
       width: "100%",
       // backgroundColor: PRIMARY_BLUE,
       marginBottom: globalStyles.navbar.height * 2.5,
