@@ -85,7 +85,8 @@ export async function getShuffledQuotes(
   } else if (filter === strings.filters.subject) {
     query += ` WHERE subjects LIKE '%${key}%' ORDER BY RANDOM()`;
   } else {
-    throw new Error("Invalid filter provided");
+    const string = `Invalid filter provided: ${filter}`;
+    throw new Error(string);
   }
 
   return new Promise<QuotationInterface[]>((resolve, reject) => {
@@ -119,7 +120,7 @@ export async function getFromDB(key: string): Promise<string[]> {
       key = "subjects";
       break;
     default:
-      throw new Error("Invalid filter provided");
+      throw new Error("b Invalid filter provided");
   }
   const query = `SELECT DISTINCT "${key}" FROM ${dbName} ORDER BY "${key}" ASC`;
 

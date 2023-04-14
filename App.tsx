@@ -17,14 +17,16 @@ export default function App() {
 
   useEffect(() => {
     getShuffledQuotes(
-      strings.database.defaultFilter,
-      strings.database.defaultKey
+      strings.database.defaultQuery,
+      strings.database.defaultFilter
     ).then((res) => {
       setShuffledQuotes(res);
     });
   }, []);
 
-  return <RootNavigation initialRoute={"Home"} />;
+  return (
+    <RootNavigation initialRoute={"Home"} shuffledQuotes={shuffledQuotes} />
+  );
 }
 
 const styles = StyleSheet.create({

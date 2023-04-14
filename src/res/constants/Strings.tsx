@@ -15,7 +15,6 @@ export const strings = new LocalizedStrings({
         safeChar: "%",
         defaultQuery: "Top 100",
         defaultFilter: "Subject",
-        defaultKey: "Top 100"
       },
       filters: {
         author: "Author",

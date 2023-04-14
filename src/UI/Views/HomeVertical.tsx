@@ -16,15 +16,17 @@ import { globalStyles } from "../../../styles/GlobalStyles";
 import { autoScrollIntervalTime } from "../../res/constants/Values";
 import { strings } from "../../res/constants/Strings";
 import { AutoScrollingQuoteList } from "../animals/AutoScrollingQuoteList";
+
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;
+  initialQuotes: QuotationInterface[];
 }
 
-export const HomeVertical = ({ navigation, route }: Props) => {
+export const HomeVertical = ({ navigation, route, initialQuotes }: Props) => {
   const [title, setTitle] = useState("");
   const [backButton, setBackButton] = useState(false);
-  const [quotes, setQuotes] = useState<QuotationInterface[]>([]);
+  const [quotes, setQuotes] = useState<QuotationInterface[]>(initialQuotes);
   const [filter, setFilter] = useState("");
   const [query, setQuery] = useState("");
   const [playPressed, setPlayPressed] = useState<boolean>(true);
@@ -120,7 +122,11 @@ const styles = StyleSheet.create({
   background: {
     width: "100%",
     alignItems: "center",
-    height: Dimensions.get("window").height - globalStyles.navbar.height -globalStyles.scrollButtonBar.height - 35
+    height:
+      Dimensions.get("window").height -
+      globalStyles.navbar.height -
+      globalStyles.scrollButtonBar.height -
+      35,
     // backgroundColor: LIGHT,
   },
 });
