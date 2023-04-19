@@ -1,41 +1,41 @@
 import { BackButtonNavEnum, NotificationsMenuOptionEnum } from "./Enums";
 
 export interface RouteInterface {
-    params: {
-      currentQuotes: QuotationInterface[];
-      editingQuote: QuotationInterface;
-      quoteSearch: {
-        filter: string;
-        query: string;
-      };
-      showBackButton: boolean;
-      backButtonNavigationFunction: BackButtonNavEnum;
-      notificationKey: string;
-      notificationFilter: string;
+  params: {
+    currentQuotes: QuotationInterface[];
+    editingQuote: QuotationInterface;
+    quoteSearch: {
+      filter: string;
+      query: string;
     };
-  }
-  
-  export interface NavigationInterface {
-    push: (ev: string, {}) => void;
-    goBack: () => void;
-  }
+    showBackButton: boolean;
+    backButtonNavigationFunction: BackButtonNavEnum;
+    notificationKey: string;
+    notificationFilter: string;
+  };
+}
 
-  export interface Subject {
-    _id: number;
-    value: string;
-  }
+export interface NavigationInterface {
+  push: (ev: string, {}) => void;
+  goBack: () => void;
+}
 
-  export interface QuotationInterface {
-    _id: number,
-    quoteText: string,
-    author: string,
-    subjects: string,
-    authorLink: string,
-    videoLink: string,
-    contributedBy: string,
-    favorite: boolean,
-    deleted: boolean
-};
+export interface Subject {
+  _id: number;
+  value: string;
+}
+
+export interface QuotationInterface {
+  _id: number;
+  quoteText: string;
+  author: string;
+  subjects: string;
+  authorLink: string;
+  videoLink: string;
+  contributedBy: string;
+  favorite: boolean;
+  deleted: boolean;
+}
 
 export interface NotificationsMenuOptionProps {
   notificationsMenuOptionEnum: NotificationsMenuOptionEnum;
@@ -46,7 +46,6 @@ export interface NotificationsMenuOptionProps {
   bottomLine: boolean;
   errorMessage?: string | null;
 }
-
 
 export interface NavButtonInterface {
   buttonText: string;

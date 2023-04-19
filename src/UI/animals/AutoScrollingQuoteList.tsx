@@ -14,6 +14,7 @@ import {
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { SmallQuoteContainer } from "../organisms/SmallQuoteContainer";
 import { scrollToNextQuote } from "../../res/functions/UtilFunctions";
+
 interface Props {
   navigation: NavigationInterface;
   data: QuotationInterface[];
@@ -37,33 +38,50 @@ export const AutoScrollingQuoteList = ({
   offset,
   setOffset,
 }: Props) => {
+  const [uniqueQuotesData, setUniqueQuotesData] = useState<
+    QuotationInterface[]
+  >([]);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState<number>(0);
-const flatListRef = useRef<FlatList<QuotationInterface>>(null);
+  const flatListRef = useRef<FlatList<QuotationInterface>>(null);
 
-useEffect(() => {
-  // If play is pressed, every interval scroll to the next quote
-  // FIXME if the playPause button in changed from play to pause, this will still scroll one more time. Kill the extra thread if the button has been pressed
-  setTimeout(() => {
-    scrollToNextQuote(
-      playPressed,
-      currentQuoteIndex,
-      data,
-      flatListRef,
-      setCurrentQuoteIndex,
-      setPlayPressed,
-      offset,
-      setOffset
-    );
-  }, scrollSpeed);
-}, [playPressed, currentQuoteIndex]);
+  useEffect(() => {
+    const removeDuplicateQuotes = (quotesArray: QuotationInterface[]) => {
+      const seenQuotes: { [key: string]: boolean } = {};
+      return quotesArray.filter((quote) => {
+        const isDuplicate = seenQuotes.hasOwnProperty(quote.quoteText);
+        seenQuotes[quote.quoteText] = true;
+        return !isDuplicate;
+      });
+    };
 
-useEffect(() => {
-  // Every time the scrollPosition changes, check to see if we are on a new quote. If we are, change the quoteInEditing
-  const i: number = getCurrentOffset();
-  if (i != 0) {
-    // console.log("BLOCKED offset useEffect setting quote to ", quotes[i].quoteText)
-    // setCurrentQuoteIndex(quotes[i]);
-    setCurrentQuoteIndex(i);
+    const uniqueQuotes = removeDuplicateQuotes(data);
+    setUniqueQuotesData(uniqueQuotes);
+  }, [data]);
+
+  useEffect(() => {
+    // If play is pressed, every interval scroll to the next quote
+    // FIXME if the playPause button in changed from play to pause, this will still scroll one more time. Kill the extra thread if the button has been pressed
+    setTimeout(() => {
+      scrollToNextQuote(
+        playPressed,
+        currentQuoteIndex,
+        uniqueQuotesData,
+        flatListRef,
+        setCurrentQuoteIndex,
+        setPlayPressed,
+        offset,
+        setOffset
+      );
+    }, scrollSpeed);
+  }, [playPressed, currentQuoteIndex]);
+
+  useEffect(() => {
+    // Every time the scrollPosition changes, check to see if we are on a new quote. If we are, change the quoteInEditing
+    const i: number = getCurrentOffset();
+    if (i != 0) {
+      // console.log("BLOCKED offset useEffect setting quote to ", quotes[i].quoteText)
+      // setCurrentQuoteIndex(quotes[i]);
+      setCurrentQuoteIndex(i);
     }
   }, [offset]);
 
@@ -81,19 +99,12 @@ useEffect(() => {
 
   return (
     <View>
-      {/* <View style={styles.progressBarView}>
-        <ProgressBar
-          timing={scrollSpeed}
-          executeAnimation={playPressed}
-          index={currentQuoteIndex}
-        />
-      </View> */}
       <TouchableWithoutFeedback onPress={() => setPlayPressed(false)}>
         <FlatList
           ref={flatListRef}
           snapToAlignment={"start"}
           style={styles.container}
-          data={data}
+          data={uniqueQuotesData}
           contentContainerStyle={[
             { paddingTop: globalStyles.smallQuoteContainer.paddingTop },
           ]}
@@ -106,7 +117,7 @@ useEffect(() => {
                 animated: true,
                 viewPosition: 0,
               });
-              console.log("TODO kill thread")
+              console.log("TODO kill thread");
             });
           }}
           renderItem={(quote) => {
@@ -118,8 +129,8 @@ useEffect(() => {
                   // reorganize quotes, then set quotes
                   let newQuotes: QuotationInterface[] = [];
                   newQuotes.push(quote.item);
-                  data.forEach((quote2) => {
-                    if (quote.item._id != quote2._id) {
+                  uniqueQuotesData.forEach((quote2) => {
+                    if (quote.item._id !== quote2._id) {
                       newQuotes.push(quote2);
                     }
                   });
@@ -131,39 +142,40 @@ useEffect(() => {
                     },
                   });
                 }}
-                />
-              );
-            }}
-            keyExtractor={(item) => item.quoteText}
-            invertStickyHeaders={true}
-            horizontal={false}
-            onScroll={(ev) => {
-              if (!playPressed) {
-                // This stops offset from resetting if autoscroll is on
-                setOffset(ev.nativeEvent.contentOffset.y);
-              }
-            }}
-            snapToInterval={
-              globalStyles.smallQuoteContainer.height +
-              globalStyles.smallQuoteContainer.marginBottom
+              />
+            );
+          }}
+          keyExtractor={(item) => item.quoteText}
+          invertStickyHeaders={true}
+          horizontal={false}
+          onScroll={(ev) => {
+            if (!playPressed) {
+              // This stops offset from resetting if autoscroll is on
+              setOffset(ev.nativeEvent.contentOffset.y);
             }
-            decelerationRate={0}
-          />
-        </TouchableWithoutFeedback>
-      </View>
-    );
-  };
-  const styles = StyleSheet.create({
-    container: {
-      height: "100%",
-      width: "100%",
-      // backgroundColor: PRIMARY_BLUE,
-      marginBottom: globalStyles.navbar.height * 2.5,
-    },
-    progressBarView: {
-      height: 5,
-      width: Dimensions.get('screen').width,
-      alignItems: 'center',
-      justifyContent: 'center'
-    },
-  });
+          }}
+          snapToInterval={
+            globalStyles.smallQuoteContainer.height +
+            globalStyles.smallQuoteContainer.marginBottom
+          }
+          decelerationRate={0}
+        />
+      </TouchableWithoutFeedback>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    height: "100%",
+    width: "100%",
+    // backgroundColor: PRIMARY_BLUE,
+    marginBottom: globalStyles.navbar.height * 2.5,
+  },
+  progressBarView: {
+    height: 5,
+    width: Dimensions.get("screen").width,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
