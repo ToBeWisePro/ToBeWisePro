@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { strings } from "../../res/constants/Strings";
 import {
   NavigationInterface,
@@ -28,15 +29,56 @@ export enum Frequencies {
   "6 Hours",
 }
 
+const loadSettings = async (key: string) => {
+  try {
+    const value = await AsyncStorage.getItem(key);
+    if (value !== null) {
+      if (key === "allowNotifications") {
+        return value === "true";
+      }
+      return value;
+    }
+  } catch (error) {
+    console.error("Error loading settings:", error);
+  }
+  return null;
+};
+
 export const NotificationScreen: React.FC<Props> = ({
   navigation,
   route,
 }: Props) => {
-  const [allowNotifications, setAllowNotifications] = useState(false);
+  const [allowNotifications, setAllowNotifications] = useState(true);
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
-  const [frequency, setFrequency] = useState();
-  const [notificationDB, setNotificationDB] = useState();
+  const [frequency, setFrequency] = useState(Frequencies["1 Hour"]);
+  const [notificationDB, setNotificationDB] = useState("default");
+
+  useEffect(() => {
+    (async () => {
+      const savedAllowNotifications = await loadSettings("allowNotifications");
+      const savedStartTime = await loadSettings("startTime");
+      const savedEndTime = await loadSettings("endTime");
+      const savedFrequency = await loadSettings("frequency");
+      const savedNotificationDB = await loadSettings("notificationDB");
+
+      if (savedAllowNotifications !== null) {
+        setAllowNotifications(savedAllowNotifications);
+      }
+      if (savedStartTime) {
+        setStartTime(new Date(savedStartTime));
+      }
+      if (savedEndTime) {
+        setEndTime(new Date(savedEndTime));
+      }
+      if (savedFrequency) {
+        setFrequency(savedFrequency);
+      }
+      if (savedNotificationDB) {
+        setNotificationDB(savedNotificationDB);
+      }
+    })();
+  }, []);
 
   const toggleSwitch = () =>
     setAllowNotifications((previousState) => !previousState);
@@ -93,7 +135,8 @@ export const NotificationScreen: React.FC<Props> = ({
           data={menu}
           renderItem={(item) => (
             <NotificationsMenuOption
-            notificationsMenuOptionEnum={
+              key={item.index} // Add this line
+              notificationsMenuOptionEnum={
                 item.item.notificationsMenuOptionEnum
               }
               label={item.item.label}

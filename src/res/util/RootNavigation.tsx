@@ -1,4 +1,3 @@
-import React, { useEffect } from "react";
 import { StatusBar } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
@@ -38,7 +37,13 @@ export const RootNavigation: React.FC<RootProps> = ({
         />
         <Stack.Screen
           name={strings.screenName.home}
-          component={() => <HomeVertical initialQuotes={shuffledQuotes} />}
+          children={(props) => (
+            <HomeVertical
+              navigation={props.navigation}
+              route={props.route}
+              initialQuotes={shuffledQuotes}
+            />
+          )}
           options={{ headerShown: false }}
         />
         <Stack.Screen
