@@ -13,19 +13,12 @@ export const NotificationFrequencySelector: React.FC<Props> = ({
   state,
   setState,
 }: Props) => {
-  const data = [
-    Frequencies[0],
-    Frequencies[1],
-    Frequencies[2],
-    Frequencies[3],
-    Frequencies[4],
-    Frequencies[5],
-  ];
+  const data = Object.values(Frequencies);
 
   return (
-    <View style={{ height: 40 }} >
+    <View style={{ height: 40 }}>
       <SelectDropdown
-        buttonStyle={{backgroundColor: LIGHT, height: "100%"}}
+        buttonStyle={{ backgroundColor: LIGHT, height: "100%" }}
         data={data}
         defaultButtonText={state}
         onSelect={(selectedItem, index) => {

@@ -8,20 +8,38 @@ import {
 import { strings } from "./src/res/constants/Strings";
 import { RootNavigation } from "./src/res/util/RootNavigation";
 import { QuotationInterface } from "./src/res/constants/Interfaces";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Frequencies } from "./src/res/constants/Enums";
 
 export default function App() {
-  const [fontReady, setFontReady] = useState(false);
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     []
   );
 
+  const saveDefaultValue = async (key: string, value: any) => {
+    try {
+      const storedValue = await AsyncStorage.getItem(key);
+      if (storedValue === null) {
+        await AsyncStorage.setItem(key, JSON.stringify(value));
+      }
+    } catch (error) {
+      console.error("Error saving default value:", error);
+    }
+  };
+
   useEffect(() => {
-    getShuffledQuotes(
-      strings.database.defaultQuery,
-      strings.database.defaultFilter
-    ).then((res) => {
-      setShuffledQuotes(res);
-    });
+    (async () => {
+      const defaultStartTime = new Date();
+      defaultStartTime.setHours(9, 0, 0, 0);
+      const defaultEndTime = new Date();
+      defaultEndTime.setHours(17, 0, 0, 0);
+
+      await saveDefaultValue("allowNotifications", true);
+      await saveDefaultValue("startTime", defaultStartTime);
+      await saveDefaultValue("endTime", defaultEndTime);
+      await saveDefaultValue("frequency", Frequencies["1 Hour"]);
+      await saveDefaultValue("notificationDB", "default"); // Update the default value for notificationDB
+    })();
   }, []);
 
   return (
