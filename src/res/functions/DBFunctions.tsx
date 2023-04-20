@@ -9,15 +9,23 @@ import * as SQLite from "expo-sqlite";
 export async function dataImporter() {
   const db = SQLite.openDatabase(dbName);
 
-  // Check if our database exists. If not, create it
-  db.transaction((tx) => {
-    tx.executeSql(
-      `CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite BOOLEAN, deleted BOOLEAN);`
-    );
+  const createTable = new Promise<void>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite BOOLEAN, deleted BOOLEAN);`,
+        [],
+        () => resolve(),
+        (_, error) => {
+          console.log(error);
+          reject(error);
+        }
+      );
+    });
   });
 
-  // Check if the database is empty
-  const isDbEmpty: boolean = await new Promise<boolean>((resolve, reject) => {
+  await createTable;
+
+  const isDbEmpty = await new Promise<boolean>((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
         `SELECT * FROM ${dbName}`,
@@ -50,28 +58,32 @@ export async function dataImporter() {
 
     const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
-    db.transaction((tx) => {
-      quotes.forEach((quote) => {
-        tx.executeSql(insertQuery, [
-          quote.quoteText,
-          quote.author,
-          quote.contributedBy,
-          quote.subjects,
-          quote.authorLink,
-          quote.videoLink,
-          quote.favorite,
-          quote.deleted,
-        ]);
+    await new Promise<void>((resolve, reject) => {
+      db.transaction((tx) => {
+        quotes.forEach((quote) => {
+          tx.executeSql(
+            insertQuery,
+            [
+              quote.quoteText,
+              quote.author,
+              quote.contributedBy,
+              quote.subjects,
+              quote.authorLink,
+              quote.videoLink,
+              quote.favorite,
+              quote.deleted,
+            ],
+            () => resolve(),
+            (_, error) => {
+              console.log(error);
+              reject(error);
+            }
+          );
+        });
       });
     });
   }
-
-  // Print the length of our database to make sure it's the same length as our jsonQuotes array without using a promise
-  db.transaction((tx) => {
-    tx.executeSql(`SELECT * FROM ${dbName}`, []);
-  });
 }
-
 
 export async function getShuffledQuotes(
   key: string,
@@ -149,7 +161,9 @@ export async function getFromDB(key: string): Promise<string[]> {
   });
 }
 
-export async function getQuoteById(id: number): Promise<QuotationInterface | null> {
+export async function getQuoteById(
+  id: number
+): Promise<QuotationInterface | null> {
   const db = SQLite.openDatabase(dbName);
 
   return new Promise<QuotationInterface | null>((resolve, reject) => {
@@ -178,7 +192,10 @@ export async function getQuoteById(id: number): Promise<QuotationInterface | nul
   });
 }
 
-export const saveOrUpdateQuote = async (quote: QuotationInterface, existingQuote: boolean) => {
+export const saveOrUpdateQuote = async (
+  quote: QuotationInterface,
+  existingQuote: boolean
+) => {
   const db = SQLite.openDatabase(dbName);
 
   const query = existingQuote
@@ -201,30 +218,29 @@ export const saveOrUpdateQuote = async (quote: QuotationInterface, existingQuote
   }
 
   return new Promise((resolve, reject) => {
-    db.transaction(
-      (tx) => {
-        tx.executeSql(
-          query,
-          queryParams,
-          async (_, result) => {
-            const fetchedQuote = await getQuoteById(quote._id);
-            const isQuoteEqual = JSON.stringify(quote) === JSON.stringify(fetchedQuote);
+    db.transaction((tx) => {
+      tx.executeSql(
+        query,
+        queryParams,
+        async (_, result) => {
+          const fetchedQuote = await getQuoteById(quote._id);
+          const isQuoteEqual =
+            JSON.stringify(quote) === JSON.stringify(fetchedQuote);
 
-            if (isQuoteEqual) {
-              console.log("Quote saved or updated successfully");
-              resolve(result);
-            } else {
-              console.log("Error: Fetched quote does not match the input quote");
-              reject(new Error("Fetched quote does not match the input quote"));
-            }
-          },
-          (_, error) => {
-            console.log("Error saving or updating quote:", error);
-            reject(error);
+          if (isQuoteEqual) {
+            console.log("Quote saved or updated successfully");
+            resolve(result);
+          } else {
+            console.log("Error: Fetched quote does not match the input quote");
+            reject(new Error("Fetched quote does not match the input quote"));
           }
-        );
-      }
-    );
+        },
+        (_, error) => {
+          console.log("Error saving or updating quote:", error);
+          reject(error);
+        }
+      );
+    });
   });
 };
 
@@ -286,10 +302,13 @@ export const getFavoriteQuotes = async (): Promise<QuotationInterface[]> => {
   });
 };
 
-export async function getQuoteCount(key: string, filter: string): Promise<number> {
+export async function getQuoteCount(
+  key: string,
+  filter: string
+): Promise<number> {
   const db = SQLite.openDatabase(dbName);
 
-  let query = '';
+  let query = "";
   let params: any[] = [];
 
   if (filter === strings.filters.author) {
@@ -302,12 +321,17 @@ export async function getQuoteCount(key: string, filter: string): Promise<number
 
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
-      tx.executeSql(query, params, (_, result) => {
-        resolve(result.rows.item(0).count);
-      }, (_, error) => {
-        console.log(error);
-        reject(error);
-      });
+      tx.executeSql(
+        query,
+        params,
+        (_, result) => {
+          resolve(result.rows.item(0).count);
+        },
+        (_, error) => {
+          console.log(error);
+          reject(error);
+        }
+      );
     });
   });
 }
@@ -329,4 +353,3 @@ export const updateQuoteContainer = (
     }
   }, refreshRate);
 };
-

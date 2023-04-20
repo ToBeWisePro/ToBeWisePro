@@ -14,6 +14,7 @@ import {
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { SmallQuoteContainer } from "../organisms/SmallQuoteContainer";
 import { scrollToNextQuote } from "../../res/functions/UtilFunctions";
+import { getShuffledQuotes } from "../../res/functions/DBFunctions";
 
 interface Props {
   navigation: NavigationInterface;

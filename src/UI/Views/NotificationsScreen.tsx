@@ -13,10 +13,6 @@ import {
   LIGHT,
   PRIMARY_GREEN,
 } from "../../../styles/Colors";
-
-import { NotificationsMenuOption } from "../molecules/NotificationsMenuOption";
-import { NotificationsMenuOptionEnum } from "../../res/constants/Enums";
-import { NotificationsMenuOptionProps } from "../../res/constants/Interfaces";
 import { BottomNav } from "../organisms/BottomNav";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
 import { TopNav } from "../molecules/TopNav";

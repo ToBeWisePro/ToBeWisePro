@@ -37,15 +37,12 @@ export const RootNavigation: React.FC<RootProps> = ({
         />
         <Stack.Screen
           name={strings.screenName.home}
-          children={(props) => (
-            <HomeVertical
-              navigation={props.navigation}
-              route={props.route}
-              initialQuotes={shuffledQuotes}
-            />
-          )}
           options={{ headerShown: false }}
-        />
+        >
+          {(props) => (
+            <HomeVertical {...props} initialQuotes={shuffledQuotes} />
+          )}
+        </Stack.Screen>
         <Stack.Screen
           name={strings.screenName.editQuote}
           component={EditQuotes}

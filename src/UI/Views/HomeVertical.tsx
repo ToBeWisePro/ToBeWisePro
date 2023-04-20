@@ -21,9 +21,15 @@ interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;
   initialQuotes: QuotationInterface[];
+  initialRoute?: boolean;
 }
 
-export const HomeVertical = ({ navigation, route, initialQuotes }: Props) => {
+export const HomeVertical = ({
+  navigation,
+  route,
+  initialQuotes,
+  initialRoute,
+}: Props) => {
   const [title, setTitle] = useState("");
   const [backButton, setBackButton] = useState(false);
   const [quotes, setQuotes] = useState<QuotationInterface[]>(initialQuotes);
@@ -39,30 +45,28 @@ export const HomeVertical = ({ navigation, route, initialQuotes }: Props) => {
 
   useEffect(() => {
     const getQuotes = async () => {
-      await dataImporter().then(async () => {
-        try {
-          setQuotes(route.params.currentQuotes);
-          setFilter(route.params.quoteSearch.filter);
-          setQuery(route.params.quoteSearch.query);
-          setTitle(
-            route.params.quoteSearch.filter +
-              ": " +
-              route.params.quoteSearch.query
-          );
-        } catch {
-          setTitle(strings.navbarHomeDefaultText);
-          setQuery(strings.database.defaultQuery);
-          setFilter(strings.database.defaultFilter);
+      try {
+        setQuotes(route.params.currentQuotes);
+        setFilter(route.params.quoteSearch.filter);
+        setQuery(route.params.quoteSearch.query);
+        setTitle(
+          route.params.quoteSearch.filter +
+            ": " +
+            route.params.quoteSearch.query
+        );
+      } catch {
+        setTitle(strings.navbarHomeDefaultText);
+        setQuery(strings.database.defaultQuery);
+        setFilter(strings.database.defaultFilter);
 
-          // call getShuffledQuotes() to get the default quotes and set quotes to the result
-          await getShuffledQuotes(
-            strings.database.defaultQuery,
-            strings.database.defaultFilter
-          ).then((res) => {
-            setQuotes(res);
-          });
-        }
-      });
+        // call getShuffledQuotes() to get the default quotes and set quotes to the result
+        await getShuffledQuotes(
+          strings.database.defaultQuery,
+          strings.database.defaultFilter
+        ).then((res) => {
+          setQuotes(res);
+        });
+      }
     };
 
     getQuotes();
