@@ -1,45 +1,36 @@
 import React, { useState, useEffect } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { TextInput, StyleSheet, TouchableOpacity, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { strings } from "../../res/constants/Strings";
 import {
   NavigationInterface,
+  QuotationInterface,
   RouteInterface,
 } from "../../res/constants/Interfaces";
-import {
-  GRAY_4,
-  GRAY_5,
-  GRAY_6,
-  LIGHT,
-  PRIMARY_GREEN,
-} from "../../../styles/Colors";
+import { GRAY_5, GRAY_6, LIGHT, PRIMARY_GREEN } from "../../../styles/Colors";
 import { BottomNav } from "../organisms/BottomNav";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
 import { TopNav } from "../molecules/TopNav";
 import { Switch } from "react-native-gesture-handler";
 import { AppText } from "../atoms/AppText";
 import { CustomTimeInput } from "../atoms/CustomTimeInput";
-import { NotificationFrequencySelector } from "../atoms/NotificationFrequencySelector";
+import { DataButton } from "../atoms/DataButton";
+import { TextInputField } from "../atoms/TextInputField";
+import * as Notifications from "expo-notifications";
+import { getShuffledQuotes } from "../../res/functions/DBFunctions";
 
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;
 }
 
-export const Frequencies = {
-  "15 Minutes": "15 Minutes",
-  "30 Minutes": "30 Minutes",
-  "1 Hour": "1 Hour",
-  "2 Hours": "2 Hours",
-  "4 Hours": "4 Hours",
-  "6 Hours": "6 Hours",
-};
-
 const SETTINGS_KEYS = {
   allowNotifications: "allowNotifications",
   startTime: "startTime",
   endTime: "endTime",
   frequency: "frequency",
+  query: "query",
+  filter: "filter",
 };
 
 const saveSettings = async (key: string, value: any) => {
@@ -69,7 +60,9 @@ export const NotificationScreen: React.FC<Props> = ({
   const [allowNotifications, setAllowNotifications] = useState(true);
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
-  const [frequency, setFrequency] = useState(Frequencies["1 Hour"]);
+  const [frequency, setFrequency] = useState(1);
+  const [query, setQuery] = useState(strings.database.defaultQuery);
+  const [filter, setFilter] = useState(strings.database.defaultFilter);
 
   useEffect(() => {
     const loadSavedSettings = async () => {
@@ -79,7 +72,15 @@ export const NotificationScreen: React.FC<Props> = ({
       const savedStartTime = await loadSettings(SETTINGS_KEYS.startTime);
       const savedEndTime = await loadSettings(SETTINGS_KEYS.endTime);
       const savedFrequency = await loadSettings(SETTINGS_KEYS.frequency);
+      const savedQuery = await loadSettings(SETTINGS_KEYS.query);
+      const savedFilter = await loadSettings(SETTINGS_KEYS.filter);
 
+      if (savedQuery !== null) {
+        setQuery(savedQuery);
+      }
+      if (savedFilter !== null) {
+        setFilter(savedFilter);
+      }
       if (savedAllowNotifications !== null) {
         setAllowNotifications(savedAllowNotifications);
       }
@@ -112,9 +113,57 @@ export const NotificationScreen: React.FC<Props> = ({
     saveSettings(SETTINGS_KEYS.endTime, time);
   };
 
-  const handleFrequencyChange = (value: string) => {
+  const handleFrequencyChange = (value: number) => {
     setFrequency(value);
     saveSettings(SETTINGS_KEYS.frequency, value);
+  };
+
+  const handleQueryChange = (text: string) => {
+    setQuery(text);
+    saveSettings(SETTINGS_KEYS.query, text);
+  };
+
+  const handleFilterChange = (filter: string) => {
+    setFilter(filter);
+    saveSettings(SETTINGS_KEYS.filter, filter);
+  };
+
+  const handleButtonPress = async () => {
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== "granted") {
+        alert("You need to grant permission to receive notifications");
+        return;
+      }
+      console.log("filter: ", filter.trim());
+      await getShuffledQuotes(query, filter).then(async (data) => {
+        if (data.length === 0) {
+          await getShuffledQuotes(
+            strings.database.defaultQuery,
+            strings.database.defaultFilter
+          ).then(async (data) => {
+            alert("Invalid query. Notifications database set to defaults");
+            const quote: QuotationInterface = data[0];
+            await Notifications.presentNotificationAsync({
+              title:
+                strings.database.defaultFilter +
+                ": " +
+                strings.database.defaultQuery,
+              body: quote.quoteText,
+            });
+          });
+        } else {
+          const quote: QuotationInterface = data[0];
+          await Notifications.presentNotificationAsync({
+            title: filter + ": " + query,
+            body: quote.quoteText,
+          });
+        }
+      });
+    } catch (error) {
+      console.log(error);
+      alert("An error occurred while trying to send the notification");
+    }
   };
 
   return (
@@ -127,29 +176,68 @@ export const NotificationScreen: React.FC<Props> = ({
       />
       <View style={styles.main}>
         <View style={styles.menuOptionContainerBottom}>
-          <AppText>Allow Notifications</AppText>
+          <AppText>Allow Notifications: </AppText>
           <Switch
             onValueChange={toggleSwitch}
             value={allowNotifications}
             trackColor={{ false: GRAY_5, true: PRIMARY_GREEN }}
           />
         </View>
+        <AppText style={styles.title}>Notification Timing</AppText>
+
         <View style={styles.menuOptionContainer}>
-          <AppText>Start Time</AppText>
+          <AppText>Start Time: </AppText>
           <CustomTimeInput time={startTime} setTime={handleStartTimeChange} />
         </View>
         <View style={styles.menuOptionContainerBottom}>
-          <AppText>End Time</AppText>
+          <AppText>End Time: </AppText>
           <CustomTimeInput time={endTime} setTime={handleEndTimeChange} />
         </View>
         <View style={styles.menuOptionContainerBottom}>
-          <AppText>Frequency</AppText>
-          <NotificationFrequencySelector
-            state={frequency}
-            setState={handleFrequencyChange}
+          <AppText>Frequency: </AppText>
+          <TextInput
+            keyboardType="numeric"
+            style={styles.frequencyInput}
+            value={String(frequency)}
+            onChangeText={(text) => handleFrequencyChange(Number(text))}
           />
         </View>
+        <AppText style={styles.title}>Notification Database</AppText>
+        <View style={styles.menuOptionContainerBottom}>
+          <AppText>Select Filter:</AppText>
+          <View style={styles.dataSelector}>
+            <DataButton
+              buttonText={"Author"}
+              selected={filter == strings.filters.author}
+              onPress={() => {
+                handleFilterChange(strings.filters.author);
+              }}
+            />
+            <DataButton
+              buttonText={"Subject"}
+              selected={filter == strings.filters.subject}
+              onPress={() => {
+                handleFilterChange(strings.filters.subject);
+              }}
+            />
+          </View>
+        </View>
+
+        <View style={styles.menuOptionContainerBottom}>
+          <AppText>Notification Database: </AppText>
+          <TextInputField
+            placeholderText="query"
+            state={query}
+            setState={handleQueryChange}
+          />
+        </View>
+        <View style={{ alignItems: "center" }}>
+          <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
+            <AppText style={styles.buttonText}>Send Test Notification</AppText>
+          </TouchableOpacity>
+        </View>
       </View>
+
       <BottomNav
         navigation={navigation}
         screen={strings.screenName.settings}
@@ -164,28 +252,58 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
   },
+  title: {
+    alignSelf: "center",
+    marginBottom: 10,
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+  dataSelector: {
+    flexDirection: "row",
+    marginTop: 18,
+    justifyContent: "space-between",
+    width: 224,
+    marginBottom: 17,
+  },
   main: {
     backgroundColor: GRAY_6,
     height: "100%",
     width: "100%",
   },
   menuOptionContainer: {
-    height: 40,
+    height: 60,
     backgroundColor: LIGHT,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 5,
+    paddingHorizontal: 15,
     justifyContent: "space-between",
   },
   menuOptionContainerBottom: {
     borderBottomColor: GRAY_5,
     borderBottomWidth: 0.5,
     marginBottom: 25,
-    height: 40,
+    height: 60,
     backgroundColor: LIGHT,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 5,
+    paddingHorizontal: 15,
     justifyContent: "space-between",
+  },
+  button: {
+    borderRadius: 10,
+    backgroundColor: PRIMARY_GREEN,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 180,
+  },
+  buttonText: {
+    color: LIGHT,
+    fontWeight: "bold",
+  },
+  frequencyInput: {
+    width: 50,
+    backgroundColor: LIGHT,
+    textAlign: "center",
   },
 });
