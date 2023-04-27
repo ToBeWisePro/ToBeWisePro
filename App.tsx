@@ -9,7 +9,8 @@ import { strings } from "./src/res/constants/Strings";
 import { RootNavigation } from "./src/res/util/RootNavigation";
 import { QuotationInterface } from "./src/res/constants/Interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Notifications from 'expo-notifications';
+import * as Notifications from "expo-notifications";
+import { NotificationScheduler } from "./src/res/util/NotificationScheduler";
 
 export default function App() {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
@@ -33,7 +34,7 @@ export default function App() {
       defaultStartTime.setHours(9, 0, 0, 0);
       const defaultEndTime = new Date();
       defaultEndTime.setHours(17, 0, 0, 0);
-  
+
       await saveDefaultValue("allowNotifications", true);
       await saveDefaultValue("startTime", defaultStartTime);
       await saveDefaultValue("endTime", defaultEndTime);
@@ -72,7 +73,10 @@ export default function App() {
   }
 
   return (
-    <RootNavigation initialRoute={"Home"} shuffledQuotes={shuffledQuotes} />
+    <>
+      <NotificationScheduler />
+      <RootNavigation initialRoute={"Home"} shuffledQuotes={shuffledQuotes} />
+    </>
   );
 }
 

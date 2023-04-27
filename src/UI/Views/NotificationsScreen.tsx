@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { TextInput, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Dimensions,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { strings } from "../../res/constants/Strings";
 import {
@@ -11,7 +17,7 @@ import { GRAY_5, GRAY_6, LIGHT, PRIMARY_GREEN } from "../../../styles/Colors";
 import { BottomNav } from "../organisms/BottomNav";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
 import { TopNav } from "../molecules/TopNav";
-import { Switch } from "react-native-gesture-handler";
+import { ScrollView, Switch } from "react-native-gesture-handler";
 import { AppText } from "../atoms/AppText";
 import { CustomTimeInput } from "../atoms/CustomTimeInput";
 import { DataButton } from "../atoms/DataButton";
@@ -63,7 +69,10 @@ export const NotificationScreen: React.FC<Props> = ({
   const [frequency, setFrequency] = useState(1);
   const [query, setQuery] = useState(strings.database.defaultQuery);
   const [filter, setFilter] = useState(strings.database.defaultFilter);
-
+  useEffect(() => {
+    console.log("startTime: ", startTime);
+    console.log("endTime: ", endTime);
+  }, []);
   useEffect(() => {
     const loadSavedSettings = async () => {
       const savedAllowNotifications = await loadSettings(
@@ -114,8 +123,16 @@ export const NotificationScreen: React.FC<Props> = ({
   };
 
   const handleFrequencyChange = (value: number) => {
+    if (value < 1 || value > 60) {
+      alert("Invalid frequency. The value must be between 1 and 60.");
+      return;
+    }
+
+    console.log("Handle Frequency Change:", value); // Add this line
+    console.log("Start Time before frequency change:", startTime); // Add this line
     setFrequency(value);
     saveSettings(SETTINGS_KEYS.frequency, value);
+    console.log("Start Time after frequency change:", startTime); // Add this line
   };
 
   const handleQueryChange = (text: string) => {
@@ -145,15 +162,13 @@ export const NotificationScreen: React.FC<Props> = ({
             alert("Invalid query. Notifications database set to defaults");
             const quote: QuotationInterface = data[0];
             await Notifications.presentNotificationAsync({
-              title:
-                strings.database.defaultFilter +
-                ": " +
-                strings.database.defaultQuery,
+              title: filter + ": " + query,
               body: quote.quoteText,
             });
           });
         } else {
           const quote: QuotationInterface = data[0];
+
           await Notifications.presentNotificationAsync({
             title: filter + ": " + query,
             body: quote.quoteText,
@@ -174,69 +189,73 @@ export const NotificationScreen: React.FC<Props> = ({
         title={strings.screenName.notificationsScreen}
         stickyHeader={true}
       />
-      <View style={styles.main}>
-        <View style={styles.menuOptionContainerBottom}>
-          <AppText>Allow Notifications: </AppText>
-          <Switch
-            onValueChange={toggleSwitch}
-            value={allowNotifications}
-            trackColor={{ false: GRAY_5, true: PRIMARY_GREEN }}
-          />
-        </View>
-        <AppText style={styles.title}>Notification Timing</AppText>
-
-        <View style={styles.menuOptionContainer}>
-          <AppText>Start Time: </AppText>
-          <CustomTimeInput time={startTime} setTime={handleStartTimeChange} />
-        </View>
-        <View style={styles.menuOptionContainerBottom}>
-          <AppText>End Time: </AppText>
-          <CustomTimeInput time={endTime} setTime={handleEndTimeChange} />
-        </View>
-        <View style={styles.menuOptionContainerBottom}>
-          <AppText>Frequency: </AppText>
-          <TextInput
-            keyboardType="numeric"
-            style={styles.frequencyInput}
-            value={String(frequency)}
-            onChangeText={(text) => handleFrequencyChange(Number(text))}
-          />
-        </View>
-        <AppText style={styles.title}>Notification Database</AppText>
-        <View style={styles.menuOptionContainerBottom}>
-          <AppText>Select Filter:</AppText>
-          <View style={styles.dataSelector}>
-            <DataButton
-              buttonText={"Author"}
-              selected={filter == strings.filters.author}
-              onPress={() => {
-                handleFilterChange(strings.filters.author);
-              }}
-            />
-            <DataButton
-              buttonText={"Subject"}
-              selected={filter == strings.filters.subject}
-              onPress={() => {
-                handleFilterChange(strings.filters.subject);
-              }}
+      <ScrollView>
+        <View style={styles.main}>
+          <View style={styles.menuOptionContainerBottom}>
+            <AppText>Allow Notifications: </AppText>
+            <Switch
+              onValueChange={toggleSwitch}
+              value={allowNotifications}
+              trackColor={{ false: GRAY_5, true: PRIMARY_GREEN }}
             />
           </View>
-        </View>
+          <AppText style={styles.title}>Notification Timing</AppText>
 
-        <View style={styles.menuOptionContainerBottom}>
-          <AppText>Notification Database: </AppText>
-          <TextInputField
-            placeholderText="query"
-            state={query}
-            setState={handleQueryChange}
-          />
+          <View style={styles.menuOptionContainer}>
+            <AppText>Start Time: </AppText>
+            <CustomTimeInput time={startTime} setTime={handleStartTimeChange} />
+          </View>
+          <View style={styles.menuOptionContainerBottom}>
+            <AppText>End Time: </AppText>
+            <CustomTimeInput time={endTime} setTime={handleEndTimeChange} />
+          </View>
+          <View style={styles.menuOptionContainerBottom}>
+            <AppText>Notifications Per Hour: </AppText>
+            <TextInput
+              keyboardType="numeric"
+              style={styles.frequencyInput}
+              value={String(frequency)}
+              onChangeText={(text) => handleFrequencyChange(Number(text))}
+            />
+          </View>
+          <AppText style={styles.title}>Notification Database</AppText>
+          <View style={styles.menuOptionContainerBottom}>
+            <AppText>Select Filter:</AppText>
+            <View style={styles.dataSelector}>
+              <DataButton
+                buttonText={"Author"}
+                selected={filter == strings.filters.author}
+                onPress={() => {
+                  handleFilterChange(strings.filters.author);
+                }}
+              />
+              <DataButton
+                buttonText={"Subject"}
+                selected={filter == strings.filters.subject}
+                onPress={() => {
+                  handleFilterChange(strings.filters.subject);
+                }}
+              />
+            </View>
+          </View>
+
+          <View style={styles.menuOptionContainerBottom}>
+            <AppText>Author or Subject: </AppText>
+            <TextInputField
+              placeholderText="query"
+              state={query}
+              setState={handleQueryChange}
+            />
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
+              <AppText style={styles.buttonText}>
+                Send Test Notification
+              </AppText>
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={{ alignItems: "center" }}>
-          <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
-            <AppText style={styles.buttonText}>Send Test Notification</AppText>
-          </TouchableOpacity>
-        </View>
-      </View>
+      </ScrollView>
 
       <BottomNav
         navigation={navigation}
@@ -267,7 +286,7 @@ const styles = StyleSheet.create({
   },
   main: {
     backgroundColor: GRAY_6,
-    height: "100%",
+    height: Dimensions.get("window").height,
     width: "100%",
   },
   menuOptionContainer: {
