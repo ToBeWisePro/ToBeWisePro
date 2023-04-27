@@ -16,6 +16,7 @@ export default function App() {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     []
   );
+  const [frequency, setFrequency] = useState<number>(1);
 
   const saveDefaultValue = async (key: string, value: any) => {
     try {
@@ -39,7 +40,12 @@ export default function App() {
       await saveDefaultValue("startTime", defaultStartTime);
       await saveDefaultValue("endTime", defaultEndTime);
       await saveDefaultValue("frequency", 5);
-      await saveDefaultValue("notificationDB", "default"); // Update the default value for notificationDB
+      await saveDefaultValue("notificationDB", "default");
+
+      const savedFrequency = await AsyncStorage.getItem("frequency");
+      if (savedFrequency !== null) {
+        setFrequency(Number(savedFrequency));
+      }
     })();
 
     (async () => {

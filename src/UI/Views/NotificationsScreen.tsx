@@ -112,21 +112,42 @@ export const NotificationScreen: React.FC<Props> = ({
     saveSettings(SETTINGS_KEYS.allowNotifications, updatedAllowNotifications);
   };
 
+  const isValidTimeRange = (start: Date, end: Date) => {
+    if (start.getHours() < end.getHours()) {
+      return true;
+    } else if (start.getHours() === end.getHours()) {
+      return start.getMinutes() <= end.getMinutes();
+    }
+    return false;
+  };
+
   const handleStartTimeChange = (time: Date) => {
-    setStartTime(time);
-    saveSettings(SETTINGS_KEYS.startTime, time);
+    if (isValidTimeRange(time, endTime)) {
+      setStartTime(time);
+      saveSettings(SETTINGS_KEYS.startTime, time);
+    } else {
+      alert(
+        `Start Time "${time.toLocaleTimeString()}" must be less than or equal to End Time "${endTime.toLocaleTimeString()}".`
+      );
+    }
   };
 
   const handleEndTimeChange = (time: Date) => {
-    setEndTime(time);
-    saveSettings(SETTINGS_KEYS.endTime, time);
+    if (isValidTimeRange(startTime, time)) {
+      setEndTime(time);
+      saveSettings(SETTINGS_KEYS.endTime, time);
+    } else {
+      alert(
+        `End Time "${time.toLocaleTimeString()}" must be greater than or equal to Start Time "${startTime.toLocaleTimeString()}".`
+      );
+    }
   };
 
   const handleFrequencyChange = (value: number) => {
-    if (value < 1 || value > 60) {
-      alert("Invalid frequency. The value must be between 1 and 60.");
-      return;
-    }
+    // if (value < 1 || value > 60) {
+    //   alert("Invalid frequency. The value must be between 1 and 60.");
+    //   return;
+    // }
 
     console.log("Handle Frequency Change:", value); // Add this line
     console.log("Start Time before frequency change:", startTime); // Add this line
@@ -209,7 +230,7 @@ export const NotificationScreen: React.FC<Props> = ({
             <AppText>End Time: </AppText>
             <CustomTimeInput time={endTime} setTime={handleEndTimeChange} />
           </View>
-          <View style={styles.menuOptionContainerBottom}>
+          {/* <View style={styles.menuOptionContainerBottom}>
             <AppText>Notifications Per Hour: </AppText>
             <TextInput
               keyboardType="numeric"
@@ -217,7 +238,7 @@ export const NotificationScreen: React.FC<Props> = ({
               value={String(frequency)}
               onChangeText={(text) => handleFrequencyChange(Number(text))}
             />
-          </View>
+          </View> */}
           <AppText style={styles.title}>Notification Database</AppText>
           <View style={styles.menuOptionContainerBottom}>
             <AppText>Select Filter:</AppText>
