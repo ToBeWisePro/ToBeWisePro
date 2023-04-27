@@ -1,10 +1,8 @@
-import React, { useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Notifications from 'expo-notifications';
-import { getShuffledQuotes } from '../functions/DBFunctions';
-import { strings } from '../constants/Strings';
-
-const INTERVAL = (60*30) * 1000; // 1 minute in milliseconds
+import React, { useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from "expo-notifications";
+import { getShuffledQuotes } from "../functions/DBFunctions";
+import { strings } from "../constants/Strings";
 
 export const NotificationScheduler: React.FC = () => {
   useEffect(() => {
@@ -19,20 +17,22 @@ export const NotificationScheduler: React.FC = () => {
     const presentNotifications = async () => {
       const startTime = adjustDate(
         new Date(
-          JSON.parse(await AsyncStorage.getItem('startTime')) ?? new Date()
+          JSON.parse(await AsyncStorage.getItem("startTime")) ?? new Date()
         )
       );
       const endTime = adjustDate(
         new Date(
-          JSON.parse(await AsyncStorage.getItem('endTime')) ?? new Date()
+          JSON.parse(await AsyncStorage.getItem("endTime")) ?? new Date()
         )
       );
       const query =
-        JSON.parse(await AsyncStorage.getItem('query')) ??
+        JSON.parse(await AsyncStorage.getItem("query")) ??
         strings.database.defaultQuery;
       const filter =
-        JSON.parse(await AsyncStorage.getItem('filter')) ??
+        JSON.parse(await AsyncStorage.getItem("filter")) ??
         strings.database.defaultFilter;
+      const spacing = JSON.parse(await AsyncStorage.getItem("spacing")) ?? 30;
+      const INTERVAL = spacing * 60 * 1000;
 
       for (let i = 1; i <= 63; i++) {
         const now = new Date();
@@ -49,8 +49,8 @@ export const NotificationScheduler: React.FC = () => {
 
       setTimeout(async () => {
         await Notifications.presentNotificationAsync({
-          title: 'ToBeWise',
-          body: 'Open ToBeWise to queue more notifications',
+          title: "ToBeWise",
+          body: "Open ToBeWise to queue more notifications",
         });
       }, 64 * INTERVAL);
     };
