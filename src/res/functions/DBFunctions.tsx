@@ -270,7 +270,7 @@ export const getQuotesContributedByMe = async (): Promise<
   return new Promise<QuotationInterface[]>((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        `SELECT * FROM quotations WHERE contributedBy = ?;`,
+        `SELECT * FROM ${dbName} WHERE contributedBy = ?;`,
         [defaultUsername],
         (_, { rows }) => {
           const objs: QuotationInterface[] = rows["_array"];
@@ -298,7 +298,6 @@ export const getFavoriteQuotes = async (): Promise<QuotationInterface[]> => {
         }
       );
     });
-    c;
   });
 };
 
@@ -311,12 +310,31 @@ export async function getQuoteCount(
   let query = "";
   let params: any[] = [];
 
-  if (filter === strings.filters.author) {
-    query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE author = ?`;
-    params = [key];
-  } else if (filter === strings.filters.subject) {
-    query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE subjects LIKE ?`;
-    params = [`%${key}%`];
+  switch (filter) {
+    case strings.filters.author:
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE author = ?`;
+      params = [key];
+      break;
+    case strings.filters.subject:
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE subjects LIKE ?`;
+      params = [`%${key}%`];
+      break;
+    case strings.customDiscoverHeaders.all:
+      query = `SELECT COUNT(*) AS count FROM ${dbName}`;
+      break;
+    case strings.customDiscoverHeaders.addedByMe:
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE contributedBy = ?`;
+      params = [key];
+      break;
+    case strings.customDiscoverHeaders.favorites:
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE favorite = 1`;
+      break;
+    case strings.customDiscoverHeaders.top100 || "Top 100":
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE subjects LIKE ?`;
+      params = [`%${"Top 100"}%`];
+      break;
+    default:
+      break;
   }
 
   return new Promise((resolve, reject) => {
@@ -352,4 +370,26 @@ export const updateQuoteContainer = (
       console.log("Error: couldn't update quote");
     }
   }, refreshRate);
+};
+
+export const updateQuote = async (updatedQuote: QuotationInterface) => {
+  const db = SQLite.openDatabase(dbName);
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `UPDATE ${dbName} SET favorite = ? WHERE _id = ?`,
+        [updatedQuote.favorite, updatedQuote._id],
+        (_, { rowsAffected }) => {
+          if (rowsAffected > 0) {
+            resolve(true);
+          } else {
+            reject(new Error("Error updating quote"));
+          }
+        },
+        (_, error) => {
+          reject(error);
+        }
+      );
+    });
+  });
 };

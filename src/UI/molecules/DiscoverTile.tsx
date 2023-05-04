@@ -3,14 +3,23 @@ import { StyleSheet } from "react-native";
 import { GRAY_3, LIGHT } from "../../../styles/Colors";
 import { AppText } from "../atoms/AppText";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { getAllQuotes, getShuffledQuotes, getQuotesContributedByMe, getFavoriteQuotes, getQuoteCount } from "../../res/functions/DBFunctions";
-import { QuotationInterface, NavigationInterface } from "../../res/constants/Interfaces";
+import {
+  getAllQuotes,
+  getShuffledQuotes,
+  getQuotesContributedByMe,
+  getFavoriteQuotes,
+  getQuoteCount,
+} from "../../res/functions/DBFunctions";
+import {
+  QuotationInterface,
+  NavigationInterface,
+} from "../../res/constants/Interfaces";
 import { BackButtonNavEnum } from "../../res/constants/Enums";
 import { strings } from "../../res/constants/Strings";
 
 interface Props {
   query: string;
-  navigation: NavigationInterface
+  navigation: NavigationInterface;
   filter: string;
 }
 
@@ -19,62 +28,88 @@ export const DiscoverTile: React.FC<Props> = ({
   navigation,
   filter,
 }: Props) => {
-  const [count, setCount] = useState<string>("loading...")
+  const [count, setCount] = useState<string>("loading...");
 
-  useEffect(()=>{
-  
-    const getCountForComponent = async (value: string, filter: string)=>{
-      await getQuoteCount(value, filter).then((res: React.SetStateAction<number>)=>{
-        setCount(res.toString())}
-        )
-  }
-  getCountForComponent(query, filter)
-  }, [])
+  useEffect(() => {
+    const getCountForComponent = async (value: string, filter: string) => {
+      await getQuoteCount(value, filter).then(
+        (res: React.SetStateAction<number>) => {
+          setCount(res.toString());
+        }
+      );
+    };
+
+    switch (query) {
+      case strings.customDiscoverHeaders.all:
+        getCountForComponent(query, strings.customDiscoverHeaders.all);
+        break;
+      case strings.customDiscoverHeaders.addedByMe:
+        getCountForComponent(query, strings.customDiscoverHeaders.addedByMe);
+        break;
+      case strings.customDiscoverHeaders.favorites:
+        getCountForComponent(query, strings.customDiscoverHeaders.favorites);
+        break;
+      case strings.customDiscoverHeaders.top100 || "Top 100":
+        getCountForComponent(query, strings.customDiscoverHeaders.top100);
+        break;
+      default:
+        getCountForComponent(query, filter);
+        break;
+    }
+  }, []);
 
   return (
     <TouchableWithoutFeedback
       style={styles.container}
-
       onPress={async () => {
-        const getQuotesFromQuery = async() => {
+        const getQuotesFromQuery = async () => {
           safeQuery = query.replaceAll("'", strings.database.safeChar);
-          await getShuffledQuotes(safeQuery, filter).then((res: QuotationInterface[]) => navPush(res));
-        }
-        const navPush = (res: QuotationInterface[])=>{
+          await getShuffledQuotes(safeQuery, filter).then(
+            (res: QuotationInterface[]) => navPush(res)
+          );
+        };
+        const navPush = (res: QuotationInterface[]) => {
           navigation.push("Home", {
             currentQuotes: res,
             quoteSearch: {
               query: query,
-              filter: filter
+              filter: filter,
             },
             backButtonNavigationFunction: BackButtonNavEnum.GoBack,
           });
-        }
-        let safeQuery: string = query
+        };
+        let safeQuery: string = query;
         // see if we're using a special query. If not, use the default query
-        switch(query){
+        switch (query) {
           case strings.customDiscoverHeaders.all:
-            await getAllQuotes().then((res: QuotationInterface[]) => navPush(res))
+            await getAllQuotes().then((res: QuotationInterface[]) =>
+              navPush(res)
+            );
             break;
           case strings.customDiscoverHeaders.addedByMe:
-            await getQuotesContributedByMe().then((res: QuotationInterface[])=> navPush(res))
+            await getQuotesContributedByMe().then((res: QuotationInterface[]) =>
+              navPush(res)
+            );
             break;
           // case strings.customDiscoverHeaders.deleted:
           case strings.customDiscoverHeaders.favorites:
-            await getFavoriteQuotes().then((res: QuotationInterface[])=> navPush(res))
+            await getFavoriteQuotes().then((res: QuotationInterface[]) => {
+              navPush(res);
+            });
             break;
           case strings.customDiscoverHeaders.top100:
-            await getShuffledQuotes('Top 100', strings.filters.subject).then((res: QuotationInterface[])=> navPush(res))
+            await getShuffledQuotes("Top 100", strings.filters.subject).then(
+              (res: QuotationInterface[]) => navPush(res)
+            );
             break;
           default:
-            getQuotesFromQuery()
+            getQuotesFromQuery();
             break;
-        }        
-        
+        }
       }}
     >
-      <AppText style={styles.title}>{query }</AppText>
-      <AppText style={styles.count}>{" ("+ count.toString() + ")"}</AppText>
+      <AppText style={styles.title}>{query}</AppText>
+      <AppText style={styles.count}>{" (" + count.toString() + ")"}</AppText>
     </TouchableWithoutFeedback>
   );
 };
@@ -88,12 +123,12 @@ const styles = StyleSheet.create({
     backgroundColor: LIGHT,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start"
+    justifyContent: "flex-start",
   },
   title: {
     marginLeft: 6,
   },
   count: {
-    color: GRAY_3
-  }
+    color: GRAY_3,
+  },
 });
