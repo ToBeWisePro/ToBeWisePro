@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Share, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Share, TouchableOpacity, View, StyleSheet, Alert } from "react-native";
 import {
   NavigationInterface,
   QuotationInterface,
@@ -8,7 +8,11 @@ import { IconFactory } from "../atoms/IconFactory";
 import { PRIMARY_GREEN, PRIMARY_RED } from "../../../styles/Colors";
 import { AppText } from "../atoms/AppText";
 import { strings } from "../../res/constants/Strings";
-import { deleteQuote, updateQuote } from "../../res/functions/DBFunctions";
+import {
+  deleteQuote,
+  markQuoteAsDeleted,
+  updateQuote,
+} from "../../res/functions/DBFunctions";
 import { QuoteContainerButtons } from "../../res/constants/Enums";
 import { openLink } from "../../res/functions/UtilFunctions";
 
@@ -59,6 +63,20 @@ export const QuoteButtonBar: React.FC<Props> = ({
     }
   };
 
+  const deleteFunction = async (quote: QuotationInterface) => {
+    await markQuoteAsDeleted(quote);
+    Alert.alert(
+      "Quote deleted successfully!",
+      "Reload the screen to see updates",
+      [
+        {
+          text: "OK",
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
   const buttons = [
     {
       id: QuoteContainerButtons.Add,
@@ -82,10 +100,11 @@ export const QuoteButtonBar: React.FC<Props> = ({
     {
       id: QuoteContainerButtons.Delete,
       name: QuoteContainerButtons.Delete,
-      onPress: () => deleteQuote(quote),
+      onPress: () => deleteFunction(quote),
       iconName: "delete",
       color: PRIMARY_GREEN,
     },
+
     {
       id: QuoteContainerButtons.Edit,
       name: QuoteContainerButtons.Edit,

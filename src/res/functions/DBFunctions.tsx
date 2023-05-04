@@ -93,9 +93,9 @@ export async function getShuffledQuotes(
 
   let query = `SELECT * FROM ${dbName}`;
   if (filter === strings.filters.author) {
-    query += ` WHERE author LIKE '%${key}%' ORDER BY RANDOM()`;
+    query += ` WHERE deleted = 0 AND author LIKE '%${key}%' ORDER BY RANDOM()`;
   } else if (filter === strings.filters.subject) {
-    query += ` WHERE subjects LIKE '%${key}%' ORDER BY RANDOM()`;
+    query += ` WHERE deleted = 0 AND subjects LIKE '%${key}%' ORDER BY RANDOM()`;
   } else {
     const string = `Invalid filter provided: ${filter}`;
     throw new Error(string);
@@ -312,25 +312,25 @@ export async function getQuoteCount(
 
   switch (filter) {
     case strings.filters.author:
-      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE author = ?`;
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE author = ? AND deleted = 0`;
       params = [key];
       break;
     case strings.filters.subject:
-      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE subjects LIKE ?`;
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE subjects LIKE ? AND deleted = 0`;
       params = [`%${key}%`];
       break;
     case strings.customDiscoverHeaders.all:
-      query = `SELECT COUNT(*) AS count FROM ${dbName}`;
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0`;
       break;
     case strings.customDiscoverHeaders.addedByMe:
-      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE contributedBy = ?`;
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE contributedBy = ? AND deleted = 0`;
       params = [key];
       break;
     case strings.customDiscoverHeaders.favorites:
-      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE favorite = 1`;
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE favorite = 1 AND deleted = 0`;
       break;
     case strings.customDiscoverHeaders.top100 || "Top 100":
-      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE subjects LIKE ?`;
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE subjects LIKE ? AND deleted = 0`;
       params = [`%${"Top 100"}%`];
       break;
     default:
@@ -393,3 +393,24 @@ export const updateQuote = async (updatedQuote: QuotationInterface) => {
     });
   });
 };
+
+export async function markQuoteAsDeleted(quote: QuotationInterface) {
+  const db = SQLite.openDatabase(dbName);
+
+  const query = `UPDATE ${dbName} SET deleted = 1 WHERE _id = ?`;
+  const params = [quote._id];
+
+  return new Promise<void>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        query,
+        params,
+        () => resolve(),
+        (_, error) => {
+          console.log(error);
+          reject(error);
+        }
+      );
+    });
+  });
+}

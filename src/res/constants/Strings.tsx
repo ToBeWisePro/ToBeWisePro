@@ -55,7 +55,7 @@ export const strings = new LocalizedStrings({
       customDiscoverHeaders:{
         all: "🌏 Show All",
         addedByMe: "🙋 Contributed By Me",
-        // deleted: "🗑️ Deleted",
+        deleted: "🗑️ Deleted",
         favorites: "❤️ Favorites",
         top100: "🏆 Top 100"
       },

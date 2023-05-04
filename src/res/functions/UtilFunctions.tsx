@@ -51,17 +51,6 @@ export const openLink = async (url: string) => {
         modalTransitionStyle: "coverVertical",
         modalEnabled: true,
         enableBarCollapsing: false,
-        // // Android Properties
-        // showTitle: true,
-        // toolbarColor: '#6200EE',
-        // secondaryToolbarColor: 'black',
-        // navigationBarColor: 'black',
-        // navigationBarDividerColor: 'white',
-        // enableUrlBarHiding: true,
-        // enableDefaultShare: true,
-        // forceCloseOnRedirection: false,
-        // Specify full animation resource identifier(package:anim/name)
-        // or only resource name(in case of animation bundled with app).
         animations: {
           startEnter: "slide_in_right",
           startExit: "slide_out_left",
