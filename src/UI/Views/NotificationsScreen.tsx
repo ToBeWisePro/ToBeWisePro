@@ -24,6 +24,7 @@ import { DataButton } from "../atoms/DataButton";
 import { TextInputField } from "../atoms/TextInputField";
 import * as Notifications from "expo-notifications";
 import { getShuffledQuotes } from "../../res/functions/DBFunctions";
+import { NotificationScheduler } from "../../res/util/NotificationScheduler";
 
 interface Props {
   navigation: NavigationInterface;
@@ -69,6 +70,12 @@ export const NotificationScreen: React.FC<Props> = ({
   const [spacing, setSpacing] = useState(30);
   const [query, setQuery] = useState(strings.database.defaultQuery);
   const [filter, setFilter] = useState(strings.database.defaultFilter);
+  const [reinitializeCounter, setReinitializeCounter] = useState(0);
+
+  const reinitializeNotificationScheduler = () => {
+    setReinitializeCounter((prevCounter) => prevCounter + 1);
+  };
+
   useEffect(() => {
     console.log("startTime: ", startTime);
     console.log("endTime: ", endTime);
@@ -110,6 +117,7 @@ export const NotificationScreen: React.FC<Props> = ({
     const updatedAllowNotifications = !allowNotifications;
     setAllowNotifications(updatedAllowNotifications);
     saveSettings(SETTINGS_KEYS.allowNotifications, updatedAllowNotifications);
+    reinitializeNotificationScheduler();
   };
 
   const isValidTimeRange = (start: Date, end: Date) => {
@@ -125,9 +133,10 @@ export const NotificationScreen: React.FC<Props> = ({
     if (isValidTimeRange(time, endTime)) {
       setStartTime(time);
       saveSettings(SETTINGS_KEYS.startTime, time);
+      reinitializeNotificationScheduler();
     } else {
       alert(
-      'Start Time "${time.toLocaleTimeString()}" must be less than or equal to End Time "${endTime.toLocaleTimeString()}".'
+        'Start Time "${time.toLocaleTimeString()}" must be less than or equal to End Time "${endTime.toLocaleTimeString()}".'
       );
     }
   };
@@ -136,9 +145,10 @@ export const NotificationScreen: React.FC<Props> = ({
     if (isValidTimeRange(startTime, time)) {
       setEndTime(time);
       saveSettings(SETTINGS_KEYS.endTime, time);
+      reinitializeNotificationScheduler();
     } else {
       alert(
-      'End Time "${time.toLocaleTimeString()}" must be greater than or equal to Start Time "${startTime.toLocaleTimeString()}".'
+        'End Time "${time.toLocaleTimeString()}" must be greater than or equal to Start Time "${startTime.toLocaleTimeString()}".'
       );
     }
   };
@@ -146,18 +156,20 @@ export const NotificationScreen: React.FC<Props> = ({
   const handleSpacingChange = (value: number) => {
     setSpacing(value);
     saveSettings(SETTINGS_KEYS.spacing, value);
+    reinitializeNotificationScheduler();
   };
 
   const handleQueryChange = (text: string) => {
     setQuery(text);
     saveSettings(SETTINGS_KEYS.query, text);
+    reinitializeNotificationScheduler();
   };
 
   const handleFilterChange = (filter: string) => {
     setFilter(filter);
     saveSettings(SETTINGS_KEYS.filter, filter);
+    reinitializeNotificationScheduler();
   };
-
   const handleButtonPress = async () => {
     try {
       const { status } = await Notifications.requestPermissionsAsync();
@@ -181,6 +193,7 @@ export const NotificationScreen: React.FC<Props> = ({
           });
         } else {
           const quote: QuotationInterface = data[0];
+
           await Notifications.presentNotificationAsync({
             title: filter + ": " + query,
             body: quote.quoteText,
@@ -192,9 +205,11 @@ export const NotificationScreen: React.FC<Props> = ({
       alert("An error occurred while trying to send the notification");
     }
   };
-
+  // Other parts of the component remain unchanged
   return (
     <View style={styles.container}>
+      <NotificationScheduler reinitialize={reinitializeCounter} />
+
       <TopNav
         backButton={true}
         backFunction={() => navigation.goBack()}
@@ -221,13 +236,17 @@ export const NotificationScreen: React.FC<Props> = ({
             <CustomTimeInput time={endTime} setTime={handleEndTimeChange} />
           </View>
           <View style={styles.menuOptionContainerBottom}>
-            <AppText>Spacing (minutes): </AppText>
+            <AppText>Time between notifications: </AppText>
+            <View style={{flexDirection: "row"}}>
             <TextInput
               keyboardType="numeric"
               style={styles.frequencyInput}
               value={String(spacing)}
               onChangeText={(text) => handleSpacingChange(Number(text))}
             />
+            <AppText>minute(s)</AppText>
+            </View>
+            
           </View>
           <AppText style={styles.title}>Notification Database</AppText>
           <View style={styles.menuOptionContainerBottom}>
@@ -331,8 +350,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   frequencyInput: {
-    width: 50,
-    backgroundColor: LIGHT,
+    width: 40,
+    marginHorizontal: 10,
+    backgroundColor: GRAY_6,
     textAlign: "center",
+
   },
 });
