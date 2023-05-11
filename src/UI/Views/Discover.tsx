@@ -56,7 +56,7 @@ export const Discover = ({navigation}: Props) => {
         });
         dataObjects.push({key: "a", value: strings.customDiscoverHeaders.all})
         dataObjects.push({key: "b", value: strings.customDiscoverHeaders.addedByMe})
-        // dataObjects.push({key:"e", value: strings.customDiscoverHeaders.deleted})
+        dataObjects.push({key:"e", value: strings.customDiscoverHeaders.deleted})
         dataObjects.push({key: "d", value: strings.customDiscoverHeaders.favorites})
         dataObjects.push({key: "c", value: strings.customDiscoverHeaders.top100})
 

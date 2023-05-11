@@ -64,9 +64,12 @@ export const QuoteButtonBar: React.FC<Props> = ({
   };
 
   const deleteFunction = async (quote: QuotationInterface) => {
-    await markQuoteAsDeleted(quote);
+    const shouldDelete = !quote.deleted; // If the quote is not currently deleted, we should delete it.
+    await markQuoteAsDeleted(quote, shouldDelete);
     Alert.alert(
-      "Quote deleted successfully!",
+      shouldDelete
+        ? "Quote deleted successfully!"
+        : "Quote restored successfully!",
       "Reload the screen to see updates",
       [
         {

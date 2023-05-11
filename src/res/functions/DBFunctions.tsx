@@ -92,7 +92,10 @@ export async function getShuffledQuotes(
   const db = SQLite.openDatabase(dbName);
 
   let query = `SELECT * FROM ${dbName}`;
-  if (filter === strings.filters.author) {
+  if (key === strings.customDiscoverHeaders.deleted) {
+    query += ` WHERE deleted = 1 ORDER BY RANDOM()`;
+  }
+  else if (filter === strings.filters.author) {
     query += ` WHERE deleted = 0 AND author LIKE '%${key}%' ORDER BY RANDOM()`;
   } else if (filter === strings.filters.subject) {
     query += ` WHERE deleted = 0 AND subjects LIKE '%${key}%' ORDER BY RANDOM()`;
@@ -333,6 +336,9 @@ export async function getQuoteCount(
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE subjects LIKE ? AND deleted = 0`;
       params = [`%${"Top 100"}%`];
       break;
+    case strings.customDiscoverHeaders.deleted:
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 1`;
+      break;
     default:
       break;
   }
@@ -353,6 +359,7 @@ export async function getQuoteCount(
     });
   });
 }
+
 
 export const updateQuoteContainer = (
   quote: QuotationInterface,
@@ -394,11 +401,11 @@ export const updateQuote = async (updatedQuote: QuotationInterface) => {
   });
 };
 
-export async function markQuoteAsDeleted(quote: QuotationInterface) {
+export async function markQuoteAsDeleted(quote: QuotationInterface, shouldDelete: boolean) {
   const db = SQLite.openDatabase(dbName);
 
-  const query = `UPDATE ${dbName} SET deleted = 1 WHERE _id = ?`;
-  const params = [quote._id];
+  const query = `UPDATE ${dbName} SET deleted = ? WHERE _id = ?`;
+  const params = [shouldDelete ? 1 : 0, quote._id]; // Here we set the 'deleted' field to 1 if shouldDelete is true, and 0 otherwise.
 
   return new Promise<void>((resolve, reject) => {
     db.transaction((tx) => {
@@ -414,3 +421,4 @@ export async function markQuoteAsDeleted(quote: QuotationInterface) {
     });
   });
 }
+

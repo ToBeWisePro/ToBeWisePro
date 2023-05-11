@@ -52,6 +52,9 @@ export const DiscoverTile: React.FC<Props> = ({
       case strings.customDiscoverHeaders.top100 || "Top 100":
         getCountForComponent(query, strings.customDiscoverHeaders.top100);
         break;
+      case strings.customDiscoverHeaders.deleted:
+        getCountForComponent(query, strings.customDiscoverHeaders.deleted);
+        break;
       default:
         getCountForComponent(query, filter);
         break;
@@ -99,6 +102,11 @@ export const DiscoverTile: React.FC<Props> = ({
             break;
           case strings.customDiscoverHeaders.top100:
             await getShuffledQuotes("Top 100", strings.filters.subject).then(
+              (res: QuotationInterface[]) => navPush(res)
+            );
+            break;
+          case strings.customDiscoverHeaders.deleted:
+            await getShuffledQuotes(strings.customDiscoverHeaders.deleted, strings.filters.subject).then(
               (res: QuotationInterface[]) => navPush(res)
             );
             break;

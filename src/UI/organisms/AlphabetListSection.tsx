@@ -38,6 +38,8 @@ const formatDataForAlphabetList = (
       { key: "b", value: strings.customDiscoverHeaders.addedByMe },
       { key: "d", value: strings.customDiscoverHeaders.favorites },
       { key: "c", value: strings.customDiscoverHeaders.top100 },
+      { key: "e", value: strings.customDiscoverHeaders.deleted },
+
     ]);
   }
 );
