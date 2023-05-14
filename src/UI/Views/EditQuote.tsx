@@ -22,7 +22,8 @@ import {
 import { TopNav } from "../molecules/TopNav";
 import {
   getQuoteById,
-  saveOrUpdateQuote,
+  saveQuote,
+  saveQuoteToDatabase,
 } from "../../res/functions/DBFunctions";
 import { AppText } from "../atoms/AppText";
 interface Props {
@@ -151,13 +152,25 @@ export const EditQuotes = ({ navigation, route }: Props) => {
                   subjects,
                   authorLink,
                   videoLink,
+                  favorite: false,
+                  deleted: false,
+                  contributedBy: "user",
                 };
-                await saveOrUpdateQuote(updatedQuote, isExistingQuote).then(
-                  async () => {
-                    const quote: QuotationInterface = await getQuoteById(
+                console.log("updatedQuote before save", updatedQuote);
+                await saveQuoteToDatabase(updatedQuote).then(
+                  async (insertId) => {
+                    console.log("insertId", insertId);
+                    updatedQuote._id = insertId; // Add the _id attribute to updatedQuote
+
+                    console.log("updatedQuote after save", updatedQuote);
+                    const quote: QuotationInterface | null = await getQuoteById(
                       updatedQuote._id
                     );
-                    setQuoteInEditing(quote);
+                    if (quote) {
+                      setQuoteInEditing(quote);
+                    } else {
+                      console.log("quote is null");
+                    }
                   }
                 );
               }}

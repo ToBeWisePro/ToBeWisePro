@@ -56,33 +56,40 @@ export async function dataImporter() {
       };
     });
 
-    const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-
-    await new Promise<void>((resolve, reject) => {
-      db.transaction((tx) => {
-        quotes.forEach((quote) => {
-          tx.executeSql(
-            insertQuery,
-            [
-              quote.quoteText,
-              quote.author,
-              quote.contributedBy,
-              quote.subjects,
-              quote.authorLink,
-              quote.videoLink,
-              quote.favorite,
-              quote.deleted,
-            ],
-            () => resolve(),
-            (_, error) => {
-              console.log(error);
-              reject(error);
-            }
-          );
-        });
-      });
-    });
+    for (let quote of quotes) {
+      await saveQuoteToDatabase(quote);
+    }
   }
+}
+
+
+export async function saveQuoteToDatabase(quote: QuotationInterface) {
+  const db = SQLite.openDatabase(dbName);
+
+  const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+  return await new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        insertQuery,
+        [
+          quote.quoteText,
+          quote.author,
+          quote.contributedBy,
+          quote.subjects,
+          quote.authorLink,
+          quote.videoLink,
+          quote.favorite,
+          quote.deleted,
+        ],
+        (_, resultSet) => resolve(resultSet.insertId),
+        (_, error) => {
+          console.log(error);
+          reject(error);
+        }
+      );
+    });
+  });
 }
 
 export async function getShuffledQuotes(
@@ -94,8 +101,7 @@ export async function getShuffledQuotes(
   let query = `SELECT * FROM ${dbName}`;
   if (key === strings.customDiscoverHeaders.deleted) {
     query += ` WHERE deleted = 1 ORDER BY RANDOM()`;
-  }
-  else if (filter === strings.filters.author) {
+  } else if (filter === strings.filters.author) {
     query += ` WHERE deleted = 0 AND author LIKE '%${key}%' ORDER BY RANDOM()`;
   } else if (filter === strings.filters.subject) {
     query += ` WHERE deleted = 0 AND subjects LIKE '%${key}%' ORDER BY RANDOM()`;
@@ -176,6 +182,7 @@ export async function getQuoteById(
         [id],
         (_, result) => {
           if (result.rows.length === 0) {
+            console.log(`No quote found with id: ${id}`); // Debugging line
             resolve(null);
           } else {
             const quoteRow = result.rows.item(0);
@@ -183,69 +190,18 @@ export async function getQuoteById(
               ...quoteRow,
               favorite: quoteRow.favorite,
             };
+            // console.log(`Fetched quote: ${JSON.stringify(quote)}`); // Debugging line
             resolve(quote);
           }
         },
         (_, error) => {
-          console.log(error);
+          console.log(`Error in getQuoteById: ${error}`); // Debugging line
           reject(error);
         }
       );
     });
   });
 }
-
-export const saveOrUpdateQuote = async (
-  quote: QuotationInterface,
-  existingQuote: boolean
-) => {
-  const db = SQLite.openDatabase(dbName);
-
-  const query = existingQuote
-    ? `UPDATE ${dbName} SET quoteText = ?, author = ?, subjects = ?, authorLink = ?, videoLink = ?, contributedBy = ?, favorite = ?, deleted = ? WHERE _id = ?`
-    : `INSERT INTO ${dbName} (quoteText, author, subjects, authorLink, videoLink, contributedBy, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-
-  const queryParams = [
-    quote.quoteText,
-    quote.author,
-    quote.subjects,
-    quote.authorLink,
-    quote.videoLink,
-    quote.contributedBy,
-    quote.favorite,
-    quote.deleted,
-  ];
-
-  if (existingQuote) {
-    queryParams.push(quote._id);
-  }
-
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        query,
-        queryParams,
-        async (_, result) => {
-          const fetchedQuote = await getQuoteById(quote._id);
-          const isQuoteEqual =
-            JSON.stringify(quote) === JSON.stringify(fetchedQuote);
-
-          if (isQuoteEqual) {
-            console.log("Quote saved or updated successfully");
-            resolve(result);
-          } else {
-            console.log("Error: Fetched quote does not match the input quote");
-            reject(new Error("Fetched quote does not match the input quote"));
-          }
-        },
-        (_, error) => {
-          console.log("Error saving or updating quote:", error);
-          reject(error);
-        }
-      );
-    });
-  });
-};
 
 export const getAllQuotes = async (): Promise<QuotationInterface[]> => {
   const db = await SQLite.openDatabase(dbName);
@@ -360,7 +316,6 @@ export async function getQuoteCount(
   });
 }
 
-
 export const updateQuoteContainer = (
   quote: QuotationInterface,
   refreshRate: number,
@@ -401,7 +356,10 @@ export const updateQuote = async (updatedQuote: QuotationInterface) => {
   });
 };
 
-export async function markQuoteAsDeleted(quote: QuotationInterface, shouldDelete: boolean) {
+export async function markQuoteAsDeleted(
+  quote: QuotationInterface,
+  shouldDelete: boolean
+) {
   const db = SQLite.openDatabase(dbName);
 
   const query = `UPDATE ${dbName} SET deleted = ? WHERE _id = ?`;
@@ -421,4 +379,3 @@ export async function markQuoteAsDeleted(quote: QuotationInterface, shouldDelete
     });
   });
 }
-
