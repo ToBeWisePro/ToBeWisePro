@@ -29,7 +29,7 @@ export const SaveButton: React.FC<Props> = ({
     if (active) {
       try {
         await pressFunction();
-        navigation.goBack();
+        navigation.push(strings.screenName.discover, {});
       } catch (error) {
         Alert.alert("Error", "An error occurred while saving.");
         console.error(error);

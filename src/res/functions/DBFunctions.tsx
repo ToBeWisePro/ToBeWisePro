@@ -62,6 +62,33 @@ export async function dataImporter() {
   }
 }
 
+export async function editQuote(quoteId: number, newQuote: QuotationInterface) {
+  const db = SQLite.openDatabase(dbName);
+
+  await new Promise<void>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `UPDATE ${dbName} SET quoteText = ?, author = ?, contributedBy = ?, subjects = ?, authorLink = ?, videoLink = ?, favorite = ?, deleted = ? WHERE _id = ?`,
+        [
+          newQuote.quoteText,
+          newQuote.author,
+          newQuote.contributedBy,
+          newQuote.subjects,
+          newQuote.authorLink,
+          newQuote.videoLink,
+          newQuote.favorite,
+          newQuote.deleted,
+          quoteId,
+        ],
+        () => resolve(),
+        (_, error) => {
+          console.log(error);
+          reject(error);
+        }
+      );
+    });
+  });
+}
 
 export async function saveQuoteToDatabase(quote: QuotationInterface) {
   const db = SQLite.openDatabase(dbName);
@@ -83,6 +110,24 @@ export async function saveQuoteToDatabase(quote: QuotationInterface) {
           quote.deleted,
         ],
         (_, resultSet) => resolve(resultSet.insertId),
+        (_, error) => {
+          console.log(error);
+          reject(error);
+        }
+      );
+    });
+  });
+}
+
+export async function removeQuote(quoteId: number) {
+  const db = SQLite.openDatabase(dbName);
+
+  await new Promise<void>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `DELETE FROM ${dbName} WHERE _id = ?`,
+        [quoteId],
+        () => resolve(),
         (_, error) => {
           console.log(error);
           reject(error);

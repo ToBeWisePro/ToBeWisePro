@@ -21,8 +21,9 @@ import {
 } from "../atoms/TextInputField";
 import { TopNav } from "../molecules/TopNav";
 import {
+  editQuote,
   getQuoteById,
-  saveQuote,
+  removeQuote,
   saveQuoteToDatabase,
 } from "../../res/functions/DBFunctions";
 import { AppText } from "../atoms/AppText";
@@ -157,12 +158,8 @@ export const EditQuotes = ({ navigation, route }: Props) => {
                   contributedBy: "user",
                 };
                 console.log("updatedQuote before save", updatedQuote);
-                await saveQuoteToDatabase(updatedQuote).then(
-                  async (insertId) => {
-                    console.log("insertId", insertId);
-                    updatedQuote._id = insertId; // Add the _id attribute to updatedQuote
-
-                    console.log("updatedQuote after save", updatedQuote);
+                if (isExistingQuote) {
+                  editQuote(updatedQuote._id, updatedQuote).then(async () => {
                     const quote: QuotationInterface | null = await getQuoteById(
                       updatedQuote._id
                     );
@@ -171,8 +168,24 @@ export const EditQuotes = ({ navigation, route }: Props) => {
                     } else {
                       console.log("quote is null");
                     }
-                  }
-                );
+                  });
+                } else {
+                  await saveQuoteToDatabase(updatedQuote).then(
+                    async (insertId) => {
+                      console.log("insertId", insertId);
+                      updatedQuote._id = insertId; // Add the _id attribute to updatedQuote
+
+                      console.log("updatedQuote after save", updatedQuote);
+                      const quote: QuotationInterface | null =
+                        await getQuoteById(updatedQuote._id);
+                      if (quote) {
+                        setQuoteInEditing(quote);
+                      } else {
+                        console.log("quote is null");
+                      }
+                    }
+                  );
+                }
               }}
               active={canSave}
               navigation={navigation}

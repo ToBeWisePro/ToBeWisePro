@@ -46,6 +46,7 @@ export const AutoScrollingQuoteList = ({
   const flatListRef = useRef<FlatList<QuotationInterface>>(null);
 
   useEffect(() => {
+    
     const removeDuplicateQuotes = (quotesArray: QuotationInterface[]) => {
       const seenQuotes: { [key: string]: boolean } = {};
       return quotesArray.filter((quote) => {
@@ -54,7 +55,9 @@ export const AutoScrollingQuoteList = ({
         return !isDuplicate;
       });
     };
-
+    if(data == null){
+      data = []
+    }
     const uniqueQuotes = removeDuplicateQuotes(data);
     setUniqueQuotesData(uniqueQuotes);
   }, [data]);
