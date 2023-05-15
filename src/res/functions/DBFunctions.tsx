@@ -95,6 +95,9 @@ export async function saveQuoteToDatabase(quote: QuotationInterface) {
 
   const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
+  console.log("Attempting to save quote:", quote);
+  console.log("Using insert query:", insertQuery);
+
   return await new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
@@ -111,7 +114,9 @@ export async function saveQuoteToDatabase(quote: QuotationInterface) {
         ],
         (_, resultSet) => resolve(resultSet.insertId),
         (_, error) => {
-          console.log(error);
+          console.log("Error when saving quote:", error);
+          console.log("Failed to save quote:", quote);
+          console.log("Used insert query:", insertQuery);
           reject(error);
         }
       );

@@ -9,7 +9,6 @@ import { PRIMARY_GREEN, PRIMARY_RED } from "../../../styles/Colors";
 import { AppText } from "../atoms/AppText";
 import { strings } from "../../res/constants/Strings";
 import {
-  deleteQuote,
   markQuoteAsDeleted,
   updateQuote,
 } from "../../res/functions/DBFunctions";
@@ -95,6 +94,7 @@ export const QuoteButtonBar: React.FC<Props> = ({
             subjects: "",
             videoLink: "",
           },
+          editingExistingQuote: false,
         });
       },
       iconName: "add",
@@ -112,7 +112,10 @@ export const QuoteButtonBar: React.FC<Props> = ({
       id: QuoteContainerButtons.Edit,
       name: QuoteContainerButtons.Edit,
       onPress: () =>
-        navigation.push(strings.screenName.editQuote, { editingQuote: quote }),
+        navigation.push(strings.screenName.editQuote, {
+          editingQuote: quote,
+          editingExistingQuote: true,
+        }),
       iconName: "edit",
       color: PRIMARY_GREEN,
     },

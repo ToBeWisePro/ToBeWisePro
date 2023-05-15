@@ -34,7 +34,7 @@ interface Props {
 
 export const EditQuotes = ({ navigation, route }: Props) => {
   const editingQuote = route.params.editingQuote || {};
-  const isExistingQuote = Boolean(editingQuote);
+  const isExistingQuote = Boolean(route.params.editingExistingQuote);
   const initialQuote = {
     ...editingQuote,
     quoteText: editingQuote.quoteText || "",
@@ -42,6 +42,7 @@ export const EditQuotes = ({ navigation, route }: Props) => {
     subjects: editingQuote.subjects || "",
     authorLink: editingQuote.authorLink || "",
     videoLink: editingQuote.videoLink || "",
+    _id: editingQuote._id || parseInt(String(Math.random() * 100000)),
   };
 
   const [quoteInEditing, setQuoteInEditing] = useState(initialQuote);
@@ -51,6 +52,11 @@ export const EditQuotes = ({ navigation, route }: Props) => {
   const [subjects, setSubjects] = useState(initialQuote.subjects);
   const [authorLink, setAuthorLink] = useState(initialQuote.authorLink);
   const [videoLink, setVideoLink] = useState(initialQuote.videoLink);
+
+  useEffect(()=>{
+    console.log("is existing quote", isExistingQuote)
+    console.log("editing quote", editingQuote)
+  },[])
 
   const textInputFields: TextInputProps[] = [
     {
@@ -153,9 +159,11 @@ export const EditQuotes = ({ navigation, route }: Props) => {
                   subjects,
                   authorLink,
                   videoLink,
+                  _id: quoteInEditing._id,
                   favorite: false,
                   deleted: false,
                   contributedBy: "user",
+                 
                 };
                 console.log("updatedQuote before save", updatedQuote);
                 if (isExistingQuote) {
@@ -174,8 +182,10 @@ export const EditQuotes = ({ navigation, route }: Props) => {
                     async (insertId) => {
                       console.log("insertId", insertId);
                       updatedQuote._id = insertId; // Add the _id attribute to updatedQuote
-
+                  
                       console.log("updatedQuote after save", updatedQuote);
+                    })
+                    .then(async () => {
                       const quote: QuotationInterface | null =
                         await getQuoteById(updatedQuote._id);
                       if (quote) {
@@ -183,8 +193,8 @@ export const EditQuotes = ({ navigation, route }: Props) => {
                       } else {
                         console.log("quote is null");
                       }
-                    }
-                  );
+                    });
+                  
                 }
               }}
               active={canSave}

@@ -8,6 +8,7 @@ export interface RouteInterface {
       filter: string;
       query: string;
     };
+    editingExistingQuote: boolean;
     showBackButton: boolean;
     backButtonNavigationFunction: BackButtonNavEnum;
     notificationKey: string;
