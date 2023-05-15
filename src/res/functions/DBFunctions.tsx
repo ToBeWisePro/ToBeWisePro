@@ -333,7 +333,7 @@ export async function getQuoteCount(
       break;
     case strings.customDiscoverHeaders.addedByMe:
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE contributedBy = ? AND deleted = 0`;
-      params = [key];
+      params = [defaultUsername]; // ensure the correct username is used here
       break;
     case strings.customDiscoverHeaders.favorites:
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE favorite = 1 AND deleted = 0`;

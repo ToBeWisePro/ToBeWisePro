@@ -27,6 +27,7 @@ import {
   saveQuoteToDatabase,
 } from "../../res/functions/DBFunctions";
 import { AppText } from "../atoms/AppText";
+import { defaultUsername } from "../../res/constants/Values";
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;
@@ -162,7 +163,7 @@ export const EditQuotes = ({ navigation, route }: Props) => {
                   _id: quoteInEditing._id,
                   favorite: false,
                   deleted: false,
-                  contributedBy: "user",
+                  contributedBy: defaultUsername,
                  
                 };
                 console.log("updatedQuote before save", updatedQuote);
