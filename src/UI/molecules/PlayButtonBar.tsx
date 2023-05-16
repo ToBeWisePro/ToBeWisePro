@@ -11,12 +11,6 @@ interface Props {
     playPressed: boolean
 }
 
-interface PlayPauseButton {
-    name: string,
-    selected: boolean,
-    onPress: () => void
-}
-
 enum ScrollControllerButtons {
     Play, Pause
 }
@@ -38,32 +32,10 @@ export const PlayButtonBar: React.FC<Props> = ({setPlayPressed, playPressed}: Pr
         setButtonToDisplay(ScrollControllerButtons.Play);
         setPlayPressed(false)
     }
-    // const scrollButtons: PlayPauseButton[] = [
-    //     {
-    //         name: strings.playPauseButtons.slowDown,
-    //         selected: slowDownSelected,
-    //         onPress: () => {setSlowDownSelected(true); setSpeedUpSelected(false); startScrolling()}
-    //     },
-    //     {
-    //         name: strings.playPauseButtons.pause,
-    //         selected: buttonToDisplay == ScrollControllerButtons.pause,
-    //         onPress: () => {stopScrolling()}
-    //
-    //     },
-    //     {
-    //         name: strings.playPauseButtons.play,
-    //         selected: buttonToDisplay == ScrollControllerButtons.play,
-    //         onPress: () => {startScrolling(); setSlowDownSelected(false); setSpeedUpSelected(false)}
-    //     },
-    //     {
-    //         name: strings.playPauseButtons.speedUp,
-    //         selected: speedUpSelected,
-    //         onPress: () => {setSpeedUpSelected(true); setSlowDownSelected(false); startScrolling()}
-    //     },
-    // ]
+ 
     return (
         <View style={styles.container}>
-            <AppText style={styles.playPauseText}>{"Slower"}</AppText>
+            <AppText style={styles.playPauseText}>{"Faster"}</AppText>
             <View style={styles.playPauseContainer}>
                 <TouchableOpacity
                     onPress={buttonToDisplay == ScrollControllerButtons.Pause ? stopScrolling : startScrolling}
@@ -73,7 +45,7 @@ export const PlayButtonBar: React.FC<Props> = ({setPlayPressed, playPressed}: Pr
                 <AppText style={styles.playPauseText}>{"Play/Pause"}</AppText>
             </View>
 
-            <AppText style={styles.playPauseText}>{"Faster"}</AppText>
+            <AppText style={styles.playPauseText}>{"Slower"}</AppText>
 
         </View>
     )

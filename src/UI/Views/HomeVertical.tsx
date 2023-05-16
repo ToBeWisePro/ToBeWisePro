@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
@@ -8,7 +8,6 @@ import {
   QuotationInterface,
   RouteInterface,
 } from "../../res/constants/Interfaces";
-import { dataImporter } from "../../res/functions/DBFunctions";
 import { getShuffledQuotes } from "../../res/functions/DBFunctions";
 import { BottomNav } from "../organisms/BottomNav";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
@@ -29,7 +28,7 @@ export const HomeVertical = ({
   route,
   initialQuotes,
   initialRoute,
-}: Props) => {
+}: Props) => { 
   const [title, setTitle] = useState("");
   const [backButton, setBackButton] = useState(false);
   const [quotes, setQuotes] = useState<QuotationInterface[]>(initialQuotes);
@@ -38,9 +37,6 @@ export const HomeVertical = ({
   const [playPressed, setPlayPressed] = useState<boolean>(true);
   const [scrollSpeed, setScrollSpeed] = useState<number>(
     autoScrollIntervalTime
-  );
-  const [offset, setOffset] = useState(
-    globalStyles.smallQuoteContainer.paddingTop
   );
 
   useEffect(() => {
@@ -94,21 +90,18 @@ export const HomeVertical = ({
         style={styles.background}
       >
         <AutoScrollingQuoteList
-          navigation={navigation}
           data={quotes}
-          filter={filter}
-          query={query}
           playPressed={playPressed}
           setPlayPressed={setPlayPressed}
-          scrollSpeed={scrollSpeed}
-          offset={offset}
-          setOffset={setOffset}
-        />
+          navigation={navigation}
+          query={query}
+          filter={filter}
+          />
       </LinearGradient>
       <BottomNav
         navigation={navigation}
         screen={strings.screenName.home}
-        whatToInclude={IncludeInBottomNav.AutoScrollBar}
+        whatToInclude={IncludeInBottomNav.PlayButton}
         playPressed={playPressed}
         setPlayPressed={setPlayPressed}
         scrollSpeed={scrollSpeed}
@@ -117,6 +110,7 @@ export const HomeVertical = ({
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     height: "100%",

@@ -21,6 +21,7 @@ export const shuffle = (unshuffledQuotes: QuotationInterface[]) => {
       contributedBy: quote.contributedBy,
       subjects: quote.subjects,
       favorite: quote.favorite,
+      deleted: quote.deleted,
     };
     // XXX cast Results<Object> to Quotation
     shuffledQuotes.push(quoteWithoutSafeChars);
@@ -65,41 +66,6 @@ export const openLink = async (url: string) => {
   } catch (error) {
     // @ts-ignore
     Alert.alert(error.message);
-  }
-};
-
-export const scrollToNextQuote = (
-  playPressed: boolean,
-  currentQuoteIndex: number,
-  quotes: QuotationInterface[],
-  flatListRef: any,
-  setCurrentQuoteIndex: (i: number) => void,
-  setPlayPressed: (x: boolean) => void,
-  offset: number,
-  setOffset: (x: number) => void
-) => {
-  if (playPressed) {
-    if (currentQuoteIndex < quotes.length - 1) {
-      const newIndex: number = currentQuoteIndex + 1;
-      if (!isNaN(newIndex) && newIndex >= 0 && newIndex < quotes.length) { // Add this line
-        flatListRef.current?.scrollToIndex({
-          index: newIndex,
-          animated: true,
-          viewPosition: 0,
-        });
-        const newOffset: number =
-          offset +
-          globalStyles.smallQuoteContainer.height +
-          globalStyles.smallQuoteContainer.marginBottom;
-        setOffset(newOffset);
-        setCurrentQuoteIndex(newIndex);
-      } else {
-        console.warn("Invalid newIndex:", newIndex); // Add this line
-      }
-    } else {
-      // This will stop it from going out of bounds
-      setPlayPressed(false);
-    }
   }
 };
 

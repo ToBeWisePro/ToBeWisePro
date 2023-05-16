@@ -1,185 +1,148 @@
 import React, { useEffect, useRef, useState } from "react";
+import { FlatList, Slider, StyleSheet, View } from "react-native";
 import {
   NavigationInterface,
   QuotationInterface,
 } from "../../res/constants/Interfaces";
-import { strings } from "../../res/constants/Strings";
-import {
-  FlatList,
-  StyleSheet,
-  View,
-  TouchableWithoutFeedback,
-  Dimensions,
-} from "react-native";
-import { globalStyles } from "../../../styles/GlobalStyles";
 import { SmallQuoteContainer } from "../organisms/SmallQuoteContainer";
-import { scrollToNextQuote } from "../../res/functions/UtilFunctions";
-import { getShuffledQuotes } from "../../res/functions/DBFunctions";
+import { globalStyles } from "../../../styles/GlobalStyles";
+import { SliderPicker } from "react-native-slider-picker";
+import { PRIMARY_GREEN } from "../../../styles/Colors";
+import { strings } from "../../res/constants/Strings";
 
 interface Props {
-  navigation: NavigationInterface;
   data: QuotationInterface[];
-  filter: string;
-  query: string;
   playPressed: boolean;
-  setPlayPressed: (x: boolean) => void;
-  scrollSpeed: number;
-  offset: number;
-  setOffset: (x: number) => void;
+  setPlayPressed: (value: boolean) => void;
+  navigation: NavigationInterface;
+  query: string;
+  filter: string;
 }
 
-export const AutoScrollingQuoteList = ({
-  navigation,
+export const AutoScrollingQuoteList: React.FC<Props> = ({
   data,
-  filter,
-  query,
   playPressed,
   setPlayPressed,
-  scrollSpeed,
-  offset,
-  setOffset,
-}: Props) => {
-  const [uniqueQuotesData, setUniqueQuotesData] = useState<
-    QuotationInterface[]
-  >([]);
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState<number>(0);
-  const flatListRef = useRef<FlatList<QuotationInterface>>(null);
+  navigation,
+  query,
+  filter,
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const flatListRef = useRef<FlatList>(null);
+  const [scrollSpeed, setScrollSpeed] = useState(50);
+  const [scrollInterval, setScrollInterval] = useState<any>(null);
+  const scrollOffset = useRef(0); // create a mutable reference
 
-  useEffect(() => {
-    
-    const removeDuplicateQuotes = (quotesArray: QuotationInterface[]) => {
-      const seenQuotes: { [key: string]: boolean } = {};
-      return quotesArray.filter((quote) => {
-        const isDuplicate = seenQuotes.hasOwnProperty(quote.quoteText);
-        seenQuotes[quote.quoteText] = true;
-        return !isDuplicate;
-      });
-    };
-    if(data == null){
-      data = []
-    }
-    const uniqueQuotes = removeDuplicateQuotes(data);
-    setUniqueQuotesData(uniqueQuotes);
-  }, [data]);
-
-  useEffect(() => {
-    // If play is pressed, every interval scroll to the next quote
-    // FIXME if the playPause button in changed from play to pause, this will still scroll one more time. Kill the extra thread if the button has been pressed
-    setTimeout(() => {
-      scrollToNextQuote(
-        playPressed,
-        currentQuoteIndex,
-        uniqueQuotesData,
-        flatListRef,
-        setCurrentQuoteIndex,
-        setPlayPressed,
-        offset,
-        setOffset
-      );
-    }, scrollSpeed);
-  }, [playPressed, currentQuoteIndex]);
-
-  useEffect(() => {
-    // Every time the scrollPosition changes, check to see if we are on a new quote. If we are, change the quoteInEditing
-    const i: number = getCurrentOffset();
-    if (i != 0) {
-      // console.log("BLOCKED offset useEffect setting quote to ", quotes[i].quoteText)
-      // setCurrentQuoteIndex(quotes[i]);
-      setCurrentQuoteIndex(i);
-    }
-  }, [offset]);
-
-  const getCurrentOffset = () => {
-    // returns the index of the current quote. If you want to increment, set incremented to true
-    let currentPosition: number = parseInt(
-      String(
-        offset /
-          (globalStyles.smallQuoteContainer.height +
-            globalStyles.smallQuoteContainer.marginBottom)
-      )
-    );
-    return currentPosition;
+  const handlePlayPress = () => {
+    setPlayPressed(!playPressed);
   };
 
+  useEffect(() => {
+    if (playPressed) {
+      if (scrollInterval) clearInterval(scrollInterval);
+      const newInterval = setInterval(() => {
+        scrollOffset.current += 1; // use the current property of the ref
+        if (
+          scrollOffset.current >=
+          globalStyles.smallQuoteContainer.height * data.length
+        ) {
+          clearInterval(newInterval);
+          setPlayPressed(false);
+          scrollOffset.current = 0; // use the current property of the ref
+        } else {
+          flatListRef.current?.scrollToOffset({
+            offset: scrollOffset.current, // use the current property of the ref
+            animated: false,
+          });
+        }
+      }, scrollSpeed);
+      setScrollInterval(newInterval);
+    } else if (scrollInterval) {
+      clearInterval(scrollInterval);
+    }
+    return () => {
+      if (scrollInterval) clearInterval(scrollInterval);
+    };
+  }, [playPressed, data.length, scrollSpeed]);
+
   return (
-    <View>
-      <TouchableWithoutFeedback onPress={() => setPlayPressed(false)}>
-        <FlatList
-          ref={flatListRef}
-          snapToAlignment={"start"}
-          style={styles.container}
-          data={uniqueQuotesData}
-          contentContainerStyle={[
-            { paddingTop: globalStyles.smallQuoteContainer.paddingTop },
-          ]}
-          onScrollToIndexFailed={(info) => {
-            const wait = new Promise((resolve) => setTimeout(resolve, 500));
-            wait.then(() => {
-              setPlayPressed(false);
-              flatListRef.current?.scrollToIndex({
-                index: currentQuoteIndex,
-                animated: true,
-                viewPosition: 0,
-              });
-              console.log("TODO kill thread");
-            });
-          }}
-          renderItem={(quote) => {
-            return (
-              <SmallQuoteContainer
-                passedInQuote={quote.item}
-                key={quote.item._id}
-                pressFunction={() => {
-                  // reorganize quotes, then set quotes
-                  let newQuotes: QuotationInterface[] = [];
-                  newQuotes.push(quote.item);
-                  uniqueQuotesData.forEach((quote2) => {
-                    if (quote.item._id !== quote2._id) {
-                      newQuotes.push(quote2);
-                    }
-                  });
-                  navigation.push(strings.screenName.homeHorizontal, {
-                    currentQuotes: newQuotes,
-                    quoteSearch: {
-                      filter: filter,
-                      query: query,
-                    },
-                  });
-                }}
-              />
-            );
-          }}
-          keyExtractor={(item) => item.quoteText}
-          invertStickyHeaders={true}
-          horizontal={false}
-          onScroll={(ev) => {
-            if (!playPressed) {
-              // This stops offset from resetting if autoscroll is on
-              setOffset(ev.nativeEvent.contentOffset.y);
-            }
-          }}
-          snapToInterval={
-            globalStyles.smallQuoteContainer.height +
-            globalStyles.smallQuoteContainer.marginBottom
+    <View style={styles.container}>
+      <FlatList
+        ref={flatListRef}
+        data={data}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={(quote) => {
+          return (
+            <SmallQuoteContainer
+              passedInQuote={quote.item}
+              key={quote.item._id}
+              pressFunction={() => {
+                // reorganize quotes, then set quotes
+                let newQuotes: QuotationInterface[] = [];
+                newQuotes.push(quote.item);
+                data.forEach((quote2: QuotationInterface) => {
+                  if (quote.item._id !== quote2._id) {
+                    newQuotes.push(quote2);
+                  }
+                });
+                navigation.push(strings.screenName.homeHorizontal, {
+                  currentQuotes: newQuotes,
+                  quoteSearch: {
+                    filter: filter,
+                    query: query,
+                  },
+                });
+              }}
+            />
+          );
+        }}
+        getItemLayout={(data, index) => ({
+          length: globalStyles.smallQuoteContainer.height,
+          offset: globalStyles.smallQuoteContainer.height * index,
+          index,
+        })}
+        onScrollToIndexFailed={(error) => {
+          console.error(error);
+          setPlayPressed(false);
+        }}
+        onScrollBeginDrag={() => {
+          handlePlayPress();
+          flatListRef.current?.scrollToEnd({ animated: false });
+        }}
+      />
+      <View style={{ height: 0 }}>
+        <SliderPicker
+          maxValue={0}
+          minValue={500}
+          inverted={true}
+          callback={(value: React.SetStateAction<number>) =>
+            setScrollSpeed(value)
           }
-          decelerationRate={0}
+          defaultValue={10}
+          showNumberScale={false}
+          fillColor={PRIMARY_GREEN}
+          backgroundColor={"#fff"}
+          // labelFontWeight={'bold'}
+          // showNumberScale={true}
+          // showSeparatorScale={true}
+          // buttonBackgroundColor={'#fff'}
+          // buttonBorderColor={"#6c7682"}
+          buttonBorderWidth={1}
+          // scaleNumberFontWeight={'300'}
+          buttonDimensionsPercentage={6}
+          heightPercentage={1}
+          widthPercentage={80}
         />
-      </TouchableWithoutFeedback>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: "100%",
+    flex: 1,
     width: "100%",
-    // backgroundColor: PRIMARY_BLUE,
+    height: "100%",
     marginBottom: globalStyles.navbar.height * 2.5,
-  },
-  progressBarView: {
-    height: 5,
-    width: Dimensions.get("screen").width,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

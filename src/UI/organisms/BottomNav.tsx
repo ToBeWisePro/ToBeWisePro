@@ -53,41 +53,6 @@ export const BottomNav: React.FC<Props> = ({
 
   return (
     <View style={styles.container}>
-      {whatToInclude == IncludeInBottomNav.AutoScrollBar && (
-        <View style={styles.scrollButtonView}>
-          <View style={styles.scrollBarContainer}>
-            <SliderPicker
-              // minLabel={'1'}
-              // maxLabel={'10'}
-              // midLabel={'5'}
-              maxValue={maxScrollIntervalTime - 1000}
-              callback={(position: number) => {
-                setScrollSpeed(maxScrollIntervalTime - position);
-              }}
-              defaultValue={scrollSpeed}
-              showNumberScale={false}
-              // labelFontColor={"#6c7682"}
-              // showFill={true}
-              fillColor={PRIMARY_GREEN}
-              // labelFontWeight={'bold'}
-              // showNumberScale={true}
-              // showSeparatorScale={true}
-              // buttonBackgroundColor={'#fff'}
-              // buttonBorderColor={"#6c7682"}
-              buttonBorderWidth={1}
-              // scaleNumberFontWeight={'300'}
-              buttonDimensionsPercentage={6}
-              heightPercentage={1}
-              widthPercentage={80}
-            />
-          </View>
-          <PlayButtonBar
-            setPlayPressed={setPlayPressed}
-            playPressed={playPressed}
-          />
-        </View>
-      
-      )}
       {whatToInclude == IncludeInBottomNav.PlayButton && (
         <View style={styles.scrollButtonViewNoSlidebar}>
           <PlayButtonBar
