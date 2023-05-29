@@ -1,22 +1,29 @@
-import React, { useEffect, useRef, useState } from "react";
-import { FlatList, Slider, StyleSheet, View } from "react-native";
+import React, { useRef, useState, useEffect } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import {
+  useSharedValue,
+  withTiming,
+  useDerivedValue,
+  runOnJS,
+  cancelAnimation,
+} from "react-native-reanimated";
+import { SmallQuoteContainer } from "../organisms/SmallQuoteContainer";
+import Slider from "@react-native-community/slider";
 import {
   NavigationInterface,
   QuotationInterface,
 } from "../../res/constants/Interfaces";
-import { SmallQuoteContainer } from "../organisms/SmallQuoteContainer";
 import { globalStyles } from "../../../styles/GlobalStyles";
-import { SliderPicker } from "react-native-slider-picker";
-import { PRIMARY_GREEN } from "../../../styles/Colors";
-import { strings } from "../../res/constants/Strings";
+
+const QUOTE_ITEM_HEIGHT = globalStyles.smallQuoteContainer.height;
 
 interface Props {
   data: QuotationInterface[];
   playPressed: boolean;
   setPlayPressed: (value: boolean) => void;
   navigation: NavigationInterface;
-  query: string;
-  filter: string;
+  query?: string;
+  filter?: (quote: QuotationInterface) => boolean;
 }
 
 export const AutoScrollingQuoteList: React.FC<Props> = ({
@@ -27,122 +34,71 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   query,
   filter,
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
-  const [scrollSpeed, setScrollSpeed] = useState(50);
-  const [scrollInterval, setScrollInterval] = useState<any>(null);
-  const scrollOffset = useRef(0); // create a mutable reference
-
-  const handlePlayPress = () => {
-    setPlayPressed(!playPressed);
-  };
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollPosition = useSharedValue(0);
+  const [scrollSpeed, setScrollSpeed] = useState(1); // useState instead of useSharedValue
+  const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
 
   useEffect(() => {
     if (playPressed) {
-      if (scrollInterval) clearInterval(scrollInterval);
-      const newInterval = setInterval(() => {
-        scrollOffset.current += 1; // use the current property of the ref
-        if (
-          scrollOffset.current >=
-          globalStyles.smallQuoteContainer.height * data.length
-        ) {
-          clearInterval(newInterval);
-          setPlayPressed(false);
-          scrollOffset.current = 0; // use the current property of the ref
-        } else {
-          flatListRef.current?.scrollToOffset({
-            offset: scrollOffset.current, // use the current property of the ref
-            animated: false,
-          });
+      console.log("Starting new animation with scrollSpeed", scrollSpeed);
+      scrollPosition.value = withTiming(
+        totalScrollDistance,
+        {
+          duration: (totalScrollDistance * 6) / scrollSpeed,
+        },
+        () => {
+          console.log("scrollPosition after withTiming:", scrollPosition.value);
         }
-      }, scrollSpeed);
-      setScrollInterval(newInterval);
-    } else if (scrollInterval) {
-      clearInterval(scrollInterval);
+      );
+    } else {
+      scrollPosition.value = 0; // Reset scroll position
     }
-    return () => {
-      if (scrollInterval) clearInterval(scrollInterval);
-    };
-  }, [playPressed, data.length, scrollSpeed]);
+  }, [playPressed, scrollSpeed]); // Now useEffect will run when scrollSpeed changes
+
+  const scrollTo = (y: number) => {
+    scrollRef.current?.scrollTo({ y, animated: false });
+  };
+
+  useDerivedValue(() => {
+    runOnJS(scrollTo)(scrollPosition.value);
+  }, [scrollPosition]);
+
+  const handlePress = (quote: QuotationInterface) => {
+    // Your navigation logic here...
+  };
 
   return (
     <View style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={data}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={(quote) => {
-          return (
-            <SmallQuoteContainer
-              passedInQuote={quote.item}
-              key={quote.item._id}
-              pressFunction={() => {
-                // reorganize quotes, then set quotes
-                let newQuotes: QuotationInterface[] = [];
-                newQuotes.push(quote.item);
-                data.forEach((quote2: QuotationInterface) => {
-                  if (quote.item._id !== quote2._id) {
-                    newQuotes.push(quote2);
-                  }
-                });
-                navigation.push(strings.screenName.homeHorizontal, {
-                  currentQuotes: newQuotes,
-                  quoteSearch: {
-                    filter: filter,
-                    query: query,
-                  },
-                });
-              }}
-            />
-          );
-        }}
-        getItemLayout={(data, index) => ({
-          length: globalStyles.smallQuoteContainer.height,
-          offset: globalStyles.smallQuoteContainer.height * index,
-          index,
-        })}
-        onScrollToIndexFailed={(error) => {
-          console.error(error);
-          setPlayPressed(false);
-        }}
-        onScrollBeginDrag={() => {
-          handlePlayPress();
-          flatListRef.current?.scrollToEnd({ animated: false });
+      <ScrollView
+        ref={scrollRef}
+        scrollEnabled={!playPressed}
+        onTouchStart={() => setPlayPressed(false)}
+      >
+        {data.map((quote: QuotationInterface) => (
+          <SmallQuoteContainer
+            key={quote._id}
+            passedInQuote={quote}
+            pressFunction={() => handlePress(quote)}
+          />
+        ))}
+      </ScrollView>
+      <Slider
+        minimumValue={0.5}
+        maximumValue={3}
+        onValueChange={(value) => {
+          console.log("Slider adjusted, new scrollSpeed:", value);
+          setScrollSpeed(value); // setScrollSpeed instead of modifying scrollSpeed.value
         }}
       />
-      <View style={{ height: 0 }}>
-        <SliderPicker
-          maxValue={0}
-          minValue={500}
-          inverted={true}
-          callback={(value: React.SetStateAction<number>) =>
-            setScrollSpeed(value)
-          }
-          defaultValue={10}
-          showNumberScale={false}
-          fillColor={PRIMARY_GREEN}
-          backgroundColor={"#fff"}
-          // labelFontWeight={'bold'}
-          // showNumberScale={true}
-          // showSeparatorScale={true}
-          // buttonBackgroundColor={'#fff'}
-          // buttonBorderColor={"#6c7682"}
-          buttonBorderWidth={1}
-          // scaleNumberFontWeight={'300'}
-          buttonDimensionsPercentage={6}
-          heightPercentage={1}
-          widthPercentage={80}
-        />
-      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    width: "100%",
     height: "100%",
-    marginBottom: globalStyles.navbar.height * 2.5,
+    flex: 1,
+    marginBottom: globalStyles.navbar.height * 2,
   },
 });

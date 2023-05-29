@@ -14,7 +14,7 @@ import { IncludeInBottomNav } from "../../res/constants/Enums";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { autoScrollIntervalTime } from "../../res/constants/Values";
 import { strings } from "../../res/constants/Strings";
-import { AutoScrollingQuoteList } from "../animals/AutoScrollingQuoteList";
+import  {AutoScrollingQuoteList} from "../animals/AutoScrollingQuoteList";
 
 interface Props {
   navigation: NavigationInterface;

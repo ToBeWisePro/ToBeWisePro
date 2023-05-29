@@ -3,7 +3,7 @@
     "name": "ToBeWise Pro",
     "icon": "./assets/appstore.png",
     "slug": "ToBeWise",
-    "version": "7.1.15",
+    "version": "7.1.16",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
