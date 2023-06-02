@@ -37,47 +37,32 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const scrollRef = useRef<ScrollView>(null);
   const scrollPosition = useSharedValue(0);
   const [scrollSpeed, setScrollSpeed] = useState(1);
+  const [currentPosition, setCurrentPosition] = useState(0); // Added currentPosition state variable
+
 
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
 
   useEffect(() => {
     if (playPressed) {
-      console.log("Starting new animation with scrollSpeed", scrollSpeed);
+      const remainingDistance = totalScrollDistance - scrollPosition.value;
+      const newDuration = (remainingDistance * 6) / scrollSpeed;
       scrollPosition.value = withTiming(
         totalScrollDistance,
-        {
-          duration: (totalScrollDistance * 6) / scrollSpeed,
-        },
-        () => {
-          console.log("scrollPosition after withTiming:", scrollPosition.value);
-        }
+        { duration: newDuration }
       );
     } else {
-      console.log("Resetting scroll position");
-      scrollPosition.value = 0;
+      scrollPosition.value = currentPosition;
     }
   }, [playPressed]);
 
   useEffect(() => {
     if (playPressed) {
-      console.log("Adjusting animation due to scrollSpeed change", scrollSpeed);
       cancelAnimation(scrollPosition);
       const remainingDistance = totalScrollDistance - scrollPosition.value;
       const newDuration = (remainingDistance * 6) / scrollSpeed;
-      console.log(
-        "Remaining distance:",
-        remainingDistance,
-        "New duration:",
-        newDuration
-      );
       scrollPosition.value = withTiming(
         totalScrollDistance,
-        {
-          duration: newDuration,
-        },
-        () => {
-          console.log("scrollPosition after adjusting:", scrollPosition.value);
-        }
+        { duration: newDuration }
       );
     }
   }, [scrollSpeed]);
@@ -94,12 +79,19 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     // Your navigation logic here...
   };
 
+  const handleScroll = (event: any) => {
+    // Update currentPosition when user scrolls
+    setCurrentPosition(event.nativeEvent.contentOffset.y);
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView
         ref={scrollRef}
         scrollEnabled={!playPressed}
         onTouchStart={() => setPlayPressed(false)}
+        onScroll={handleScroll} // Added onScroll event handler
+
       >
         {data.map((quote: QuotationInterface) => (
           <SmallQuoteContainer
@@ -113,7 +105,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         minimumValue={0.5}
         maximumValue={3}
         onValueChange={(value) => {
-          console.log("Slider adjusted, new scrollSpeed:", value);
           setScrollSpeed(value);
         }}
       />
