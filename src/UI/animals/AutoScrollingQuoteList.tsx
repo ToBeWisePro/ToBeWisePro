@@ -36,7 +36,8 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
 }) => {
   const scrollRef = useRef<ScrollView>(null);
   const scrollPosition = useSharedValue(0);
-  const [scrollSpeed, setScrollSpeed] = useState(1); // useState instead of useSharedValue
+  const [scrollSpeed, setScrollSpeed] = useState(1);
+
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
 
   useEffect(() => {
@@ -52,9 +53,34 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         }
       );
     } else {
-      scrollPosition.value = 0; // Reset scroll position
+      console.log("Resetting scroll position");
+      scrollPosition.value = 0;
     }
-  }, [playPressed, scrollSpeed]); // Now useEffect will run when scrollSpeed changes
+  }, [playPressed]);
+
+  useEffect(() => {
+    if (playPressed) {
+      console.log("Adjusting animation due to scrollSpeed change", scrollSpeed);
+      cancelAnimation(scrollPosition);
+      const remainingDistance = totalScrollDistance - scrollPosition.value;
+      const newDuration = (remainingDistance * 6) / scrollSpeed;
+      console.log(
+        "Remaining distance:",
+        remainingDistance,
+        "New duration:",
+        newDuration
+      );
+      scrollPosition.value = withTiming(
+        totalScrollDistance,
+        {
+          duration: newDuration,
+        },
+        () => {
+          console.log("scrollPosition after adjusting:", scrollPosition.value);
+        }
+      );
+    }
+  }, [scrollSpeed]);
 
   const scrollTo = (y: number) => {
     scrollRef.current?.scrollTo({ y, animated: false });
@@ -88,7 +114,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         maximumValue={3}
         onValueChange={(value) => {
           console.log("Slider adjusted, new scrollSpeed:", value);
-          setScrollSpeed(value); // setScrollSpeed instead of modifying scrollSpeed.value
+          setScrollSpeed(value);
         }}
       />
     </View>
