@@ -78,11 +78,14 @@ export const Settings = ({ navigation }: Props) => {
       title: "Our Team",
       onPress: ()=> openLink("https://tobewise.co/blog/meet-the-team/")
     },
+    {
+      title: "Version Number"
+    }
   ]
 
   return (
     <View style={styles.container}>
-      <TopNav stickyHeader={true} title={strings.screenName.settings} backButton={true}/>
+      <TopNav stickyHeader={true} title={strings.screenName.settings } backButton={true}/>
       <FlatList
       style={styles.buttonList}
       data={buttons}

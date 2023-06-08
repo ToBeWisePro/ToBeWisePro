@@ -150,7 +150,7 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
         navigation={navigation}
         screen={strings.screenName.home}
         whatToInclude={IncludeInBottomNav.PlayButton}
-        setPlayPressed={()=> navigation.push(strings.screenName.home, {})}
+        setPlayPressed={()=> navigation.push(strings.screenName.home, {currentQuotes: quotes})}
         playPressed={playPressed}
       />
     </View>

@@ -56,7 +56,7 @@ export const strings = new LocalizedStrings({
         all: "🌏 Show All",
         addedByMe: "🙋 Contributed By Me",
         deleted: "🗑️ Deleted",
-        favorites: "❤️ Favorites",
+        favorites: "❤️ Favorite Quotations",
         top100: "🏆 Top 100"
       },
       

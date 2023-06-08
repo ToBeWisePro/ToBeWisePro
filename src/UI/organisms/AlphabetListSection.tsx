@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, ViewComponent } from "react-native";
-import { AlphabetList, IData } from "react-native-section-alphabet-list";
+import { StyleSheet, View, Text } from "react-native";
+import { AlphabetList } from "react-native-section-alphabet-list";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
 import { getFromDB } from "../../res/functions/DBFunctions";
@@ -18,10 +18,7 @@ interface Props {
   search: string;
 }
 
-const formatDataForAlphabetList = (
-  data: String[],
-  setFunction: (arg: IData[]) => void
-) => {
+const formatDataForAlphabetList = (data: String[]) => {
   const subjectsSet = new Set<string>();
   data.forEach((string) => {
     const subjectArr = string.split(",");
@@ -36,14 +33,16 @@ const formatDataForAlphabetList = (
       return { key: Math.random().toString(), value: subject };
     });
 
-  setFunction([
+  const finalData = [
     ...subjectsArr,
     { key: "a", value: strings.customDiscoverHeaders.all },
     { key: "b", value: strings.customDiscoverHeaders.addedByMe },
     { key: "d", value: strings.customDiscoverHeaders.favorites },
     { key: "c", value: strings.customDiscoverHeaders.top100 },
     { key: "e", value: strings.customDiscoverHeaders.deleted },
-  ]);
+  ];
+
+  return { finalData, count: subjectsArr.length };
 };
 
 export const AlphabetListSection = ({
@@ -52,17 +51,23 @@ export const AlphabetListSection = ({
   navigation,
   search,
 }: Props) => {
-  const [subjects, setSubjects] = useState<IData[]>([]);
-  const [authors, setAuthors] = useState<IData[]>([]);
+  const [subjects, setSubjects] = useState([]);
+  const [authors, setAuthors] = useState([]);
+  const [subjectsCount, setSubjectsCount] = useState(0);
+  const [authorsCount, setAuthorsCount] = useState(0);
 
   useEffect(() => {
     // set authors and subjects
     const load = async () => {
       await getFromDB(strings.filters.subject).then((res) => {
-        formatDataForAlphabetList(res, setSubjects);
+        const { finalData, count } = formatDataForAlphabetList(res);
+        setSubjects(finalData);
+        setSubjectsCount(count);
       });
       await getFromDB(strings.filters.author).then((res) => {
-        formatDataForAlphabetList(res, setAuthors);
+        const { finalData, count } = formatDataForAlphabetList(res);
+        setAuthors(finalData);
+        setAuthorsCount(count);
       });
     };
     setFilter(strings.filters.author);
@@ -86,9 +91,11 @@ export const AlphabetListSection = ({
           buttonText={"Author"}
           selected={filter == strings.filters.author}
           onPress={async () => {
-            await getFromDB(strings.filters.author).then((res) =>
-              formatDataForAlphabetList(res, setAuthors)
-            );
+            const { finalData, count } = await getFromDB(
+              strings.filters.author
+            ).then(formatDataForAlphabetList);
+            setAuthors(finalData);
+            setAuthorsCount(count);
             setFilter(strings.filters.author);
           }}
         />
@@ -96,9 +103,11 @@ export const AlphabetListSection = ({
           buttonText={"Subject"}
           selected={filter == strings.filters.subject}
           onPress={async () => {
-            await getFromDB(strings.filters.subject).then((res) => {
-              formatDataForAlphabetList(res, setSubjects);
-            });
+            const { finalData, count } = await getFromDB(
+              strings.filters.subject
+            ).then(formatDataForAlphabetList);
+            setSubjects(finalData);
+            setSubjectsCount(count);
             setFilter(strings.filters.subject);
           }}
         />
@@ -110,8 +119,8 @@ export const AlphabetListSection = ({
         contentContainerStyle={globalStyles.fullPageScrollView}
         data={data}
         uncategorizedAtTop={true}
-        indexLetterStyle={styles.indexLeterText}
-        renderCustomItem={(item: IData) => {
+        indexLetterStyle={styles.indexLetterText}
+        renderCustomItem={(item) => {
           return (
             <DiscoverTile
               key={item.key}
@@ -126,6 +135,10 @@ export const AlphabetListSection = ({
           <DiscoverSectionHeader label={section.title} />
         )}
       />
+      <Text style={styles.countText}>
+        Total {filter == strings.filters.author ? "Authors" : "Subjects"} ={" "}
+        {filter == strings.filters.author ? authorsCount : subjectsCount}
+      </Text>
     </View>
   );
 };
@@ -146,11 +159,14 @@ const styles = StyleSheet.create({
     width: 224,
     marginBottom: 17,
   },
-  indexLeterText: {
+  indexLetterText: {
     fontWeight: "800",
     fontSize: 12,
     color: GRAY_1,
-    // paddingRight: 10,
-    // paddingTop: 10
+  },
+  countText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
   },
 });

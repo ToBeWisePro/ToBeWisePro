@@ -12,14 +12,19 @@ interface Props {
 }
 
 export const SettingsButton: React.FC<Props> = ({ icon, title, onPress }) => {
-  return (
-    <TouchableOpacity onPress={() => onPress()} style={styles.container}>
-      <View style={styles.itemContainer}>
-        <IconFactory selected={false} icon={icon} />
-        </View>
-        <AppText>{title}</AppText>
-    </TouchableOpacity>
-  );
+  switch (title) {
+    case "Version Number":
+      return <AppText style={{marginTop: 20, marginLeft: 10}}>Version Number: 7.1.20</AppText>;
+    default:
+      return (
+        <TouchableOpacity onPress={() => onPress()} style={styles.container}>
+          <View style={styles.itemContainer}>
+            <IconFactory selected={false} icon={icon} />
+          </View>
+          <AppText>{title}</AppText>
+        </TouchableOpacity>
+      );
+  }
 };
 
 const styles = StyleSheet.create({
@@ -33,6 +38,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   itemContainer: {
-    marginHorizontal: 10
-  }
+    marginHorizontal: 10,
+  },
 });

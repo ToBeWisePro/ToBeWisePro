@@ -33,7 +33,7 @@ export const NotificationScheduler: React.FC<{ reinitialize: number }> = ({
       return date;
     };
 
-    const presentNotifications = async () => {
+    const scheduleNotifications = async () => {
       const startTimeValue = await AsyncStorage.getItem("startTime");
       const startTime = adjustDate(
         new Date(startTimeValue ? JSON.parse(startTimeValue) : new Date())
@@ -55,62 +55,55 @@ export const NotificationScheduler: React.FC<{ reinitialize: number }> = ({
         ? JSON.parse(filterValue)
         : strings.database.defaultFilter;
       const spacing = spacingValue ? JSON.parse(spacingValue) : 30;
+
       const INTERVAL = spacing * 60 * 1000;
-      const timeouts = [];
       const now = new Date();
 
       if (allowNotifications) {
         for (let i = 1; i <= 63; i++) {
-          if (now >= startTime && now <= endTime) {
-            const timeout = setTimeout(async () => {
-              const quote = await getShuffledQuotes(query, filter);
-              console.log("Quote:", quote);
-              await Notifications.presentNotificationAsync({
+          const fireDate = new Date(now.getTime() + i * INTERVAL);
+          if (fireDate >= startTime && fireDate <= endTime) {
+            const quote = await getShuffledQuotes(query, filter);
+
+            await Notifications.scheduleNotificationAsync({
+              content: {
                 title: quote[0].author,
                 body: quote[0].quoteText,
-              });
+              },
+              trigger: {
+                date: fireDate,
+              },
+            });
 
-              // Debugging Information
-              const fireTime = new Date(now.getTime() + i * INTERVAL);
-              console.log(`Scheduled notification #${i}:`);
-              console.log(`Title: ${quote[0].author}`);
-              console.log(`Body: ${quote[0].quoteText}`);
-              console.log(`Will fire at: ${fireTime.toString()}`);
-            }, i * INTERVAL);
-            timeouts.push(timeout);
+            // Debugging Information
+            console.log(`Scheduled notification #${i}:`);
+            console.log(`Title: ${quote[0].author}`);
+            console.log(`Body: ${quote[0].quoteText}`);
+            console.log(`Will fire at: ${fireDate.toString()}`);
           }
         }
 
-        const timeout = setTimeout(async () => {
-          await Notifications.presentNotificationAsync({
+        const finalFireDate = new Date(now.getTime() + 64 * INTERVAL);
+
+        await Notifications.scheduleNotificationAsync({
+          content: {
             title: "ToBeWise",
             body: "Open ToBeWise to queue more notifications",
-          });
+          },
+          trigger: {
+            date: finalFireDate,
+          },
+        });
 
-          // Debugging Information
-          const fireTime = new Date(now.getTime() + 64 * INTERVAL);
-          console.log(`Scheduled final notification:`);
-          console.log(`Title: ToBeWise`);
-          console.log(`Body: Open ToBeWise to queue more notifications`);
-          console.log(`Will fire at: ${fireTime.toString()}`);
-        }, 64 * INTERVAL);
-        timeouts.push(timeout);
+        // Debugging Information
+        console.log(`Scheduled final notification:`);
+        console.log(`Title: ToBeWise`);
+        console.log(`Body: Open ToBeWise to queue more notifications`);
+        console.log(`Will fire at: ${finalFireDate.toString()}`);
       }
-
-      return timeouts;
     };
 
-    let timeouts: any[] = [];
-
-    (async () => {
-      timeouts = await presentNotifications();
-    })();
-
-    return () => {
-      timeouts.forEach((timeout) => {
-        clearTimeout(timeout);
-      });
-    };
+    scheduleNotifications();
   }, [reinitialize, allowNotifications]);
 
   return <></>;

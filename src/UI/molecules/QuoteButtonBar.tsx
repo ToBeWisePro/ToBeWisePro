@@ -41,10 +41,7 @@ export const QuoteButtonBar: React.FC<Props> = ({
 
   const onShare = async () => {
     try {
-      const websiteLink = quote.authorLink || "www.tobewise.co"; // replace with your website link
-      const author = quote.author || "Unknown";
-      const subjects = quote.subjects || "N/A";
-      const message = `"${quote.quoteText}"\n\nAuthor: ${author}\nSubjects: ${subjects}\nRead more at ${websiteLink}`;
+      const message = `"${quote.quoteText}"\n-${quote.author}\n\nRead more on ToBeWise™ at https://www.tobewise.co`;
 
       const result = await Share.share({ message });
 

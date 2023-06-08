@@ -65,7 +65,7 @@ export const openLink = async (url: string) => {
     } else await Linking.openURL(url);
   } catch (error) {
     // @ts-ignore
-    Alert.alert(error.message);
+    throw error;
   }
 };
 
