@@ -57,17 +57,25 @@ export const NotificationScheduler: React.FC<{ reinitialize: number }> = ({
       const spacing = spacingValue ? JSON.parse(spacingValue) : 30;
       const INTERVAL = spacing * 60 * 1000;
       const timeouts = [];
+      const now = new Date();
 
       if (allowNotifications) {
         for (let i = 1; i <= 63; i++) {
-          const now = new Date();
           if (now >= startTime && now <= endTime) {
             const timeout = setTimeout(async () => {
               const quote = await getShuffledQuotes(query, filter);
+              console.log("Quote:", quote);
               await Notifications.presentNotificationAsync({
                 title: quote[0].author,
                 body: quote[0].quoteText,
               });
+
+              // Debugging Information
+              const fireTime = new Date(now.getTime() + i * INTERVAL);
+              console.log(`Scheduled notification #${i}:`);
+              console.log(`Title: ${quote[0].author}`);
+              console.log(`Body: ${quote[0].quoteText}`);
+              console.log(`Will fire at: ${fireTime.toString()}`);
             }, i * INTERVAL);
             timeouts.push(timeout);
           }
@@ -78,6 +86,13 @@ export const NotificationScheduler: React.FC<{ reinitialize: number }> = ({
             title: "ToBeWise",
             body: "Open ToBeWise to queue more notifications",
           });
+
+          // Debugging Information
+          const fireTime = new Date(now.getTime() + 64 * INTERVAL);
+          console.log(`Scheduled final notification:`);
+          console.log(`Title: ToBeWise`);
+          console.log(`Body: Open ToBeWise to queue more notifications`);
+          console.log(`Will fire at: ${fireTime.toString()}`);
         }, 64 * INTERVAL);
         timeouts.push(timeout);
       }
@@ -91,18 +106,12 @@ export const NotificationScheduler: React.FC<{ reinitialize: number }> = ({
       timeouts = await presentNotifications();
     })();
 
-    const subscription = Notifications.addNotificationResponseReceivedListener(
-      async () => {
-        timeouts = await presentNotifications();
-      }
-    );
-
     return () => {
-      subscription.remove();
-      // Cancel any remaining setTimeout calls when the component is unmounted
-      timeouts.forEach((timeout) => clearTimeout(timeout));
+      timeouts.forEach((timeout) => {
+        clearTimeout(timeout);
+      });
     };
-  }, [reinitialize]);
+  }, [reinitialize, allowNotifications]);
 
-  return null;
+  return <></>;
 };

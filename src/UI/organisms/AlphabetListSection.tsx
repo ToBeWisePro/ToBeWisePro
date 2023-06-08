@@ -5,7 +5,7 @@ import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
 import { getFromDB } from "../../res/functions/DBFunctions";
 import { DiscoverSectionHeader } from "../atoms/DiscoverSectionHeader";
-import { DiscoverTile } from '../molecules/DiscoverTile';
+import { DiscoverTile } from "../molecules/DiscoverTile";
 import { maxWindowSize } from "../../res/constants/Values";
 import { NavigationInterface } from "../../res/constants/Interfaces";
 import { GRAY_1 } from "../../../styles/Colors";
@@ -14,38 +14,44 @@ import { DataButton } from "../atoms/DataButton";
 interface Props {
   filter: string;
   setFilter: (filter: string) => void;
-  navigation: NavigationInterface
-  search: string
+  navigation: NavigationInterface;
+  search: string;
 }
 
 const formatDataForAlphabetList = (
-  (data: String[], setFunction: (arg: IData[]) => void) => {
-    const subjectsSet = new Set<string>();
-    data.forEach((string) => {
-      const subjectArr = string.split(",");
-      subjectArr.forEach((subject) => {
-        subjectsSet.add(subject.trim());
-      });
+  data: String[],
+  setFunction: (arg: IData[]) => void
+) => {
+  const subjectsSet = new Set<string>();
+  data.forEach((string) => {
+    const subjectArr = string.split(",");
+    subjectArr.forEach((subject) => {
+      subjectsSet.add(subject.trim());
     });
+  });
 
-    const subjectsArr = Array.from(subjectsSet).sort().map((subject) => {
+  const subjectsArr = Array.from(subjectsSet)
+    .sort()
+    .map((subject) => {
       return { key: Math.random().toString(), value: subject };
     });
 
-    setFunction([
-      ...subjectsArr,
-      { key: "a", value: strings.customDiscoverHeaders.all },
-      { key: "b", value: strings.customDiscoverHeaders.addedByMe },
-      { key: "d", value: strings.customDiscoverHeaders.favorites },
-      { key: "c", value: strings.customDiscoverHeaders.top100 },
-      { key: "e", value: strings.customDiscoverHeaders.deleted },
+  setFunction([
+    ...subjectsArr,
+    { key: "a", value: strings.customDiscoverHeaders.all },
+    { key: "b", value: strings.customDiscoverHeaders.addedByMe },
+    { key: "d", value: strings.customDiscoverHeaders.favorites },
+    { key: "c", value: strings.customDiscoverHeaders.top100 },
+    { key: "e", value: strings.customDiscoverHeaders.deleted },
+  ]);
+};
 
-    ]);
-  }
-);
-
-
-export const AlphabetListSection = ({ filter, setFilter, navigation, search }: Props) => {
+export const AlphabetListSection = ({
+  filter,
+  setFilter,
+  navigation,
+  search,
+}: Props) => {
   const [subjects, setSubjects] = useState<IData[]>([]);
   const [authors, setAuthors] = useState<IData[]>([]);
 
@@ -70,7 +76,8 @@ export const AlphabetListSection = ({ filter, setFilter, navigation, search }: P
     item.value.toLowerCase().includes(search.toLowerCase())
   );
 
-  const data = filter == strings.filters.author ? filteredAuthors : filteredSubjects;
+  const data =
+    filter == strings.filters.author ? filteredAuthors : filteredSubjects;
 
   return (
     <View style={styles.container}>
@@ -98,8 +105,8 @@ export const AlphabetListSection = ({ filter, setFilter, navigation, search }: P
       </View>
       <AlphabetList
         style={styles.scrollView}
-        indexLetterContainerStyle={{width: "100%"}}
-        indexContainerStyle={{width: 30}}
+        indexLetterContainerStyle={{ width: "100%" }}
+        indexContainerStyle={{ width: 30 }}
         contentContainerStyle={globalStyles.fullPageScrollView}
         data={data}
         uncategorizedAtTop={true}
@@ -123,28 +130,27 @@ export const AlphabetListSection = ({ filter, setFilter, navigation, search }: P
   );
 };
 
-
 const styles = StyleSheet.create({
-    scrollView: {
-        width: "100%",
-        height: maxWindowSize - 51 - 32 - 33 - 35 - 115,
-    },
-    container:{
-      width: "100%",
-      alignItems: "center",
-    },
-        dataSelector: {
-        flexDirection: "row",
-        marginTop: 18,
-        justifyContent: "space-between",
-        width: 224,
-        marginBottom: 17,
-    },
-    indexLeterText: {
-      fontWeight: "800",
-      fontSize: 12,
-      color: GRAY_1,
-      // paddingRight: 10, 
-      // paddingTop: 10
-  }
+  scrollView: {
+    width: "100%",
+    height: maxWindowSize - 51 - 32 - 33 - 35 - 115,
+  },
+  container: {
+    width: "100%",
+    alignItems: "center",
+  },
+  dataSelector: {
+    flexDirection: "row",
+    marginTop: 18,
+    justifyContent: "space-between",
+    width: 224,
+    marginBottom: 17,
+  },
+  indexLeterText: {
+    fontWeight: "800",
+    fontSize: 12,
+    color: GRAY_1,
+    // paddingRight: 10,
+    // paddingTop: 10
+  },
 });

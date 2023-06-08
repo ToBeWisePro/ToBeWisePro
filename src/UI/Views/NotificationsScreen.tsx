@@ -71,15 +71,13 @@ export const NotificationScreen: React.FC<Props> = ({
   const [query, setQuery] = useState(strings.database.defaultQuery);
   const [filter, setFilter] = useState(strings.database.defaultFilter);
   const [reinitializeCounter, setReinitializeCounter] = useState(0);
+  const [reinitialize, setReinitialize] = useState(0);
+
 
   const reinitializeNotificationScheduler = () => {
     setReinitializeCounter((prevCounter) => prevCounter + 1);
   };
 
-  useEffect(() => {
-    console.log("startTime: ", startTime);
-    console.log("endTime: ", endTime);
-  }, []);
   useEffect(() => {
     const loadSavedSettings = async () => {
       const savedAllowNotifications = await loadSettings(
@@ -110,6 +108,8 @@ export const NotificationScreen: React.FC<Props> = ({
         setSpacing(savedSpacing);
       }
     };
+    saveSettings(SETTINGS_KEYS.query, query);
+  saveSettings(SETTINGS_KEYS.filter, filter);
     loadSavedSettings();
   }, []);
 
@@ -171,41 +171,29 @@ export const NotificationScreen: React.FC<Props> = ({
     reinitializeNotificationScheduler();
   };
   const handleButtonPress = async () => {
-    try {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== "granted") {
-        alert("You need to grant permission to receive notifications");
-        return;
-      }
-      console.log("filter: ", filter.trim());
-      await getShuffledQuotes(query, filter).then(async (data) => {
-        if (data.length === 0) {
-          await getShuffledQuotes(
-            strings.database.defaultQuery,
-            strings.database.defaultFilter
-          ).then(async (data) => {
-            alert("Invalid query. Notifications database set to defaults");
-            const quote: QuotationInterface = data[0];
-            await Notifications.presentNotificationAsync({
-              title: filter + ": " + query,
-              body: quote.quoteText,
-            });
-          });
-        } else {
-          const quote: QuotationInterface = data[0];
+    console.log('Test notification button pressed.');
+  
+    // Log current settings
+    const startTimeValue = await AsyncStorage.getItem("startTime");
+    const endTimeValue = await AsyncStorage.getItem("endTime");
+    const spacingValue = await AsyncStorage.getItem("spacing");
+    const queryValue = await AsyncStorage.getItem("query");
+    const filterValue = await AsyncStorage.getItem("filter");
+  
+    console.log('Start Time:', startTimeValue ? new Date(JSON.parse(startTimeValue)).toLocaleString() : 'Not set');
+    console.log('End Time:', endTimeValue ? new Date(JSON.parse(endTimeValue)).toLocaleString() : 'Not set');
+    
+    console.log('Spacing:', spacingValue ? JSON.parse(spacingValue) : 'Not set');
+    console.log('Query:', queryValue ? JSON.parse(queryValue) : 'Not set');
+    console.log('Filter:', filterValue ? JSON.parse(filterValue) : 'Not set');
+    console.log('Allow Notifications:', allowNotifications);
+    console.log('Now:', new Date().toString());
 
-          await Notifications.presentNotificationAsync({
-            title: filter + ": " + query,
-            body: quote.quoteText,
-          });
-        }
-      });
-    } catch (error) {
-      console.log(error);
-      alert("An error occurred while trying to send the notification");
-    }
+  
+    // Trigger the notification scheduling process
+    reinitializeNotificationScheduler();
   };
-  // Other parts of the component remain unchanged
+  
   return (
     <View style={styles.container}>
       <NotificationScheduler reinitialize={reinitializeCounter} />
@@ -279,7 +267,7 @@ export const NotificationScreen: React.FC<Props> = ({
           <View style={{ alignItems: "center" }}>
             <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
               <AppText style={styles.buttonText}>
-                Send Test Notification
+                Queue Notifications
               </AppText>
             </TouchableOpacity>
           </View>

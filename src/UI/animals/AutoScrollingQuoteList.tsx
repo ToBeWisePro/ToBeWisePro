@@ -14,6 +14,7 @@ import {
   QuotationInterface,
 } from "../../res/constants/Interfaces";
 import { globalStyles } from "../../../styles/GlobalStyles";
+import { strings } from "../../res/constants/Strings";
 
 const QUOTE_ITEM_HEIGHT = globalStyles.smallQuoteContainer.height;
 
@@ -39,17 +40,15 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const [scrollSpeed, setScrollSpeed] = useState(1);
   const [currentPosition, setCurrentPosition] = useState(0); // Added currentPosition state variable
 
-
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
 
   useEffect(() => {
     if (playPressed) {
       const remainingDistance = totalScrollDistance - scrollPosition.value;
       const newDuration = (remainingDistance * 6) / scrollSpeed;
-      scrollPosition.value = withTiming(
-        totalScrollDistance,
-        { duration: newDuration }
-      );
+      scrollPosition.value = withTiming(totalScrollDistance, {
+        duration: newDuration,
+      });
     } else {
       scrollPosition.value = currentPosition;
     }
@@ -60,10 +59,9 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       cancelAnimation(scrollPosition);
       const remainingDistance = totalScrollDistance - scrollPosition.value;
       const newDuration = (remainingDistance * 6) / scrollSpeed;
-      scrollPosition.value = withTiming(
-        totalScrollDistance,
-        { duration: newDuration }
-      );
+      scrollPosition.value = withTiming(totalScrollDistance, {
+        duration: newDuration,
+      });
     }
   }, [scrollSpeed]);
 
@@ -75,10 +73,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     runOnJS(scrollTo)(scrollPosition.value);
   }, [scrollPosition]);
 
-  const handlePress = (quote: QuotationInterface) => {
-    // Your navigation logic here...
-  };
-
   const handleScroll = (event: any) => {
     // Update currentPosition when user scrolls
     setCurrentPosition(event.nativeEvent.contentOffset.y);
@@ -87,17 +81,33 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   return (
     <View style={styles.container}>
       <ScrollView
+      scrollEventThrottle={16}
         ref={scrollRef}
         scrollEnabled={!playPressed}
         onTouchStart={() => setPlayPressed(false)}
         onScroll={handleScroll} // Added onScroll event handler
-
       >
         {data.map((quote: QuotationInterface) => (
           <SmallQuoteContainer
             key={quote._id}
             passedInQuote={quote}
-            pressFunction={() => handlePress(quote)}
+            pressFunction={() => {
+              // reorganize quotes, then set quotes
+              let newQuotes: QuotationInterface[] = [];
+              newQuotes.push(quote);
+              data.forEach((quote2) => {
+                if (quote._id !== quote2._id) {
+                  newQuotes.push(quote2);
+                }
+              });
+              navigation.push(strings.screenName.homeHorizontal, {
+                currentQuotes: newQuotes,
+                quoteSearch: {
+                  filter: filter,
+                  query: query,
+                },
+              });
+            }}
           />
         ))}
       </ScrollView>
