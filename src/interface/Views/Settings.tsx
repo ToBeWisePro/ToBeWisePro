@@ -32,12 +32,12 @@ export const Settings = ({ navigation }: Props) => {
     {
       icon: "info",
       title: "About",
-      onPress: ()=> openLink("https://tobewise.co/blog/app-description-2/")
+      onPress: ()=> openLink("https://ToBeWiseApp.com/blog/app-description-2/")
     },
     {
       icon: "star",
       title: "Rate Us",
-      onPress: ()=> openLink("tobewise.co")
+      onPress: ()=> openLink("https://apps.apple.com/ca/app/tobewise-pro/id1156018700")
     },
     {
       icon: "share",
@@ -66,17 +66,17 @@ export const Settings = ({ navigation }: Props) => {
     {
       icon: "help",
       title: "Support",
-      onPress: ()=> openLink("https://tobewise.co/frequently-asked-questions/")
+      onPress: ()=> openLink("https://tobewise.co/feedback/")
     },
     {
       icon: "web",
       title: "Terms",
-      onPress: ()=> openLink("https://tobewise.co/terms/")
+      onPress: ()=> openLink("https://ToBeWiseApp.com/terms/")
     },
     {
       icon: "people",
       title: "Our Team",
-      onPress: ()=> openLink("https://tobewise.co/blog/meet-the-team/")
+      onPress: ()=> openLink("https://ToBeWiseApp.com/blog/meet-the-team/")
     },
     {
       title: "Version Number"

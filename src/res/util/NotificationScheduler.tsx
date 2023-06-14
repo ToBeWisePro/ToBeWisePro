@@ -64,16 +64,21 @@ export const NotificationScheduler: React.FC<{ reinitialize: number }> = ({
           const fireDate = new Date(now.getTime() + i * INTERVAL);
           if (fireDate >= startTime && fireDate <= endTime) {
             const quote = await getShuffledQuotes(query, filter);
-
-            await Notifications.scheduleNotificationAsync({
-              content: {
-                title: quote[0].author,
-                body: quote[0].quoteText,
-              },
-              trigger: {
-                date: fireDate,
-              },
-            });
+            if(quote[0].quoteText.length > 0){
+              await Notifications.scheduleNotificationAsync({
+                content: {
+                  title: quote[0].author,
+                  body: quote[0].quoteText,
+                },
+                trigger: {
+                  date: fireDate,
+                },
+              });
+            }
+            else {
+              throw Error;
+            }
+            
 
             // Debugging Information
             console.log(`Scheduled notification #${i}:`);

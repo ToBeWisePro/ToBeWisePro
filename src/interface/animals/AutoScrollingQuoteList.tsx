@@ -9,10 +9,13 @@ import {
 } from "react-native-reanimated";
 import { SmallQuoteContainer } from "../organisms/SmallQuoteContainer";
 import Slider from "@react-native-community/slider";
+import { PRIMARY_BLUE } from "../../../styles/Colors"; // Corrected typo in import
 import {
   NavigationInterface,
   QuotationInterface,
 } from "../../res/constants/Interfaces";
+import { Easing } from "react-native-reanimated";
+
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
 
@@ -37,17 +40,16 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
 }) => {
   const scrollRef = useRef<ScrollView>(null);
   const scrollPosition = useSharedValue(0);
-  const [scrollSpeed, setScrollSpeed] = useState(1);
-  const [currentPosition, setCurrentPosition] = useState(0); // Added currentPosition state variable
+  const [scrollSpeed, setScrollSpeed] = useState(0.0275);
+  const [currentPosition, setCurrentPosition] = useState(0);
 
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
 
   useEffect(() => {
     if (playPressed) {
-      const remainingDistance = totalScrollDistance - scrollPosition.value;
-      const newDuration = (remainingDistance * 6) / scrollSpeed;
       scrollPosition.value = withTiming(totalScrollDistance, {
-        duration: newDuration,
+        duration: totalScrollDistance / scrollSpeed,
+        easing: Easing.linear,
       });
     } else {
       scrollPosition.value = currentPosition;
@@ -57,10 +59,9 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   useEffect(() => {
     if (playPressed) {
       cancelAnimation(scrollPosition);
-      const remainingDistance = totalScrollDistance - scrollPosition.value;
-      const newDuration = (remainingDistance * 6) / scrollSpeed;
       scrollPosition.value = withTiming(totalScrollDistance, {
-        duration: newDuration,
+        duration: totalScrollDistance / scrollSpeed,
+        easing: Easing.linear,
       });
     }
   }, [scrollSpeed]);
@@ -74,25 +75,23 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   }, [scrollPosition]);
 
   const handleScroll = (event: any) => {
-    // Update currentPosition when user scrolls
     setCurrentPosition(event.nativeEvent.contentOffset.y);
   };
 
   return (
     <View style={styles.container}>
       <ScrollView
-      scrollEventThrottle={16}
+        scrollEventThrottle={60}
         ref={scrollRef}
         scrollEnabled={!playPressed}
         onTouchStart={() => setPlayPressed(false)}
-        onScroll={handleScroll} // Added onScroll event handler
+        onScroll={handleScroll}
       >
         {data.map((quote: QuotationInterface) => (
           <SmallQuoteContainer
             key={quote._id}
             passedInQuote={quote}
             pressFunction={() => {
-              // reorganize quotes, then set quotes
               let newQuotes: QuotationInterface[] = [];
               newQuotes.push(quote);
               data.forEach((quote2) => {
@@ -112,11 +111,12 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         ))}
       </ScrollView>
       <Slider
-        minimumValue={0.5}
-        maximumValue={3}
+        minimumValue={0.005}
+        maximumValue={0.05}
         onValueChange={(value) => {
           setScrollSpeed(value);
         }}
+        minimumTrackTintColor={PRIMARY_BLUE}
       />
     </View>
   );

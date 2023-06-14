@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { strings } from "../../res/constants/Strings";
@@ -191,7 +192,8 @@ export const NotificationScreen: React.FC<Props> = ({
 
   
     // Trigger the notification scheduling process
-    reinitializeNotificationScheduler();
+    reinitializeNotificationScheduler()
+    Alert.alert('Notifications updated');
   };
   
   return (
@@ -324,6 +326,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 15,
     justifyContent: "space-between",
+    width: "100%",
   },
   button: {
     borderRadius: 10,

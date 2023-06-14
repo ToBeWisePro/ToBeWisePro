@@ -1,13 +1,13 @@
 import { StatusBar } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
-import { Discover } from "../../UI/Views/Discover";
+import { Discover } from "../../interface/Views/Discover";
 import { strings } from "../constants/Strings";
-import { HomeHorizontal } from "../../UI/Views/HomeHorizontal";
-import { EditQuotes } from "../../UI/Views/EditQuote";
-import { HomeVertical } from "../../UI/Views/HomeVertical";
-import { Settings } from "../../UI/Views/Settings";
-import { NotificationScreen } from "../../UI/Views/NotificationsScreen";
+import { HomeHorizontal } from "../../interface/Views/HomeHorizontal";
+import { EditQuotes } from "../../interface/Views/EditQuote";
+import { HomeVertical } from "../../interface/Views/HomeVertical";
+import { Settings } from "../../interface/Views/Settings";
+import { NotificationScreen } from "../../interface/Views/NotificationsScreen";
 import { QuotationInterface } from "../constants/Interfaces";
 
 interface RootProps {
