@@ -10,12 +10,14 @@ import { maxWindowSize } from "../../res/constants/Values";
 import { NavigationInterface } from "../../res/constants/Interfaces";
 import { GRAY_1 } from "../../../styles/Colors";
 import { DataButton } from "../atoms/DataButton";
+import { AppText } from "../atoms/AppText";
 
 interface Props {
   filter: string;
   setFilter: (filter: string) => void;
   navigation: NavigationInterface;
   search: string;
+  onPress?: (query: string, filter: string) => Promise<void>;  
 }
 
 const formatDataForAlphabetList = (data: String[]) => {
@@ -40,9 +42,10 @@ const formatDataForAlphabetList = (data: String[]) => {
     { key: "d", value: strings.customDiscoverHeaders.favorites },
     { key: "c", value: strings.customDiscoverHeaders.top100 },
     { key: "e", value: strings.customDiscoverHeaders.deleted },
+    { key: "count", value: `Total items: ${subjectsArr.length}` }, // Append the count here
   ];
 
-  return { finalData, count: subjectsArr.length };
+  return finalData;
 };
 
 export const AlphabetListSection = ({
@@ -50,24 +53,21 @@ export const AlphabetListSection = ({
   setFilter,
   navigation,
   search,
+  onPress
 }: Props) => {
   const [subjects, setSubjects] = useState([]);
   const [authors, setAuthors] = useState([]);
-  const [subjectsCount, setSubjectsCount] = useState(0);
-  const [authorsCount, setAuthorsCount] = useState(0);
 
   useEffect(() => {
     // set authors and subjects
     const load = async () => {
       await getFromDB(strings.filters.subject).then((res) => {
-        const { finalData, count } = formatDataForAlphabetList(res);
+        const finalData = formatDataForAlphabetList(res);
         setSubjects(finalData);
-        setSubjectsCount(count);
       });
       await getFromDB(strings.filters.author).then((res) => {
-        const { finalData, count } = formatDataForAlphabetList(res);
+        const finalData = formatDataForAlphabetList(res);
         setAuthors(finalData);
-        setAuthorsCount(count);
       });
     };
     setFilter(strings.filters.author);
@@ -91,11 +91,10 @@ export const AlphabetListSection = ({
           buttonText={"Author"}
           selected={filter == strings.filters.author}
           onPress={async () => {
-            const { finalData, count } = await getFromDB(
+            const finalData = await getFromDB(
               strings.filters.author
             ).then(formatDataForAlphabetList);
             setAuthors(finalData);
-            setAuthorsCount(count);
             setFilter(strings.filters.author);
           }}
         />
@@ -103,11 +102,10 @@ export const AlphabetListSection = ({
           buttonText={"Subject"}
           selected={filter == strings.filters.subject}
           onPress={async () => {
-            const { finalData, count } = await getFromDB(
+            const finalData = await getFromDB(
               strings.filters.subject
             ).then(formatDataForAlphabetList);
             setSubjects(finalData);
-            setSubjectsCount(count);
             setFilter(strings.filters.subject);
           }}
         />
@@ -116,29 +114,25 @@ export const AlphabetListSection = ({
         style={styles.scrollView}
         indexLetterContainerStyle={{ width: "100%" }}
         indexContainerStyle={{ width: 30 }}
-        contentContainerStyle={globalStyles.fullPageScrollView}
+        contentContainerStyle={{paddingBottom: 125}}
         data={data}
         uncategorizedAtTop={true}
-        indexLetterStyle={styles.indexLetterText}
-        renderCustomItem={(item) => {
-          return (
-            <DiscoverTile
-              key={item.key}
-              text={item.value}
-              navigation={navigation}
-              filter={filter}
-              query={item.value}
-            />
-          );
-        }}
+        indexLetterStyle={search ? styles.indexLetterTextClear : styles.indexLetterText}
+        renderCustomItem={(item) => (
+          <DiscoverTile
+            key={item.key}
+            text={item.value}
+            navigation={navigation}
+            filter={filter}
+            query={item.value}
+            onPress={onPress}
+          />
+        )}
         renderCustomSectionHeader={(section) => (
           <DiscoverSectionHeader label={section.title} />
         )}
+        ListFooterComponent={<AppText style={styles.countText}>Total items: {data.length}</AppText>}
       />
-      <Text style={styles.countText}>
-        Total {filter == strings.filters.author ? "Authors" : "Subjects"} ={" "}
-        {filter == strings.filters.author ? authorsCount : subjectsCount}
-      </Text>
     </View>
   );
 };
@@ -164,9 +158,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: GRAY_1,
   },
+  indexLetterTextClear:{
+    fontWeight: "800",
+    fontSize: 12,
+    color: 'transparent',
+  },
   countText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
+    margin:5
   },
 });

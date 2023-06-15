@@ -35,7 +35,7 @@ export const PlayButtonBar: React.FC<Props> = ({setPlayPressed, playPressed}: Pr
  
     return (
         <View style={styles.container}>
-            <AppText style={styles.playPauseText}>{"Faster"}</AppText>
+            <AppText style={styles.playPauseText}>{"Slower"}</AppText>
             <View style={styles.playPauseContainer}>
                 <TouchableOpacity
                     onPress={buttonToDisplay == ScrollControllerButtons.Pause ? stopScrolling : startScrolling}
@@ -45,7 +45,7 @@ export const PlayButtonBar: React.FC<Props> = ({setPlayPressed, playPressed}: Pr
                 <AppText style={styles.playPauseText}>{"Play/Pause"}</AppText>
             </View>
 
-            <AppText style={styles.playPauseText}>{"Slower"}</AppText>
+            <AppText style={styles.playPauseText}>{"Faster"}</AppText>
 
         </View>
     )

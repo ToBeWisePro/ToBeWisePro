@@ -12,7 +12,7 @@ interface Props {
 
 export const AppText: React.FC<Props> = ({
   children,
-  maxFontSizeMultiplier = 1.5,
+  maxFontSizeMultiplier = 1,
   onPress,
   style,
   numberOfLines = 9999,

@@ -85,7 +85,7 @@ export const Settings = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <TopNav stickyHeader={true} title={strings.screenName.settings } backButton={true}/>
+      <TopNav stickyHeader={true} title={strings.screenName.settings } backButton={false}/>
       <FlatList
       style={styles.buttonList}
       data={buttons}

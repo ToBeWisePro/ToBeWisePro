@@ -108,7 +108,7 @@ useEffect(()=>{
             />
             <View style={styles.background}>
                     <SearchBar state={search} setState={setSearch}/>
-                <AlphabetListSection navigation={navigation} data={filter == strings.filters.author ? tempAuthors : tempSubjects} filter={filter} setFilter={setFilter} search={search}/>
+                <AlphabetListSection navigation={navigation} data={filter == strings.filters.author ? tempAuthors : tempSubjects} filter={filter} setFilter={setFilter} search={search} />
             </View>
             <BottomNav navigation={navigation} screen={strings.screenName.discover} whatToInclude={IncludeInBottomNav.Nothing}/>
         </View>

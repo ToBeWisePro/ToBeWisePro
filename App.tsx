@@ -1,3 +1,4 @@
+// App.js
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
@@ -10,13 +11,14 @@ import { RootNavigation } from "./src/res/util/RootNavigation";
 import { QuotationInterface } from "./src/res/constants/Interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
-import { NotificationScheduler } from "./src/res/util/NotificationScheduler";
+import { scheduleNotifications } from "./src/res/util/NotificationScheduler";
 
 export default function App() {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     []
   );
   const [frequency, setFrequency] = useState<number>(1);
+  const [query, setQuery] = useState(strings.database.defaultQuery);
 
   const saveDefaultValue = async (key: string, value: any) => {
     try {
@@ -30,6 +32,7 @@ export default function App() {
   };
 
   useEffect(() => {
+    scheduleNotifications();
     (async () => {
       const defaultStartTime = new Date();
       defaultStartTime.setHours(9, 0, 0, 0);
@@ -46,6 +49,11 @@ export default function App() {
       if (savedFrequency !== null) {
         setFrequency(Number(savedFrequency));
       }
+
+      const savedQuery = await AsyncStorage.getItem("query");
+      if (savedQuery !== null) {
+        setQuery(savedQuery);
+      }
     })();
 
     (async () => {
@@ -59,10 +67,7 @@ export default function App() {
   useEffect(() => {
     const i = async () => {
       await dataImporter().then(async () =>
-        getShuffledQuotes(
-          strings.database.defaultQuery,
-          strings.database.defaultFilter
-        ).then((res) => {
+        getShuffledQuotes(query, strings.database.defaultFilter).then((res) => {
           setShuffledQuotes(res);
         })
       );
@@ -79,10 +84,7 @@ export default function App() {
   }
 
   return (
-    <>
-      <NotificationScheduler />
-      <RootNavigation initialRoute={"Home"} shuffledQuotes={shuffledQuotes} />
-    </>
+    <RootNavigation initialRoute={"Home"} shuffledQuotes={shuffledQuotes} />
   );
 }
 

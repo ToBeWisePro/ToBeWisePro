@@ -9,7 +9,8 @@ export const strings = new LocalizedStrings({
         discover: "Discover",
         editQuote: "Edit Quotes",
         search: "Search Quotes",
-        notificationsScreen: "Configure Notifications"
+        notificationsScreen: "Configure Notifications",
+        notificationSelectorScreen: "Choose Notification Database"
       },
       database: {
         safeChar: "%",

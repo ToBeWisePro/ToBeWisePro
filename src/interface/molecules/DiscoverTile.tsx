@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
+import { ActivityIndicator, StyleSheet } from "react-native";
 import { GRAY_3, LIGHT } from "../../../styles/Colors";
 import { AppText } from "../atoms/AppText";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
@@ -21,14 +21,17 @@ interface Props {
   query: string;
   navigation: NavigationInterface;
   filter: string;
+  onPress?: (query: string, filter: string) => Promise<void>; // Add this line
 }
 
 export const DiscoverTile: React.FC<Props> = ({
   query,
   navigation,
   filter,
+  onPress,
 }: Props) => {
   const [count, setCount] = useState<string>("loading...");
+  const [loading, setLoading] = useState(false); // Add this line
 
   useEffect(() => {
     const getCountForComponent = async (value: string, filter: string) => {
@@ -65,59 +68,74 @@ export const DiscoverTile: React.FC<Props> = ({
     <TouchableWithoutFeedback
       style={styles.container}
       onPress={async () => {
-        const getQuotesFromQuery = async () => {
-          safeQuery = query.replaceAll("'", strings.database.safeChar);
-          await getShuffledQuotes(safeQuery, filter).then(
-            (res: QuotationInterface[]) => navPush(res)
-          );
-        };
-        const navPush = (res: QuotationInterface[]) => {
-          navigation.push("Home", {
-            currentQuotes: res,
-            quoteSearch: {
-              query: query,
-              filter: filter,
-            },
-            backButtonNavigationFunction: BackButtonNavEnum.GoBack,
-          });
-        };
-        let safeQuery: string = query;
-        // see if we're using a special query. If not, use the default query
-        switch (query) {
-          case strings.customDiscoverHeaders.all:
-            await getAllQuotes().then((res: QuotationInterface[]) =>
-              navPush(res)
+        setLoading(true); // Add this line
+        if (onPress) {
+          onPress(query, filter);
+        } else {
+          const getQuotesFromQuery = async () => {
+            safeQuery = query.replaceAll("'", strings.database.safeChar);
+            await getShuffledQuotes(safeQuery, filter).then(
+              (res: QuotationInterface[]) => navPush(res)
             );
-            break;
-          case strings.customDiscoverHeaders.addedByMe:
-            await getQuotesContributedByMe().then((res: QuotationInterface[]) =>
-              navPush(res)
-            );
-            break;
-          // case strings.customDiscoverHeaders.deleted:
-          case strings.customDiscoverHeaders.favorites:
-            await getFavoriteQuotes().then((res: QuotationInterface[]) => {
-              navPush(res);
+          };
+          const navPush = (res: QuotationInterface[]) => {
+            navigation.push("Home", {
+              currentQuotes: res,
+              quoteSearch: {
+                query: query,
+                filter: filter,
+              },
+              backButtonNavigationFunction: BackButtonNavEnum.GoBack,
             });
-            break;
-          case strings.customDiscoverHeaders.top100:
-            await getShuffledQuotes("Top 100", strings.filters.subject).then(
-              (res: QuotationInterface[]) => navPush(res)
-            );
-            break;
-          case strings.customDiscoverHeaders.deleted:
-            await getShuffledQuotes(strings.customDiscoverHeaders.deleted, strings.filters.subject).then(
-              (res: QuotationInterface[]) => navPush(res)
-            );
-            break;
-          default:
-            getQuotesFromQuery();
-            break;
+          };
+          let safeQuery: string = query;
+          // see if we're using a special query. If not, use the default query
+          switch (query) {
+            case strings.customDiscoverHeaders.all:
+              await getAllQuotes().then((res: QuotationInterface[]) =>
+                navPush(res)
+              );
+              break;
+            case strings.customDiscoverHeaders.addedByMe:
+              await getQuotesContributedByMe().then(
+                (res: QuotationInterface[]) => navPush(res)
+              );
+              break;
+            // case strings.customDiscoverHeaders.deleted:
+            case strings.customDiscoverHeaders.favorites:
+              await getFavoriteQuotes().then((res: QuotationInterface[]) => {
+                navPush(res);
+              });
+              break;
+            case strings.customDiscoverHeaders.top100:
+              await getShuffledQuotes("Top 100", strings.filters.subject).then(
+                (res: QuotationInterface[]) => navPush(res)
+              );
+              break;
+            case strings.customDiscoverHeaders.deleted:
+              await getShuffledQuotes(
+                strings.customDiscoverHeaders.deleted,
+                strings.filters.subject
+              ).then((res: QuotationInterface[]) => navPush(res));
+              break;
+            default:
+              getQuotesFromQuery();
+              break;
+          }
         }
+        setLoading(false); // Add this line
       }}
     >
-      <AppText style={styles.title}>{query}</AppText>
-      <AppText style={styles.count}>{" (" + count.toString() + ")"}</AppText>
+      {loading ? ( // Add these lines
+        <ActivityIndicator size="small" color={GRAY_3} />
+      ) : (
+        <>
+          <AppText style={styles.title}>{query}</AppText>
+          <AppText style={styles.count}>
+            {" (" + count.toString() + ")"}
+          </AppText>
+        </>
+      )}
     </TouchableWithoutFeedback>
   );
 };

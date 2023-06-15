@@ -3,11 +3,7 @@ import { View, StyleSheet, Dimensions } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
 import { GRADIENT_START, GRADIENT_END } from "../../../styles/Colors";
-import {
-  NavigationInterface,
-  QuotationInterface,
-  RouteInterface,
-} from "../../res/constants/Interfaces";
+import { NavigationInterface, QuotationInterface, RouteInterface } from "../../res/constants/Interfaces";
 import { getShuffledQuotes } from "../../res/functions/DBFunctions";
 import { BottomNav } from "../organisms/BottomNav";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
@@ -15,6 +11,7 @@ import { globalStyles } from "../../../styles/GlobalStyles";
 import { autoScrollIntervalTime } from "../../res/constants/Values";
 import { strings } from "../../res/constants/Strings";
 import  {AutoScrollingQuoteList} from "../animals/AutoScrollingQuoteList";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Props {
   navigation: NavigationInterface;
@@ -23,54 +20,57 @@ interface Props {
   initialRoute?: boolean;
 }
 
-export const HomeVertical = ({
-  navigation,
-  route,
-  initialQuotes,
-  initialRoute,
-}: Props) => { 
+export const HomeVertical = ({ navigation, route, initialQuotes, initialRoute }: Props) => { 
   const [title, setTitle] = useState("");
   const [backButton, setBackButton] = useState(false);
   const [quotes, setQuotes] = useState<QuotationInterface[]>(initialQuotes);
   const [filter, setFilter] = useState("");
   const [query, setQuery] = useState("");
   const [playPressed, setPlayPressed] = useState<boolean>(true);
-  const [scrollSpeed, setScrollSpeed] = useState<number>(
-    autoScrollIntervalTime
-  );
+  const [scrollSpeed, setScrollSpeed] = useState<number>(autoScrollIntervalTime);
 
   useEffect(() => {
-    const getQuotes = async () => {
+    const fetchQueryAndFilter = async (filter, query) => {
+      setFilter(filter);
+      setQuery(query);
+      await AsyncStorage.setItem('userQuery', query);
+      await AsyncStorage.setItem('userFilter', filter);
+    }
+
+    const fetchFromStorageAndSet = async (defaultQuery, defaultFilter) => {
+      const savedFilter = await AsyncStorage.getItem('userFilter') || defaultFilter;
+      const savedQuery = await AsyncStorage.getItem('userQuery') || defaultQuery;
+      setFilter(savedFilter);
+      setQuery(savedQuery);
+      const res = await getShuffledQuotes(savedQuery, savedFilter);
+      setQuotes(res);
+    }
+
+    const defaultQuery = strings.database.defaultQuery;
+    const defaultFilter = strings.database.defaultFilter;
+    const quoteSearch = route.params?.quoteSearch;
+
+    if (quoteSearch) {
+      const {query, filter} = quoteSearch;
       try {
         setQuotes(route.params.currentQuotes);
-        setFilter(route.params.quoteSearch.filter);
-        setQuery(route.params.quoteSearch.query);
-        setTitle(
-          route.params.quoteSearch.filter +
-            ": " +
-            route.params.quoteSearch.query
-        );
-      } catch {
-        setTitle(strings.navbarHomeDefaultText);
-        setQuery(strings.database.defaultQuery);
-        setFilter(strings.database.defaultFilter);
-
-        // call getShuffledQuotes() to get the default quotes and set quotes to the result
-        await getShuffledQuotes(
-          strings.database.defaultQuery,
-          strings.database.defaultFilter
-        ).then((res) => {
-          setQuotes(res);
-        });
+        fetchQueryAndFilter(filter, query);
+        setTitle(filter + ": " + query);
+      } catch (error) {
+        console.error(error);
       }
-    };
+    } else {
+      try {
+        fetchFromStorageAndSet(defaultQuery, defaultFilter);
+        setTitle(defaultFilter + ": " + defaultQuery);
+      } catch (error) {
+        setTitle(strings.navbarHomeDefaultText);
+      }
+    }
 
-    getQuotes();
     try {
-      // If there is a back button function, add in the back button
       setBackButton(route.params.showBackButton);
     } catch {
-      // If there is no back button function, don't show the back button
       setBackButton(false);
     }
   }, [route]);
@@ -125,6 +125,5 @@ const styles = StyleSheet.create({
       globalStyles.navbar.height -
       globalStyles.scrollButtonBar.height -
       35,
-    // backgroundColor: LIGHT,
   },
 });

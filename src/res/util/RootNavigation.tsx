@@ -9,6 +9,7 @@ import { HomeVertical } from "../../interface/Views/HomeVertical";
 import { Settings } from "../../interface/Views/Settings";
 import { NotificationScreen } from "../../interface/Views/NotificationsScreen";
 import { QuotationInterface } from "../constants/Interfaces";
+import { NotificationSelectorScreen } from "../../interface/Views/NotificationSelectorScreen";
 
 interface RootProps {
   initialRoute: string;
@@ -51,6 +52,11 @@ export const RootNavigation: React.FC<RootProps> = ({
         <Stack.Screen
           name={strings.screenName.homeHorizontal}
           component={HomeHorizontal}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name={strings.screenName.notificationSelectorScreen}
+          component={NotificationSelectorScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
