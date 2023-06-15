@@ -9,7 +9,7 @@ import {
 } from "react-native-reanimated";
 import { SmallQuoteContainer } from "../organisms/SmallQuoteContainer";
 import Slider from "@react-native-community/slider";
-import { PRIMARY_BLUE } from "../../../styles/Colors"; 
+import { LIGHT, PRIMARY_BLUE, PRIMARY_GREEN } from "../../../styles/Colors";
 import {
   NavigationInterface,
   QuotationInterface,
@@ -18,6 +18,8 @@ import { Easing } from "react-native-reanimated";
 
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { AppText } from "../atoms/AppText";
 
 const QUOTE_ITEM_HEIGHT = globalStyles.smallQuoteContainer.height;
 
@@ -71,7 +73,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   };
 
   const restartScroll = () => {
-    scrollPosition.value = 0; // scroll to the top
+    scrollRef.current?.scrollToOffset({ animated: true, offset: 0 }); // scroll to the top
     setPlayPressed(true); // restart auto-scrolling
   };
 
@@ -83,50 +85,65 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     setCurrentPosition(event.nativeEvent.contentOffset.y);
   };
 
-  const renderItem = useCallback(({ item: quote }) => (
-    <SmallQuoteContainer
-      key={quote._id}
-      passedInQuote={quote}
-      pressFunction={() => {
-        let newQuotes: QuotationInterface[] = [quote];
-        data.forEach((quote2) => {
-          if (quote._id !== quote2._id) {
-            newQuotes.push(quote2);
-          }
-        });
-        navigation.push(strings.screenName.homeHorizontal, {
-          currentQuotes: newQuotes,
-          quoteSearch: {
-            filter: filter,
-            query: query,
-          },
-        });
-      }}
-    />
-  ), [data, navigation, filter, query]);
+  const renderItem = useCallback(
+    ({ item: quote }) => (
+      <SmallQuoteContainer
+        key={quote._id}
+        passedInQuote={quote}
+        pressFunction={() => {
+          let newQuotes: QuotationInterface[] = [quote];
+          data.forEach((quote2) => {
+            if (quote._id !== quote2._id) {
+              newQuotes.push(quote2);
+            }
+          });
+          navigation.push(strings.screenName.homeHorizontal, {
+            currentQuotes: newQuotes,
+            quoteSearch: {
+              filter: filter,
+              query: query,
+            },
+          });
+        }}
+      />
+    ),
+    [data, navigation, filter, query]
+  );
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        scrollEventThrottle={16}
-        ref={scrollRef}
-        scrollEnabled={!playPressed}
-        onTouchStart={() => setPlayPressed(false)}
-        onScroll={handleScroll}
-        contentContainerStyle={{paddingBottom: 125}} // add 125px padding to the bottom
-      />
-      <Slider
-        minimumValue={0.005}
-        maximumValue={0.05}
-        onValueChange={(value) => {
-          setScrollSpeed(value);
-        }}
-        minimumTrackTintColor={PRIMARY_BLUE}
-      />
-    </View>
-  );
+  <View style={styles.container}>
+    <FlatList
+      data={data}
+      renderItem={renderItem}
+      scrollEventThrottle={16}
+      ref={scrollRef}
+      scrollEnabled={!playPressed}
+      onTouchStart={() => setPlayPressed(false)}
+      onScroll={handleScroll}
+      contentContainerStyle={{ paddingBottom: 75 }} // add 125px padding to the bottom
+      ListFooterComponent={() => (
+        data.length >= 4 ? (
+          <TouchableOpacity onPress={restartScroll} style={styles.button}>
+            <AppText style={styles.buttonText}>🔄 Restart</AppText>
+          </TouchableOpacity>
+        ) : null
+      )}
+    />
+    <Slider
+      minimumValue={0.005}
+      maximumValue={0.25}
+      onValueChange={(value) => {
+        setScrollSpeed(value);
+      }}
+      value={scrollSpeed}
+      minimumTrackTintColor={PRIMARY_BLUE}
+    />
+  </View>
+);
+
+
+
+
 };
 
 const styles = StyleSheet.create({
@@ -135,4 +152,17 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: globalStyles.navbar.height * 2,
   },
+  button: {
+    width: "100%",
+    height: 50,
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: PRIMARY_GREEN,
+  },
+  buttonText:{
+    color: LIGHT,
+    fontWeight: "bold",
+
+  }
 });
