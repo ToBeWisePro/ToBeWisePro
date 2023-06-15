@@ -248,9 +248,11 @@ export const NotificationScreen: React.FC<Props> = ({
               </View>
             </View>
             <AppText style={styles.title}>Notification Database</AppText>
+            <TouchableOpacity onPress={() => navigation.push(strings.screenName.notificationSelectorScreen, {})}>
             <View style={styles.menuOptionContainerBottom}>
               <AppText>{`Current Notifications From: ${query} (${filter})`}</AppText>
             </View>
+            </TouchableOpacity>
             <AppText style={styles.pullText}>
               Pull to refresh if your update isn't appearing
             </AppText>

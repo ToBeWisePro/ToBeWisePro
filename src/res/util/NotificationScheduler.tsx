@@ -74,8 +74,8 @@ export async function scheduleNotifications() {
           try {
             await Notifications.scheduleNotificationAsync({
               content: {
-                title: quote[0].author,
-                body: quote[0].quoteText,
+                title: quote[0].quoteText,
+                body: quote[0].author,
                 data: {
                   quote: quote[0],  // send the quote as data
                 },
@@ -94,8 +94,8 @@ export async function scheduleNotifications() {
         if (i < 5) {
           // Debugging Information
           console.log(`Scheduled notification #${i}:`);
-          console.log(`Title: ${quote[0].author}`);
-          console.log(`Body: ${quote[0].quoteText}`);
+          console.log(`Title: ${quote[0].quoteText}`);
+          console.log(`Body: ${quote[0].author}`);
           console.log(`Will fire at: ${fireDate.toString()}`);
         }
 
