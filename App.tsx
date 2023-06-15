@@ -1,22 +1,17 @@
 // App.js
-import { useEffect, useState } from "react";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
-import {
-  dataImporter,
-  getShuffledQuotes,
-} from "./src/res/functions/DBFunctions";
-import { strings } from "./src/res/constants/Strings";
-import { RootNavigation } from "./src/res/util/RootNavigation";
-import { QuotationInterface } from "./src/res/constants/Interfaces";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Notifications from "expo-notifications";
-import { scheduleNotifications } from "./src/res/util/NotificationScheduler";
+import React, { useEffect, useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { dataImporter, getShuffledQuotes } from './src/res/functions/DBFunctions';
+import { strings } from './src/res/constants/Strings';
+import { RootNavigation } from './src/res/util/RootNavigation';
+import { QuotationInterface } from './src/res/constants/Interfaces';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
+import { scheduleNotifications } from './src/res/util/NotificationScheduler';
 
 export default function App() {
-  const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
-    []
-  );
+  const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>([]);
   const [frequency, setFrequency] = useState<number>(1);
   const [query, setQuery] = useState(strings.database.defaultQuery);
 
@@ -62,7 +57,6 @@ export default function App() {
         console.log("Notification permissions not granted.");
       }
     })();
-  }, []);
 
   useEffect(() => {
     const i = async () => {

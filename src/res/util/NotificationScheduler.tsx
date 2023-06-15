@@ -56,6 +56,9 @@ export async function scheduleNotifications() {
         content: {
           title: immediateQuote[0].author,
           body: immediateQuote[0].quoteText,
+          data: {
+            quote: immediateQuote[0],  // send the quote as data
+          },
         },
         trigger: null, // triggers immediate notification
       });
@@ -73,6 +76,9 @@ export async function scheduleNotifications() {
               content: {
                 title: quote[0].author,
                 body: quote[0].quoteText,
+                data: {
+                  quote: quote[0],  // send the quote as data
+                },
               },
               trigger: {
                 date: fireDate,

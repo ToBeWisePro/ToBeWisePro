@@ -3,15 +3,20 @@ import { View, StyleSheet, Dimensions } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
 import { GRADIENT_START, GRADIENT_END } from "../../../styles/Colors";
-import { NavigationInterface, QuotationInterface, RouteInterface } from "../../res/constants/Interfaces";
+import {
+  NavigationInterface,
+  QuotationInterface,
+  RouteInterface,
+} from "../../res/constants/Interfaces";
 import { getShuffledQuotes } from "../../res/functions/DBFunctions";
 import { BottomNav } from "../organisms/BottomNav";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { autoScrollIntervalTime } from "../../res/constants/Values";
 import { strings } from "../../res/constants/Strings";
-import  {AutoScrollingQuoteList} from "../animals/AutoScrollingQuoteList";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AutoScrollingQuoteList } from "../animals/AutoScrollingQuoteList";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from "expo-notifications";
 
 interface Props {
   navigation: NavigationInterface;
@@ -20,49 +25,70 @@ interface Props {
   initialRoute?: boolean;
 }
 
-export const HomeVertical = ({ navigation, route, initialQuotes, initialRoute }: Props) => { 
+export const HomeVertical = ({
+  navigation,
+  route,
+  initialQuotes,
+  initialRoute,
+}: Props) => {
   const [title, setTitle] = useState("");
   const [backButton, setBackButton] = useState(false);
   const [quotes, setQuotes] = useState<QuotationInterface[]>(initialQuotes);
   const [filter, setFilter] = useState("");
   const [query, setQuery] = useState("");
   const [playPressed, setPlayPressed] = useState<boolean>(true);
-  const [scrollSpeed, setScrollSpeed] = useState<number>(autoScrollIntervalTime);
+  const [scrollSpeed, setScrollSpeed] = useState<number>(
+    autoScrollIntervalTime
+  );
+  useEffect(() => {
+    const unsubscribe = Notifications.addNotificationResponseReceivedListener(
+      async (response) => {
+        const quote = response.notification.request.content.data.quote;
+        if (quote) {
+          setQuotes([quote, ...quotes]);
+          setTitle(quote.author)
+        }
+      }
+    );
+
+    return () => unsubscribe.remove();
+  }, []);
+
+  const fetchQueryAndFilter = async (filter, query) => {
+    setFilter(filter);
+    setQuery(query);
+    await AsyncStorage.setItem("userQuery", query);
+    await AsyncStorage.setItem("userFilter", filter);
+    setTitle(filter + ": " + query);
+  };
+
+  const fetchFromStorageAndSet = async (defaultQuery, defaultFilter) => {
+    const savedFilter =
+      (await AsyncStorage.getItem("userFilter")) || defaultFilter;
+    const savedQuery =
+      (await AsyncStorage.getItem("userQuery")) || defaultQuery;
+    setFilter(savedFilter);
+    setQuery(savedQuery);
+    const res = await getShuffledQuotes(savedQuery, savedFilter);
+    setQuotes(res);
+  };
 
   useEffect(() => {
-    const fetchQueryAndFilter = async (filter, query) => {
-      setFilter(filter);
-      setQuery(query);
-      await AsyncStorage.setItem('userQuery', query);
-      await AsyncStorage.setItem('userFilter', filter);
-    }
-
-    const fetchFromStorageAndSet = async (defaultQuery, defaultFilter) => {
-      const savedFilter = await AsyncStorage.getItem('userFilter') || defaultFilter;
-      const savedQuery = await AsyncStorage.getItem('userQuery') || defaultQuery;
-      setFilter(savedFilter);
-      setQuery(savedQuery);
-      const res = await getShuffledQuotes(savedQuery, savedFilter);
-      setQuotes(res);
-    }
-
     const defaultQuery = strings.database.defaultQuery;
     const defaultFilter = strings.database.defaultFilter;
     const quoteSearch = route.params?.quoteSearch;
 
     if (quoteSearch) {
-      const {query, filter} = quoteSearch;
+      const { query, filter } = quoteSearch;
       try {
         setQuotes(route.params.currentQuotes);
         fetchQueryAndFilter(filter, query);
-        setTitle(filter + ": " + query);
       } catch (error) {
         console.error(error);
       }
     } else {
       try {
         fetchFromStorageAndSet(defaultQuery, defaultFilter);
-        setTitle(defaultFilter + ": " + defaultQuery);
       } catch (error) {
         setTitle(strings.navbarHomeDefaultText);
       }
@@ -96,7 +122,7 @@ export const HomeVertical = ({ navigation, route, initialQuotes, initialRoute }:
           navigation={navigation}
           query={query}
           filter={filter}
-          />
+        />
       </LinearGradient>
       <BottomNav
         navigation={navigation}
