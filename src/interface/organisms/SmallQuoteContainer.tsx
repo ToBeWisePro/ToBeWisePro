@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { DARK, LIGHT } from "../../../styles/Colors";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { QuotationInterface } from "../../res/constants/Interfaces";
@@ -18,26 +18,28 @@ export const SmallQuoteContainer: React.FC<Props> = ({
   pressFunction,
 }: Props) => {
   // const [orderedQuotes, setOrderQuotes] = useState<Quotation[]>([]);
-  const [quote, setQuote] = useState<QuotationInterface>(passedInQuote)
+  const [quote, setQuote] = useState<QuotationInterface>(passedInQuote);
 
   useEffect(() => {
     // We need the orderedQuotes so that when a user navigates to the HomeHorizontal screen the quotes stay in order
     // setOrderQuotes(quotes);
-    updateQuoteContainer(quote, quoteContainerRefreshRate, setQuote)
-
+    updateQuoteContainer(quote, quoteContainerRefreshRate, setQuote);
   }, []);
 
-
   return (
-    <TouchableWithoutFeedback style={styles.container} onPress={pressFunction}>
+    <View style={styles.container}>
       {/* <QuoteBlock quote={quote} size={ContainerSize.Small}/> */}
-      <AppText style={globalStyles.quoteText} numberOfLines={6}>
-        {quote.quoteText}
-      </AppText>
+      <TouchableOpacity onPress={pressFunction} style={styles.quoteContainer}>
+        <AppText style={globalStyles.quoteText} numberOfLines={6}>
+          {quote.quoteText}
+        </AppText>
+       
+      </TouchableOpacity>
+
       <View style={styles.authorContainer}>
         <AppText style={globalStyles.authorText}>{quote.author}</AppText>
       </View>
-    </TouchableWithoutFeedback>
+    </View>
   );
 };
 
@@ -59,6 +61,9 @@ const styles = StyleSheet.create({
     },
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  quoteContainer:{
+    height: globalStyles.smallQuoteContainer.height - 70
   },
   authorContainer: {
     // paddingTop: 10,

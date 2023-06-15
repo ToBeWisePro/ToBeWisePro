@@ -18,7 +18,6 @@ import { Easing } from "react-native-reanimated";
 
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
-import { TouchableOpacity } from "react-native-gesture-handler";
 
 const QUOTE_ITEM_HEIGHT = globalStyles.smallQuoteContainer.height;
 
@@ -126,10 +125,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         }}
         minimumTrackTintColor={PRIMARY_BLUE}
       />
-      {/* <Button title="Restart" onPress={restartScroll} /> add restart button */}
-      {/* <TouchableOpacity>
-        <Button title="Restart" onPress={restartScroll} />
-      </TouchableOpacity> */}
     </View>
   );
 };
