@@ -31,7 +31,7 @@ export const HomeVertical = ({
   initialQuotes,
   initialRoute,
 }: Props) => {
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(strings.database.defaultFilter + ": " + strings.database.defaultQuery);
   const [backButton, setBackButton] = useState(false);
   const [quotes, setQuotes] = useState<QuotationInterface[]>(initialQuotes);
   const [filter, setFilter] = useState("");
@@ -59,19 +59,37 @@ export const HomeVertical = ({
     setQuery(query);
     await AsyncStorage.setItem("userQuery", query);
     await AsyncStorage.setItem("userFilter", filter);
-    setTitle(filter + ": " + query);
+    const title = filter + ": " + query;
+    setTitle(title);
+    await AsyncStorage.setItem("title", title);
   };
+  
 
   const fetchFromStorageAndSet = async (defaultQuery, defaultFilter) => {
-    const savedFilter =
-      (await AsyncStorage.getItem("userFilter")) || defaultFilter;
-    const savedQuery =
-      (await AsyncStorage.getItem("userQuery")) || defaultQuery;
+    const savedFilter = (await AsyncStorage.getItem("userFilter")) || defaultFilter;
+    const savedQuery = (await AsyncStorage.getItem("userQuery")) || defaultQuery;
+    const savedTitle = await AsyncStorage.getItem("title");
+  
     setFilter(savedFilter);
     setQuery(savedQuery);
+    
     const res = await getShuffledQuotes(savedQuery, savedFilter);
     setQuotes(res);
+  
+    if(savedTitle) {
+      setTitle(savedTitle);
+    }
   };
+  useEffect(() => {
+    const getTitle = async () => {
+      const savedTitle = await AsyncStorage.getItem("title");
+      if(savedTitle) {
+        setTitle(savedTitle);
+      }
+    };
+    getTitle();
+  }, []);
+    
 
   useEffect(() => {
     const defaultQuery = strings.database.defaultQuery;

@@ -58,6 +58,15 @@ export default function App() {
       }
     })();
 
+    // Added this part
+    Notifications.addNotificationResponseReceivedListener(async (response) => {
+      const data = response.notification.request.content.data.quote;
+      if (data) {
+        navigation.navigate('HomeVertical', { quote: data });
+      }
+    });
+  }, []);
+
   useEffect(() => {
     const i = async () => {
       await dataImporter().then(async () =>
