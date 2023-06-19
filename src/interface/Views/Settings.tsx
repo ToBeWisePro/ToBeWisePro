@@ -32,7 +32,7 @@ export const Settings = ({ navigation }: Props) => {
     {
       icon: "info",
       title: "About",
-      onPress: ()=> openLink("https://ToBeWiseApp.com/blog/app-description-2/")
+      onPress: ()=> openLink("https://tobewise.co/")
     },
     {
       icon: "star",
@@ -46,7 +46,7 @@ export const Settings = ({ navigation }: Props) => {
         try {
           const result = await Share.share({
             message:
-              "Check Out ToBeWise on iOS"
+              "Check Out ToBeWise on iOS: https://tobewise.co/"
           });
           if (result.action === Share.sharedAction) {
             if (result.activityType) {
@@ -71,12 +71,12 @@ export const Settings = ({ navigation }: Props) => {
     {
       icon: "web",
       title: "Terms",
-      onPress: ()=> openLink("https://ToBeWiseApp.com/terms/")
+      onPress: ()=> openLink("https://tobewise.co/terms/")
     },
     {
       icon: "people",
       title: "Our Team",
-      onPress: ()=> openLink("https://ToBeWiseApp.com/blog/meet-the-team/")
+      onPress: ()=> openLink("https://tobewise.co/blog/meet-the-team/")
     },
     {
       title: "Version Number"

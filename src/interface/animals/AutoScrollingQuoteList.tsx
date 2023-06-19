@@ -120,7 +120,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         scrollEnabled={!playPressed}
         onTouchStart={() => setPlayPressed(false)}
         onScroll={handleScroll}
-        contentContainerStyle={{ paddingBottom: 75 }} // add 125px padding to the bottom
+        contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }} // add 125px padding to the bottom
         ListFooterComponent={() =>
           data.length >= 5 ? (
             <TouchableOpacity onPress={restartScroll} style={styles.button}>

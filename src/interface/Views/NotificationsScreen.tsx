@@ -80,8 +80,7 @@ export const NotificationScreen: React.FC<Props> = ({
     scheduleNotifications();
   };
 
-  useEffect(() => {
-    const loadSavedSettings = async () => {
+  const loadSavedSettings = async () => {
       const savedAllowNotifications = await loadSettings(
         SETTINGS_KEYS.allowNotifications
       );
@@ -92,7 +91,6 @@ export const NotificationScreen: React.FC<Props> = ({
       const savedFilter = await loadSettings(SETTINGS_KEYS.filter);
 
       if (savedQuery !== null) {
-        console.log("savedQuery", savedQuery);
         setQuery(savedQuery);
       }
       if (savedFilter !== null) {
@@ -111,48 +109,19 @@ export const NotificationScreen: React.FC<Props> = ({
         setSpacing(savedSpacing);
       }
     };
-    loadSavedSettings();
-  }, [refreshing]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadSavedSettings();
+    });
+
+    // Clean up the event listener on component unmount
+    return unsubscribe;
+  }, [navigation]);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-
-    const loadSavedSettings = async () => {
-      const savedAllowNotifications = await loadSettings(
-        SETTINGS_KEYS.allowNotifications
-      );
-      const savedStartTime = await loadSettings(SETTINGS_KEYS.startTime);
-      const savedEndTime = await loadSettings(SETTINGS_KEYS.endTime);
-      const savedSpacing = await loadSettings(SETTINGS_KEYS.spacing);
-      const savedQuery = await loadSettings(SETTINGS_KEYS.query);
-      const savedFilter = await loadSettings(SETTINGS_KEYS.filter);
-
-      if (savedQuery !== null) {
-        console.log("savedQuery", savedQuery);
-        setQuery(savedQuery);
-      }
-      if (savedFilter !== null) {
-        setFilter(savedFilter);
-      }
-      if (savedAllowNotifications !== null) {
-        setAllowNotifications(savedAllowNotifications);
-      }
-      if (savedStartTime !== null) {
-        setStartTime(new Date(savedStartTime));
-      }
-      if (savedEndTime !== null) {
-        setEndTime(new Date(savedEndTime));
-      }
-      if (savedSpacing !== null) {
-        setSpacing(savedSpacing);
-      }
-      scheduleNotifications();
-    };
-    loadSavedSettings();
-
-    // Here call the function that reinitializes or refreshes your data.
-    // It should be an async function that awaits your data refreshing actions.
-    await loadSavedSettings(); // If this is the function that refreshes your data
+    await loadSavedSettings();
     setRefreshing(false);
   }, []);
 
@@ -161,7 +130,6 @@ export const NotificationScreen: React.FC<Props> = ({
     setAllowNotifications(updatedAllowNotifications);
     saveSettings(SETTINGS_KEYS.allowNotifications, updatedAllowNotifications);
   };
-
   const isValidTimeRange = (start: Date, end: Date) => {
     if (start.getHours() < end.getHours()) {
       return true;
@@ -195,9 +163,12 @@ export const NotificationScreen: React.FC<Props> = ({
   };
 
   const handleSpacingChange = async (value: number) => {
-    setSpacing(value);
-    await saveSettings(SETTINGS_KEYS.spacing, value).then(() =>
+    await saveSettings(SETTINGS_KEYS.spacing, value).then(() =>{
+      setSpacing(value);
       scheduleNotifications()
+      console.log("notifs scheduled")
+
+    }
     );
   };
 
@@ -223,9 +194,9 @@ export const NotificationScreen: React.FC<Props> = ({
       />
       <View style={{ backgroundColor: LIGHT }}>
         <ScrollView
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          // refreshControl={
+          //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          // }
         >
           <View style={styles.main}>
             <View style={styles.menuOptionContainerBottom}>
@@ -272,15 +243,11 @@ export const NotificationScreen: React.FC<Props> = ({
               }
             >
               <View style={styles.menuOptionContainerBottom}>
-                <AppText>{`Current Notifications From: ${query} (${filter})`}</AppText>
+                <AppText>{`Current Notifications From: ${query}`}</AppText>
               </View>
             </TouchableOpacity>
-            <AppText style={styles.pullText}>
-              Pull to refresh if your update isn't appearing
-            </AppText>
-
             <View style={{ alignItems: "center" }}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.button}
                 onPress={() =>
                   navigation.push(
@@ -292,7 +259,7 @@ export const NotificationScreen: React.FC<Props> = ({
                 <AppText style={styles.buttonText}>
                   Debug Notifications
                 </AppText>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
         </ScrollView>
