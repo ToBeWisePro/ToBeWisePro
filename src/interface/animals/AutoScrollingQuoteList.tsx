@@ -73,8 +73,12 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   };
 
   const restartScroll = () => {
-    scrollRef.current?.scrollToOffset({ animated: true, offset: 0 }); // scroll to the top
-    setPlayPressed(true); // restart auto-scrolling
+    setPlayPressed(false);
+    scrollPosition.value = 0; // reset scroll position
+    setCurrentPosition(0);
+    setTimeout(() => {
+      scrollRef.current?.scrollToOffset({ offset: 0, animated: false }); // scroll to the top without animation
+    }, 500);
   };
 
   useDerivedValue(() => {
@@ -122,12 +126,12 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         onScroll={handleScroll}
         contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }} // add 125px padding to the bottom
         ListFooterComponent={() =>
-          data.length >= 5 ? (
-            <TouchableOpacity onPress={restartScroll} style={styles.button}>
-              <AppText style={styles.buttonText}>🔄 Restart</AppText>
-            </TouchableOpacity>
+          data.length >= 3 ? (
+            <AppText style={styles.buttonText}>🔄 Restarting Soon...</AppText>
           ) : null
         }
+        onEndReached={ data.length >= 3 ? restartScroll : null} // Add this line
+        onEndReachedThreshold={0} // Add this line
       />
       {data.length >= 1 ? (
         <Slider
@@ -141,9 +145,10 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         />
       ) : (
         <>
-        <AppText>
-          There are currently no quotes that match your selection
-          </AppText></>
+          <AppText>
+            There are currently no quotes that match your selection
+          </AppText>
+        </>
       )}
     </View>
   );
