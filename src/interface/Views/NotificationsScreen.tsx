@@ -13,7 +13,14 @@ import {
   NavigationInterface,
   RouteInterface,
 } from "../../res/constants/Interfaces";
-import { GRAY_1, GRAY_2, GRAY_5, GRAY_6, LIGHT, PRIMARY_GREEN } from "../../../styles/Colors";
+import {
+  GRAY_1,
+  GRAY_2,
+  GRAY_5,
+  GRAY_6,
+  LIGHT,
+  PRIMARY_GREEN,
+} from "../../../styles/Colors";
 import { BottomNav } from "../organisms/BottomNav";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
 import { TopNav } from "../molecules/TopNav";
@@ -21,6 +28,7 @@ import { ScrollView, Switch } from "react-native-gesture-handler";
 import { AppText } from "../atoms/AppText";
 import { CustomTimeInput } from "../atoms/CustomTimeInput";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
+import { NotificationDebugScreen } from './NotificationDebugScreen';
 
 interface Props {
   navigation: NavigationInterface;
@@ -108,6 +116,7 @@ export const NotificationScreen: React.FC<Props> = ({
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
+
     const loadSavedSettings = async () => {
       const savedAllowNotifications = await loadSettings(
         SETTINGS_KEYS.allowNotifications
@@ -137,8 +146,10 @@ export const NotificationScreen: React.FC<Props> = ({
       if (savedSpacing !== null) {
         setSpacing(savedSpacing);
       }
+      scheduleNotifications();
     };
     loadSavedSettings();
+
     // Here call the function that reinitializes or refreshes your data.
     // It should be an async function that awaits your data refreshing actions.
     await loadSavedSettings(); // If this is the function that refreshes your data
@@ -185,7 +196,9 @@ export const NotificationScreen: React.FC<Props> = ({
 
   const handleSpacingChange = async (value: number) => {
     setSpacing(value);
-    await saveSettings(SETTINGS_KEYS.spacing, value).then(()=>scheduleNotifications())
+    await saveSettings(SETTINGS_KEYS.spacing, value).then(() =>
+      scheduleNotifications()
+    );
   };
 
   // const handleQueryChange = (text: string) => {
@@ -242,16 +255,25 @@ export const NotificationScreen: React.FC<Props> = ({
                   keyboardType="numeric"
                   style={styles.frequencyInput}
                   value={String(spacing)}
-                  onChangeText={async (text) => await handleSpacingChange(Number(text))}
+                  onChangeText={async (text) =>
+                    await handleSpacingChange(Number(text))
+                  }
                 />
                 <AppText>minute(s)</AppText>
               </View>
             </View>
             <AppText style={styles.title}>Notification Database</AppText>
-            <TouchableOpacity onPress={() => navigation.push(strings.screenName.notificationSelectorScreen, {})}>
-            <View style={styles.menuOptionContainerBottom}>
-              <AppText>{`Current Notifications From: ${query} (${filter})`}</AppText>
-            </View>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.push(
+                  strings.screenName.notificationSelectorScreen,
+                  {}
+                )
+              }
+            >
+              <View style={styles.menuOptionContainerBottom}>
+                <AppText>{`Current Notifications From: ${query} (${filter})`}</AppText>
+              </View>
             </TouchableOpacity>
             <AppText style={styles.pullText}>
               Pull to refresh if your update isn't appearing
@@ -262,13 +284,13 @@ export const NotificationScreen: React.FC<Props> = ({
                 style={styles.button}
                 onPress={() =>
                   navigation.push(
-                    strings.screenName.notificationSelectorScreen,
+                    strings.screenName.notificationDebugScreen,
                     {}
                   )
                 }
               >
                 <AppText style={styles.buttonText}>
-                  Configure Notifications
+                  Debug Notifications
                 </AppText>
               </TouchableOpacity>
             </View>
@@ -333,7 +355,7 @@ const styles = StyleSheet.create({
     color: GRAY_2,
     marginTop: -15,
     marginBottom: 20,
-    marginLeft: 15
+    marginLeft: 15,
   },
   button: {
     borderRadius: 10,

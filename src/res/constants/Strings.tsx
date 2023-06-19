@@ -7,6 +7,7 @@ export const strings = new LocalizedStrings({
         homeHorizontal: "HomeHorizontal",
         home: "Home",
         discover: "Discover",
+        notificationDebugScreen: "Debug Notifications",
         editQuote: "Edit Quotes",
         search: "Search Quotes",
         notificationsScreen: "Configure Notifications",

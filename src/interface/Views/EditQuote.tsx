@@ -54,10 +54,6 @@ export const EditQuotes = ({ navigation, route }: Props) => {
   const [authorLink, setAuthorLink] = useState(initialQuote.authorLink);
   const [videoLink, setVideoLink] = useState(initialQuote.videoLink);
 
-  useEffect(()=>{
-    console.log("is existing quote", isExistingQuote)
-    console.log("editing quote", editingQuote)
-  },[])
 
   const textInputFields: TextInputProps[] = [
     {

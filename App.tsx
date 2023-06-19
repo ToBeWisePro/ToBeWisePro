@@ -70,7 +70,7 @@ export default function App() {
   useEffect(() => {
     const i = async () => {
       await dataImporter().then(async () =>
-        getShuffledQuotes(query, strings.database.defaultFilter).then((res) => {
+        getShuffledQuotes(strings.database.defaultQuery, strings.database.defaultFilter).then((res) => {
           setShuffledQuotes(res);
         })
       );

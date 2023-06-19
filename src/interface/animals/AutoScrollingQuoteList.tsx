@@ -111,39 +111,42 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   );
 
   return (
-  <View style={styles.container}>
-    <FlatList
-      data={data}
-      renderItem={renderItem}
-      scrollEventThrottle={16}
-      ref={scrollRef}
-      scrollEnabled={!playPressed}
-      onTouchStart={() => setPlayPressed(false)}
-      onScroll={handleScroll}
-      contentContainerStyle={{ paddingBottom: 75 }} // add 125px padding to the bottom
-      ListFooterComponent={() => (
-        data.length >= 4 ? (
-          <TouchableOpacity onPress={restartScroll} style={styles.button}>
-            <AppText style={styles.buttonText}>🔄 Restart</AppText>
-          </TouchableOpacity>
-        ) : null
+    <View style={styles.container}>
+      <FlatList
+        data={data}
+        renderItem={renderItem}
+        scrollEventThrottle={16}
+        ref={scrollRef}
+        scrollEnabled={!playPressed}
+        onTouchStart={() => setPlayPressed(false)}
+        onScroll={handleScroll}
+        contentContainerStyle={{ paddingBottom: 75 }} // add 125px padding to the bottom
+        ListFooterComponent={() =>
+          data.length >= 5 ? (
+            <TouchableOpacity onPress={restartScroll} style={styles.button}>
+              <AppText style={styles.buttonText}>🔄 Restart</AppText>
+            </TouchableOpacity>
+          ) : null
+        }
+      />
+      {data.length >= 1 ? (
+        <Slider
+          minimumValue={0.005}
+          maximumValue={0.25}
+          onValueChange={(value) => {
+            setScrollSpeed(value);
+          }}
+          value={scrollSpeed}
+          minimumTrackTintColor={PRIMARY_BLUE}
+        />
+      ) : (
+        <>
+        <AppText>
+          There are currently no quotes that match your selection
+          </AppText></>
       )}
-    />
-    <Slider
-      minimumValue={0.005}
-      maximumValue={0.25}
-      onValueChange={(value) => {
-        setScrollSpeed(value);
-      }}
-      value={scrollSpeed}
-      minimumTrackTintColor={PRIMARY_BLUE}
-    />
-  </View>
-);
-
-
-
-
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -160,9 +163,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: PRIMARY_GREEN,
   },
-  buttonText:{
+  buttonText: {
     color: LIGHT,
     fontWeight: "bold",
-
-  }
+  },
 });

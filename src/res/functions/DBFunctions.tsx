@@ -149,13 +149,22 @@ export async function getShuffledQuotes(
   const db = SQLite.openDatabase(dbName);
 
   let query = `SELECT * FROM ${dbName}`;
+
   if (key === strings.customDiscoverHeaders.deleted) {
     query += ` WHERE deleted = 1 ORDER BY RANDOM()`;
+  } else if (key === strings.customDiscoverHeaders.top100) {
+    query += ` ORDER BY RANDOM() LIMIT 100`; // Fetch top 100 random quotes
   } else if (filter === strings.filters.author) {
     query += ` WHERE deleted = 0 AND author LIKE '%${key}%' ORDER BY RANDOM()`;
   } else if (filter === strings.filters.subject) {
     query += ` WHERE deleted = 0 AND subjects LIKE '%${key}%' ORDER BY RANDOM()`;
-  } else {
+  } else if (key === strings.customDiscoverHeaders.favorites) {
+    query += ` WHERE favorite === TRUE AND deleted = 0 ORDERY BY RANDOM()`; 
+  } 
+  else if (key === strings.customDiscoverHeaders.addedByMe) {
+    query += ` WHERE contributeBy === '%${defaultUsername}%' AND deleted = 0 ORDER BY RANDOM()` 
+  }
+  else {
     const string = `Invalid filter provided: ${filter}`;
     throw new Error(string);
   }
@@ -279,7 +288,7 @@ export const getQuotesContributedByMe = async (): Promise<
   return new Promise<QuotationInterface[]>((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        `SELECT * FROM ${dbName} WHERE contributedBy = ?;`,
+        `SELECT * FROM ${dbName} WHERE contributedBy = ? AND deleted = 0 ORDER BY RANDOM();`,
         [defaultUsername],
         (_, { rows }) => {
           const objs: QuotationInterface[] = rows["_array"];
@@ -296,7 +305,7 @@ export const getFavoriteQuotes = async (): Promise<QuotationInterface[]> => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        `SELECT * FROM ${dbName} WHERE favorite = 1`,
+        `SELECT * FROM ${dbName} WHERE favorite = 1 AND deleted = 0;`,
         [],
         (_, { rows }) => {
           const objs: QuotationInterface[] = rows["_array"];

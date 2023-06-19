@@ -54,7 +54,6 @@ export const LargeQuoteContainer: React.FC<Props> = ({
           )}
           <TouchableOpacity
             onPress={() => {
-              console.log(quote.authorLink);
               const safeLink = quote.author.replaceAll(" ", "_");
               openLink(quote.authorLink).catch(()=>openLink("https://www.wikipedia.com/wiki/" + safeLink)
               )

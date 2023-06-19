@@ -31,7 +31,9 @@ export const HomeVertical = ({
   initialQuotes,
   initialRoute,
 }: Props) => {
-  const [title, setTitle] = useState(strings.database.defaultFilter + ": " + strings.database.defaultQuery);
+  const [title, setTitle] = useState(
+    strings.database.defaultFilter + ": " + strings.database.defaultQuery
+  );
   const [backButton, setBackButton] = useState(false);
   const [quotes, setQuotes] = useState<QuotationInterface[]>(initialQuotes);
   const [filter, setFilter] = useState("");
@@ -41,16 +43,16 @@ export const HomeVertical = ({
     autoScrollIntervalTime
   );
   useEffect(() => {
+    setScrollSpeed(autoScrollIntervalTime);
     const unsubscribe = Notifications.addNotificationResponseReceivedListener(
       async (response) => {
         const quote = response.notification.request.content.data.quote;
         if (quote) {
           setQuotes([quote, ...quotes]);
-          setTitle(quote.author)
+          setTitle(quote.author);
         }
       }
     );
-
     return () => unsubscribe.remove();
   }, []);
 
@@ -63,33 +65,38 @@ export const HomeVertical = ({
     setTitle(title);
     await AsyncStorage.setItem("title", title);
   };
-  
 
   const fetchFromStorageAndSet = async (defaultQuery, defaultFilter) => {
-    const savedFilter = (await AsyncStorage.getItem("userFilter")) || defaultFilter;
-    const savedQuery = (await AsyncStorage.getItem("userQuery")) || defaultQuery;
+    const savedFilter =
+      (await AsyncStorage.getItem("userFilter")) || defaultFilter;
+    const savedQuery =
+      (await AsyncStorage.getItem("userQuery")) || defaultQuery;
     const savedTitle = await AsyncStorage.getItem("title");
-  
+
     setFilter(savedFilter);
     setQuery(savedQuery);
-    
-    const res = await getShuffledQuotes(savedQuery, savedFilter);
-    setQuotes(res);
-  
-    if(savedTitle) {
+
+    try {
+      const res = await getShuffledQuotes(savedQuery, savedFilter);
+      setQuotes(res);
+    } catch (error) {
+      console.error("Error getting shuffled quotes: ", error);
+    }
+
+    if (savedTitle) {
       setTitle(savedTitle);
     }
   };
+
   useEffect(() => {
     const getTitle = async () => {
       const savedTitle = await AsyncStorage.getItem("title");
-      if(savedTitle) {
+      if (savedTitle) {
         setTitle(savedTitle);
       }
     };
     getTitle();
   }, []);
-    
 
   useEffect(() => {
     const defaultQuery = strings.database.defaultQuery;

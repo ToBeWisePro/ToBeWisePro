@@ -48,79 +48,58 @@ export async function scheduleNotifications() {
   const INTERVAL = spacing * 60 * 1000;
   const now = new Date();
 
+  // add 10 seconds to now for the first notification
+  let firstFireTime = new Date(now.getTime() + 10 * 1000);
+
   if (allowNotifications) {
-    // Schedule immediate notification
-    const immediateQuote = await getShuffledQuotes(query, filter);
-    if (immediateQuote[0].quoteText.length > 0) {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: immediateQuote[0].author,
-          body: immediateQuote[0].quoteText,
-          data: {
-            quote: immediateQuote[0],  // send the quote as data
-          },
-        },
-        trigger: null, // triggers immediate notification
-      });
-    } else {
-      throw Error;
-    }
+    let i = 0
+    while (i <= 63) {
+      // Use firstFireTime for the first notification, then add INTERVAL for subsequent notifications
+      const fireDate =
+        i === 0
+          ? firstFireTime
+          : new Date(firstFireTime.getTime() + i * INTERVAL);
 
-    for (let i = 2; i <= 63; i++) {  // start from 2, as the first notification is already scheduled
-      const fireDate = new Date(now.getTime() + i * INTERVAL);
       if (fireDate >= startTime && fireDate <= endTime) {
-        const quote = await getShuffledQuotes(query, filter);
-        if (quote[0].quoteText.length > 0) {
-          try {
-            await Notifications.scheduleNotificationAsync({
-              content: {
-                title: quote[0].quoteText,
-                body: quote[0].author,
-                data: {
-                  quote: quote[0],  // send the quote as data
+        const quote = await getShuffledQuotes(query, filter).then(async (quote) => {
+          if (quote[0].quoteText.length > 0) {
+            console.log(`Scheduling notification with date: ${fireDate}`); // Log the fireDate
+            try {
+              await Notifications.scheduleNotificationAsync({
+                content: {
+                  title: "ToBeWise",
+                  body: quote[0].quoteText + "\n\n-" + quote[0].author,
+                  data: {
+                    quote: quote[0],
+                  },
                 },
-              },
-              trigger: {
-                date: fireDate,
-              },
-            });
-          } catch (e) {
-            console.error("Error scheduling notification:", e);
+                trigger: {
+                  date: fireDate.getTime(), // convert Date object to milliseconds
+                },
+              }).then(() => {
+                i++;
+              });
+            } catch (e) {
+              console.error("Error scheduling notification:", e);
+            }
+          } else {
+            throw Error;
           }
-        } else {
-          throw Error;
-        }
-
-        if (i < 5) {
-          // Debugging Information
-          console.log(`Scheduled notification #${i}:`);
-          console.log(`Title: ${quote[0].quoteText}`);
-          console.log(`Body: ${quote[0].author}`);
-          console.log(`Will fire at: ${fireDate.toString()}`);
-        }
-
-        if (i == 5) {
-          console.log("Truncating notification output...");
-        }
+        });
       }
     }
 
-    const finalFireDate = new Date(now.getTime() + 64 * INTERVAL);
+    const finalFireDate = new Date(firstFireTime.getTime() + 64 * INTERVAL);
 
+    console.log(`Scheduling final notification with date: ${finalFireDate}`); // Log the finalFireDate
     await Notifications.scheduleNotificationAsync({
       content: {
         title: "ToBeWise",
         body: "Open ToBeWise to queue more notifications",
       },
       trigger: {
-        date: finalFireDate,
+        date: finalFireDate.getTime(), // converting Date object to milliseconds
       },
     });
-
-    // Debugging Information
-    console.log(`Scheduled final notification:`);
-    console.log(`Title: ToBeWise`);
-    console.log(`Body: Open ToBeWise to queue more notifications`);
-    console.log(`Will fire at: ${finalFireDate.toString()}`);
   }
 }

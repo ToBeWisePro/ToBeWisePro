@@ -10,6 +10,7 @@ import { Settings } from "../../interface/Views/Settings";
 import { NotificationScreen } from "../../interface/Views/NotificationsScreen";
 import { QuotationInterface } from "../constants/Interfaces";
 import { NotificationSelectorScreen } from "../../interface/Views/NotificationSelectorScreen";
+import { NotificationDebugScreen } from "../../interface/Views/NotificationDebugScreen";
 
 interface RootProps {
   initialRoute: string;
@@ -47,6 +48,11 @@ export const RootNavigation: React.FC<RootProps> = ({
         <Stack.Screen
           name={strings.screenName.editQuote}
           component={EditQuotes}
+          options={{ headerShown: false }}
+        />
+         <Stack.Screen
+          name={strings.screenName.notificationDebugScreen}
+          component={NotificationDebugScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
