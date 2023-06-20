@@ -37,6 +37,7 @@ export const strings = new LocalizedStrings({
         subjects: "*Subjects (comma separated)"
       },
       copy: {
+        newNotificationsSet: "Updated notifications are on their way 🥳",
         saveButton: "Save Changes",
         saveButtonBlank: "Add New Quote",
         editQuoteTitle: "Edit Quote",
@@ -47,6 +48,7 @@ export const strings = new LocalizedStrings({
         errorMessages:{
           screenFailedToLoad: "Our developer isn't great, his bad code broke the app. Please quit and restart it"
         },
+        notificationFrom: "🔔 Notification From: "
       },
       playPauseButtons: {
         play: "play-circle-outline",

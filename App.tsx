@@ -1,18 +1,23 @@
 // App.js
-import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
-import { dataImporter, getShuffledQuotes } from './src/res/functions/DBFunctions';
-import { strings } from './src/res/constants/Strings';
-import { RootNavigation } from './src/res/util/RootNavigation';
-import { QuotationInterface } from './src/res/constants/Interfaces';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Notifications from 'expo-notifications';
-import { scheduleNotifications } from './src/res/util/NotificationScheduler';
-import { Image } from 'react-native-elements';
+import React, { useEffect, useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, Text, View, ActivityIndicator, Alert } from "react-native";
+import {
+  dataImporter,
+  getShuffledQuotes,
+} from "./src/res/functions/DBFunctions";
+import { strings } from "./src/res/constants/Strings";
+import { RootNavigation } from "./src/res/util/RootNavigation";
+import { QuotationInterface } from "./src/res/constants/Interfaces";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from "expo-notifications";
+import { scheduleNotifications } from "./src/res/util/NotificationScheduler";
+import { Image } from "react-native-elements";
 
 export default function App() {
-  const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>([]);
+  const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
+    []
+  );
   const [frequency, setFrequency] = useState<number>(1);
   const [query, setQuery] = useState(strings.database.defaultQuery);
 
@@ -63,20 +68,25 @@ export default function App() {
     Notifications.addNotificationResponseReceivedListener(async (response) => {
       const data = response.notification.request.content.data.quote;
       if (data) {
-        navigation.navigate('HomeVertical', { quote: data });
+        navigation.navigate("HomeVertical", { quote: data });
       }
     });
   }, []);
 
   useEffect(() => {
     const i = async () => {
+      // log the default query and filter
+      console.log( "Default query: " + strings.database.defaultQuery + "\nDefault filter: " + strings.database.defaultFilter);
       await dataImporter().then(async () =>
-        getShuffledQuotes(strings.database.defaultQuery, strings.database.defaultFilter).then((res) => {
+        getShuffledQuotes(
+          strings.database.defaultQuery,
+          strings.database.defaultFilter
+        ).then((res) => {
           setShuffledQuotes(res);
         })
       );
     };
-    i();
+    i().then(() => console.log("App loaded\n" + shuffledQuotes.length)).catch((error)=>Alert.alert("Error",error.message));
   }, []);
 
   if (shuffledQuotes.length === 0) {

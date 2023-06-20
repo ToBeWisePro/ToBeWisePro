@@ -6,6 +6,7 @@ import {
   View,
   Dimensions,
   RefreshControl,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { strings } from "../../res/constants/Strings";
@@ -75,10 +76,6 @@ export const NotificationScreen: React.FC<Props> = ({
   const [query, setQuery] = useState(strings.database.defaultQuery);
   const [filter, setFilter] = useState(strings.database.defaultFilter);
   const [refreshing, setRefreshing] = useState(false);
-
-  const reinitializeNotificationScheduler = () => {
-    scheduleNotifications();
-  };
 
   const loadSavedSettings = async () => {
     const savedAllowNotifications = await loadSettings(
@@ -154,7 +151,7 @@ export const NotificationScreen: React.FC<Props> = ({
     if (isValidTimeRange(startTime, time)) {
       setEndTime(time);
       saveSettings(SETTINGS_KEYS.endTime, time);
-      reinitializeNotificationScheduler();
+      scheduleNotifications();
     } else {
       alert(
         'End Time "${time.toLocaleTimeString()}" must be greater than or equal to Start Time "${startTime.toLocaleTimeString()}".'
@@ -165,21 +162,11 @@ export const NotificationScreen: React.FC<Props> = ({
   const handleSpacingChange = async (value: number) => {
     await saveSettings(SETTINGS_KEYS.spacing, value).then(async () => {
       setSpacing(value);
-      await scheduleNotifications().then(() => console.log("notifs scheduled")).catch((err) => console.log(err));
+      await scheduleNotifications()
+        .then(() => console.log("notifs scheduled"))
+        .catch((err) => console.log(err));
     });
   };
-
-  // const handleQueryChange = (text: string) => {
-  //   setQuery(text);
-  //   saveSettings(SETTINGS_KEYS.query, text);
-  //   reinitializeNotificationScheduler();
-  // };
-
-  // const handleFilterChange = (filter: string) => {
-  //   setFilter(filter);
-  //   saveSettings(SETTINGS_KEYS.filter, filter);
-  //   reinitializeNotificationScheduler();
-  // };
 
   return (
     <View style={styles.container}>
@@ -246,14 +233,16 @@ export const NotificationScreen: React.FC<Props> = ({
             <View style={{ alignItems: "center" }}>
               <TouchableOpacity
                 style={styles.button}
-                onPress={() =>
-                  navigation.push(
-                    strings.screenName.notificationDebugScreen,
-                    {}
-                  )
+                onPress={async () =>
+                  await scheduleNotifications()
+                    .then(() => Alert.alert(strings.copy.newNotificationsSet))
+                    .catch((err) => {
+                      console.error(err);
+                      Alert.alert(err.toString());
+                    })
                 }
               >
-                <AppText style={styles.buttonText}>Debug Notifications</AppText>
+                <AppText style={styles.buttonText}>Save</AppText>
               </TouchableOpacity>
             </View>
           </View>

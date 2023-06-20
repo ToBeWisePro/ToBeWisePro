@@ -1,3 +1,4 @@
+import { Alert } from "react-native";
 import { jsonQuotes } from "../../../data/jsonQuotes";
 import { QuotationSchema } from "../constants/DataModels";
 import { QuotationInterface } from "../constants/Interfaces";
@@ -147,13 +148,14 @@ export async function getShuffledQuotes(
   filter: string
 ): Promise<QuotationInterface[]> {
   const db = SQLite.openDatabase(dbName);
-
   let query = `SELECT * FROM ${dbName}`;
+  let params: any[] = [];
 
   if (key === strings.customDiscoverHeaders.deleted) {
     query += ` WHERE deleted = 1 ORDER BY RANDOM()`;
   } else if (key === strings.customDiscoverHeaders.top100) {
-    query += ` ORDER BY RANDOM() LIMIT 100`; // Fetch top 100 random quotes
+    query += ` WHERE subjects LIKE ? AND deleted = 0`;
+      params = [`%${"Top 100"}%`];
   } else if (filter === strings.filters.author) {
     query += ` WHERE deleted = 0 AND author LIKE '%${key}%' ORDER BY RANDOM()`;
   } else if (filter === strings.filters.subject) {
@@ -173,7 +175,7 @@ export async function getShuffledQuotes(
     db.transaction((tx) => {
       tx.executeSql(
         query,
-        [],
+        params,
         (_, result) => {
           const quotes: QuotationInterface[] = [];
           for (let i = 0; i < result.rows.length; i++) {

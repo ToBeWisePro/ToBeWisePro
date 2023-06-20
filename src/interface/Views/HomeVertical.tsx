@@ -47,8 +47,8 @@ export const HomeVertical = ({
         const quote = response.notification.request.content.data.quote;
         if (quote) {
           // Reset the quotes state and set the quote from the notification as the first item
-          setQuotes([quote, ...quotes]);
-          setTitle(quote.author);
+          setQuotes([quote]);
+          setTitle(strings.copy.notificationFrom + quote.author);
         }
     });
 
@@ -74,14 +74,12 @@ export const HomeVertical = ({
       (await AsyncStorage.getItem("userQuery")) || defaultQuery;
     const savedTitle = await AsyncStorage.getItem("title");
 
-    console.log(`Saved Filter: ${savedFilter}, Saved Query: ${savedQuery}`); // Log the saved filter and query
 
     setFilter(savedFilter);
     setQuery(savedQuery);
 
     try {
       const res = await getShuffledQuotes(savedQuery, savedFilter);
-      console.log(`Shuffled quotes: ${JSON.stringify(res)}`); // Log the response from getShuffledQuotes
       setQuotes(res);
     } catch (error) {
       console.error("Error getting shuffled quotes: ", error);

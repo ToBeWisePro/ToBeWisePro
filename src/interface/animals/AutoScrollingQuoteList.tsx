@@ -1,18 +1,21 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
-import { 
-  useSharedValue, 
-  withTiming, 
-  useDerivedValue, 
-  runOnJS, 
-  cancelAnimation 
+import {
+  useSharedValue,
+  withTiming,
+  useDerivedValue,
+  runOnJS,
+  cancelAnimation,
 } from "react-native-reanimated";
 import { SmallQuoteContainer } from "../organisms/SmallQuoteContainer";
 import Slider from "@react-native-community/slider";
 import { LIGHT, PRIMARY_BLUE, PRIMARY_GREEN } from "../../../styles/Colors";
-import { NavigationInterface, QuotationInterface } from "../../res/constants/Interfaces";
+import {
+  NavigationInterface,
+  QuotationInterface,
+} from "../../res/constants/Interfaces";
 import { Easing } from "react-native-reanimated";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
@@ -43,33 +46,52 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const [currentPosition, setCurrentPosition] = useState(0);
 
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
+  // log hello world when the component mounts
+  useEffect(() => {
+    console.log("Hello World");
+  }, []);
+
+  const handlePress = (quote: QuotationInterface) => {
+    let newQuotes: QuotationInterface[] = [quote];
+    data.forEach((quote2) => {
+      if (quote._id !== quote2._id) {
+        newQuotes.push(quote2);
+      }
+    });
+    navigation.push(strings.screenName.homeHorizontal, {
+      currentQuotes: newQuotes,
+      quoteSearch: {
+        filter: filter,
+        query: query,
+      },
+    });
+  };
 
   // Function to set and store scroll speed
   const setAndStoreScrollSpeed = async (value) => {
     try {
-      await AsyncStorage.setItem('@scrollSpeed', JSON.stringify(value));
+      await AsyncStorage.setItem("@scrollSpeed", JSON.stringify(value));
       setScrollSpeed(value);
     } catch (e) {
-      // saving error
       console.log(e);
     }
   };
 
-  // Retrieve the stored scroll speed when component mounts
   useEffect(() => {
     const fetchScrollSpeed = async () => {
       try {
-        const value = await AsyncStorage.getItem('@scrollSpeed');
+        const value = await AsyncStorage.getItem("@scrollSpeed");
         if (value !== null) {
           setScrollSpeed(JSON.parse(value));
         }
       } catch (e) {
-        // error reading value
         console.log(e);
       }
-    }
+    };
 
     fetchScrollSpeed();
+    // log out our quotes
+    console.log("DATAAAA ", data);
   }, []);
 
   useEffect(() => {
@@ -99,10 +121,10 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
 
   const restartScroll = () => {
     setPlayPressed(false);
-    scrollPosition.value = 0; // reset scroll position
+    scrollPosition.value = 0;
     setCurrentPosition(0);
     setTimeout(() => {
-      scrollRef.current?.scrollToOffset({ offset: 0, animated: false }); // scroll to the top without animation
+      scrollRef.current?.scrollToOffset({ offset: 0, animated: false });
     }, 500);
   };
 
@@ -119,24 +141,10 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       <SmallQuoteContainer
         key={quote._id}
         passedInQuote={quote}
-        pressFunction={() => {
-          let newQuotes: QuotationInterface[] = [quote];
-          data.forEach((quote2) => {
-            if (quote._id !== quote2._id) {
-              newQuotes.push(quote2);
-            }
-          });
-          navigation.push(strings.screenName.homeHorizontal, {
-            currentQuotes: newQuotes,
-            quoteSearch: {
-              filter: filter,
-              query: query,
-            },
-          });
-        }}
+        pressFunction={() => handlePress(quote)}
       />
     ),
-    [data, navigation, filter, query]
+    [handlePress]
   );
 
   return (
@@ -157,6 +165,12 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         }
         onEndReached={data.length >= 3 ? restartScroll : null}
         onEndReachedThreshold={0}
+        getItemLayout={(data, index) => ({
+          length: QUOTE_ITEM_HEIGHT,
+          offset: QUOTE_ITEM_HEIGHT * index,
+          index,
+        })}
+        keyExtractor={(item) => item._id.toString()}
       />
       {data.length >= 1 ? (
         <Slider

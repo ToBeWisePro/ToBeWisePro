@@ -8,6 +8,11 @@ function sleep(ms: number) {
 }
 
 export async function scheduleNotifications() {
+  try {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  } catch (error) {
+    console.error("Error cancelling old notifications:", error);
+  }
   // console.log("Scheduling notifications")
   let allowNotifications = true;
 
@@ -48,7 +53,7 @@ export async function scheduleNotifications() {
   }
 
   if (allowNotifications && spacing > 0) {
-    const queue = await getQuotes(query, filter).then(async (quotes)=>{
+    const queue = await getShuffledQuotes(query, filter).then(async (quotes)=>{
       // console.log("Got quotes: " + quotes.length)
       const notificationRequests = [];
       const fireTimes = []; // Array to store the fire times

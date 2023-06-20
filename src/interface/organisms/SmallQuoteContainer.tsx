@@ -23,7 +23,7 @@ export const SmallQuoteContainer: React.FC<Props> = ({
   useEffect(() => {
     // We need the orderedQuotes so that when a user navigates to the HomeHorizontal screen the quotes stay in order
     // setOrderQuotes(quotes);
-    updateQuoteContainer(quote, quoteContainerRefreshRate, setQuote);
+    // updateQuoteContainer(quote, quoteContainerRefreshRate, setQuote);
   }, []);
 
   return (
@@ -33,12 +33,10 @@ export const SmallQuoteContainer: React.FC<Props> = ({
         <AppText style={globalStyles.quoteText} numberOfLines={6}>
           {quote.quoteText}
         </AppText>
-       
       </TouchableOpacity>
-
-      <View style={styles.authorContainer}>
+      <TouchableOpacity onPress={pressFunction} style={styles.authorContainer}>
         <AppText style={globalStyles.authorText}>{quote.author}</AppText>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -62,8 +60,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  quoteContainer:{
-    height: globalStyles.smallQuoteContainer.height - 70
+  quoteContainer: {
+    height: globalStyles.smallQuoteContainer.height - 70,
   },
   authorContainer: {
     // paddingTop: 10,
