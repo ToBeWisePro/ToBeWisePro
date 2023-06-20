@@ -74,11 +74,14 @@ export const HomeVertical = ({
       (await AsyncStorage.getItem("userQuery")) || defaultQuery;
     const savedTitle = await AsyncStorage.getItem("title");
 
+    console.log(`Saved Filter: ${savedFilter}, Saved Query: ${savedQuery}`); // Log the saved filter and query
+
     setFilter(savedFilter);
     setQuery(savedQuery);
 
     try {
       const res = await getShuffledQuotes(savedQuery, savedFilter);
+      console.log(`Shuffled quotes: ${JSON.stringify(res)}`); // Log the response from getShuffledQuotes
       setQuotes(res);
     } catch (error) {
       console.error("Error getting shuffled quotes: ", error);
@@ -102,7 +105,9 @@ export const HomeVertical = ({
   useEffect(() => {
     const defaultQuery = strings.database.defaultQuery;
     const defaultFilter = strings.database.defaultFilter;
-    const quoteSearch = route.params?.quoteSearch;
+    const quoteSearch = route.params?.quoteSearch ? route.params.quoteSearch : {"query": defaultQuery, "filter": defaultFilter};
+
+    console.log(`Quote Search: ${JSON.stringify(quoteSearch)}`); // Log the quoteSearch object
 
     if (quoteSearch) {
       const { query, filter } = quoteSearch;
@@ -116,6 +121,7 @@ export const HomeVertical = ({
       try {
         fetchFromStorageAndSet(defaultQuery, defaultFilter);
       } catch (error) {
+        console.error(`Error fetching data from storage: ${error}`); // Log the error when fetching from storage
         setTitle(strings.navbarHomeDefaultText);
       }
     }

@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
-import { getShuffledQuotes } from "../functions/DBFunctions";
+import { getQuotes, getShuffledQuotes } from "../functions/DBFunctions";
 import { strings } from "../constants/Strings";
 
 function sleep(ms: number) {
@@ -8,7 +8,7 @@ function sleep(ms: number) {
 }
 
 export async function scheduleNotifications() {
-  console.log("Scheduling notifications")
+  // console.log("Scheduling notifications")
   let allowNotifications = true;
 
   try {
@@ -48,8 +48,8 @@ export async function scheduleNotifications() {
   }
 
   if (allowNotifications && spacing > 0) {
-    const queue = await getShuffledQuotes(query, filter).then(async (quotes)=>{
-      console.log("Got quotes: " + quotes.length)
+    const queue = await getQuotes(query, filter).then(async (quotes)=>{
+      // console.log("Got quotes: " + quotes.length)
       const notificationRequests = [];
       const fireTimes = []; // Array to store the fire times
       let prevFireTime = 0;
@@ -105,7 +105,7 @@ export async function scheduleNotifications() {
       // Calculate and log the difference in fire times
       for (let i = 1; i < fireTimes.length; i++) {
         const difference = (fireTimes[i] - fireTimes[i-1]) / 1000; // Difference in seconds
-        console.log(`Difference in seconds between notification ${i} and ${i+1}: ${difference}`);
+        // console.log(`Difference in seconds between notification ${i} and ${i+1}: ${difference}`);
       }
     }).catch((error)=>{
       throw error;
