@@ -28,7 +28,7 @@ import { ScrollView, Switch } from "react-native-gesture-handler";
 import { AppText } from "../atoms/AppText";
 import { CustomTimeInput } from "../atoms/CustomTimeInput";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
-import { NotificationDebugScreen } from './NotificationDebugScreen';
+import { NotificationDebugScreen } from "./NotificationDebugScreen";
 
 interface Props {
   navigation: NavigationInterface;
@@ -81,37 +81,37 @@ export const NotificationScreen: React.FC<Props> = ({
   };
 
   const loadSavedSettings = async () => {
-      const savedAllowNotifications = await loadSettings(
-        SETTINGS_KEYS.allowNotifications
-      );
-      const savedStartTime = await loadSettings(SETTINGS_KEYS.startTime);
-      const savedEndTime = await loadSettings(SETTINGS_KEYS.endTime);
-      const savedSpacing = await loadSettings(SETTINGS_KEYS.spacing);
-      const savedQuery = await loadSettings(SETTINGS_KEYS.query);
-      const savedFilter = await loadSettings(SETTINGS_KEYS.filter);
+    const savedAllowNotifications = await loadSettings(
+      SETTINGS_KEYS.allowNotifications
+    );
+    const savedStartTime = await loadSettings(SETTINGS_KEYS.startTime);
+    const savedEndTime = await loadSettings(SETTINGS_KEYS.endTime);
+    const savedSpacing = await loadSettings(SETTINGS_KEYS.spacing);
+    const savedQuery = await loadSettings(SETTINGS_KEYS.query);
+    const savedFilter = await loadSettings(SETTINGS_KEYS.filter);
 
-      if (savedQuery !== null) {
-        setQuery(savedQuery);
-      }
-      if (savedFilter !== null) {
-        setFilter(savedFilter);
-      }
-      if (savedAllowNotifications !== null) {
-        setAllowNotifications(savedAllowNotifications);
-      }
-      if (savedStartTime !== null) {
-        setStartTime(new Date(savedStartTime));
-      }
-      if (savedEndTime !== null) {
-        setEndTime(new Date(savedEndTime));
-      }
-      if (savedSpacing !== null) {
-        setSpacing(savedSpacing);
-      }
-    };
+    if (savedQuery !== null) {
+      setQuery(savedQuery);
+    }
+    if (savedFilter !== null) {
+      setFilter(savedFilter);
+    }
+    if (savedAllowNotifications !== null) {
+      setAllowNotifications(savedAllowNotifications);
+    }
+    if (savedStartTime !== null) {
+      setStartTime(new Date(savedStartTime));
+    }
+    if (savedEndTime !== null) {
+      setEndTime(new Date(savedEndTime));
+    }
+    if (savedSpacing !== null) {
+      setSpacing(savedSpacing);
+    }
+  };
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
+    const unsubscribe = navigation.addListener("focus", () => {
       loadSavedSettings();
     });
 
@@ -163,13 +163,10 @@ export const NotificationScreen: React.FC<Props> = ({
   };
 
   const handleSpacingChange = async (value: number) => {
-    await saveSettings(SETTINGS_KEYS.spacing, value).then(() =>{
+    await saveSettings(SETTINGS_KEYS.spacing, value).then(async () => {
       setSpacing(value);
-      scheduleNotifications()
-      console.log("notifs scheduled")
-
-    }
-    );
+      await scheduleNotifications().then(() => console.log("notifs scheduled")).catch((err) => console.log(err));
+    });
   };
 
   // const handleQueryChange = (text: string) => {
@@ -194,9 +191,9 @@ export const NotificationScreen: React.FC<Props> = ({
       />
       <View style={{ backgroundColor: LIGHT }}>
         <ScrollView
-          // refreshControl={
-          //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          // }
+        // refreshControl={
+        //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        // }
         >
           <View style={styles.main}>
             <View style={styles.menuOptionContainerBottom}>
@@ -247,7 +244,7 @@ export const NotificationScreen: React.FC<Props> = ({
               </View>
             </TouchableOpacity>
             <View style={{ alignItems: "center" }}>
-              {/* <TouchableOpacity
+              <TouchableOpacity
                 style={styles.button}
                 onPress={() =>
                   navigation.push(
@@ -256,10 +253,8 @@ export const NotificationScreen: React.FC<Props> = ({
                   )
                 }
               >
-                <AppText style={styles.buttonText}>
-                  Debug Notifications
-                </AppText>
-              </TouchableOpacity> */}
+                <AppText style={styles.buttonText}>Debug Notifications</AppText>
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>

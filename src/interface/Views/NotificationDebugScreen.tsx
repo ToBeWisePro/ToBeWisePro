@@ -17,18 +17,28 @@ export const NotificationDebugScreen = ({ navigation }: Props) => {
   }, []);
 
   const fetchScheduledNotifications = async () => {
+    const schedulingMoment = Date.now(); // Save the scheduling time
     const notifications =
       await Notifications.getAllScheduledNotificationsAsync();
     notifications.forEach((notification) => {
-      console.log(
-        `Received notification with trigger: ${JSON.stringify(
-          notification.trigger,
-          null,
-          2
-        )}`
-      ); // Log trigger object directly
+      // console.log(
+      //   `Received notification with trigger: ${JSON.stringify(
+      //     notification.trigger,
+      //     null,
+      //     2
+      //   )}`
+      // ); // Log trigger object directly
     });
-    setScheduledNotifications(notifications);
+
+    const notificationsWithFireTime = notifications.map(notification => {
+      if (notification.trigger && typeof notification.trigger.seconds === 'number') {
+        const fireTime = new Date(schedulingMoment + notification.trigger.seconds * 1000);
+        return {...notification, fireTime};
+      }
+      return notification; // return the notification as is if it doesn't have a seconds property
+    });
+
+    setScheduledNotifications(notificationsWithFireTime);
     setRefreshing(false);
   };
 
@@ -52,16 +62,17 @@ export const NotificationDebugScreen = ({ navigation }: Props) => {
         }
       >
         {scheduledNotifications.map((notification, index) => {
-          // console.log(`Received notification with date: ${notification.trigger.date}`); // Log trigger date
-          const triggerDate = new Date(notification.trigger.date);
-          const formattedDate = triggerDate.toString();
+          const formattedFireTime = notification.fireTime ? notification.fireTime.toLocaleString() : 'N/A';
 
           return (
-            <View key={index}>
+            <View key={index} style={{marginBottom: 50, borderColor: "#000", borderWidth: 1}}>
               <Text>Title: {notification.content.title}</Text>
               <Text>Body: {notification.content.body}</Text>
               <Text>
                 "Trigger: " {JSON.stringify(notification.trigger, null, 2)}
+              </Text>
+              <Text>
+                "Expected Fire Time: " {formattedFireTime}
               </Text>
             </View>
           );

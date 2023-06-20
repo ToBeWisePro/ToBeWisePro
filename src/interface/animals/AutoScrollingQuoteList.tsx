@@ -1,24 +1,21 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import { FlatList, StyleSheet, View, Button } from "react-native"; // Import Button
-import {
-  useSharedValue,
-  withTiming,
-  useDerivedValue,
-  runOnJS,
-  cancelAnimation,
+import { FlatList, StyleSheet, View } from "react-native";
+import { 
+  useSharedValue, 
+  withTiming, 
+  useDerivedValue, 
+  runOnJS, 
+  cancelAnimation 
 } from "react-native-reanimated";
 import { SmallQuoteContainer } from "../organisms/SmallQuoteContainer";
 import Slider from "@react-native-community/slider";
 import { LIGHT, PRIMARY_BLUE, PRIMARY_GREEN } from "../../../styles/Colors";
-import {
-  NavigationInterface,
-  QuotationInterface,
-} from "../../res/constants/Interfaces";
+import { NavigationInterface, QuotationInterface } from "../../res/constants/Interfaces";
 import { Easing } from "react-native-reanimated";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import { AppText } from "../atoms/AppText";
 
 const QUOTE_ITEM_HEIGHT = globalStyles.smallQuoteContainer.height;
@@ -46,6 +43,34 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const [currentPosition, setCurrentPosition] = useState(0);
 
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
+
+  // Function to set and store scroll speed
+  const setAndStoreScrollSpeed = async (value) => {
+    try {
+      await AsyncStorage.setItem('@scrollSpeed', JSON.stringify(value));
+      setScrollSpeed(value);
+    } catch (e) {
+      // saving error
+      console.log(e);
+    }
+  };
+
+  // Retrieve the stored scroll speed when component mounts
+  useEffect(() => {
+    const fetchScrollSpeed = async () => {
+      try {
+        const value = await AsyncStorage.getItem('@scrollSpeed');
+        if (value !== null) {
+          setScrollSpeed(JSON.parse(value));
+        }
+      } catch (e) {
+        // error reading value
+        console.log(e);
+      }
+    }
+
+    fetchScrollSpeed();
+  }, []);
 
   useEffect(() => {
     if (playPressed) {
@@ -124,31 +149,27 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         scrollEnabled={!playPressed}
         onTouchStart={() => setPlayPressed(false)}
         onScroll={handleScroll}
-        contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }} // add 125px padding to the bottom
+        contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }}
         ListFooterComponent={() =>
           data.length >= 3 ? (
             <AppText style={styles.buttonText}>🔄 Restarting Soon...</AppText>
           ) : null
         }
-        onEndReached={ data.length >= 3 ? restartScroll : null} // Add this line
-        onEndReachedThreshold={0} // Add this line
+        onEndReached={data.length >= 3 ? restartScroll : null}
+        onEndReachedThreshold={0}
       />
       {data.length >= 1 ? (
         <Slider
           minimumValue={0.005}
           maximumValue={0.25}
-          onValueChange={(value) => {
-            setScrollSpeed(value);
-          }}
+          onValueChange={setAndStoreScrollSpeed}
           value={scrollSpeed}
           minimumTrackTintColor={PRIMARY_BLUE}
         />
       ) : (
-        <>
-          <AppText>
-            There are currently no quotes that match your selection
-          </AppText>
-        </>
+        <AppText>
+          There are currently no quotes that match your selection
+        </AppText>
       )}
     </View>
   );
@@ -159,14 +180,6 @@ const styles = StyleSheet.create({
     height: "100%",
     flex: 1,
     marginBottom: globalStyles.navbar.height * 2,
-  },
-  button: {
-    width: "100%",
-    height: 50,
-    borderRadius: 5,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: PRIMARY_GREEN,
   },
   buttonText: {
     color: LIGHT,

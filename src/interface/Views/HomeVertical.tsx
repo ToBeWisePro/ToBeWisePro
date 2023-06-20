@@ -43,18 +43,19 @@ export const HomeVertical = ({
     autoScrollIntervalTime
   );
   useEffect(() => {
-    setScrollSpeed(autoScrollIntervalTime);
-    const unsubscribe = Notifications.addNotificationResponseReceivedListener(
-      async (response) => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
         const quote = response.notification.request.content.data.quote;
         if (quote) {
+          // Reset the quotes state and set the quote from the notification as the first item
           setQuotes([quote, ...quotes]);
           setTitle(quote.author);
         }
-      }
-    );
-    return () => unsubscribe.remove();
-  }, []);
+    });
+
+    // Don't forget to unsubscribe when the component is unmounted
+    return () => subscription.remove();
+}, [quotes]);
+
 
   const fetchQueryAndFilter = async (filter, query) => {
     setFilter(filter);

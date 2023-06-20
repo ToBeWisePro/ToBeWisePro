@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, TouchableWithoutFeedback, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 import { LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
 import {
   NavigationInterface,
@@ -43,9 +43,12 @@ export const LargeQuoteContainer: React.FC<Props> = ({
     // try/catch block is here in case the user is in a author/subject quote view and they delete the last quote
     return (
       <View style={styles.container}>
-        <AppText style={globalStyles.quoteText} numberOfLines={16}>
-          {quote.quoteText}
-        </AppText>
+        <ScrollView style={{ height: "100%" }}>
+          {/* This is intentionally Text so that the user's system overrides work here (bigger font size specifically) */}
+          <Text style={globalStyles.quoteText} numberOfLines={2048}>
+            {quote.quoteText}
+          </Text>
+        </ScrollView>
         <View style={styles.authorContainer}>
           {contributedBy.length > 0 && (
             <AppText style={styles.contributedByText}>
@@ -55,8 +58,9 @@ export const LargeQuoteContainer: React.FC<Props> = ({
           <TouchableOpacity
             onPress={() => {
               const safeLink = quote.author.replaceAll(" ", "_");
-              openLink(quote.authorLink).catch(()=>openLink("https://www.wikipedia.com/wiki/" + safeLink)
-              )
+              openLink(quote.authorLink).catch(() =>
+                openLink("https://www.wikipedia.com/wiki/" + safeLink)
+              );
             }}
           >
             <AppText style={[globalStyles.authorText, { color: PRIMARY_BLUE }]}>

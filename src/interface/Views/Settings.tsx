@@ -1,5 +1,12 @@
 import React from "react";
-import { View, StyleSheet, Dimensions, FlatList, TouchableOpacity, Share, } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  FlatList,
+  TouchableOpacity,
+  Share,
+} from "react-native";
 import { BottomNav } from "../organisms/BottomNav";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
 import { strings } from "../../res/constants/Strings";
@@ -12,41 +19,41 @@ interface Props {
   navigation: {
     navigate: (ev: string) => void;
     goBack: () => void;
-    push: (ev: string, {}) => void
+    push: (ev: string, {}) => void;
   };
 }
 
 interface Button {
-  icon: string,
-  title: string,
-  onPress: ()=> void
+  icon: string;
+  title: string;
+  onPress: () => void;
 }
 export const Settings = ({ navigation }: Props) => {
-
   const buttons: Button[] = [
     {
       icon: "notifications",
-      title: "Schedule Notifications",
-      onPress: ()=> navigation.navigate(strings.screenName.notificationsScreen)
+      title: strings.settings.notifications,
+      onPress: () =>
+        navigation.navigate(strings.screenName.notificationsScreen),
     },
     {
       icon: "info",
-      title: "About",
-      onPress: ()=> openLink("https://tobewise.co/")
+      title: strings.settings.info,
+      onPress: () => openLink("https://tobewise.co/"),
     },
     {
       icon: "star",
-      title: "Rate Us",
-      onPress: ()=> openLink("https://apps.apple.com/ca/app/tobewise-pro/id1156018700")
+      title: strings.settings.rateUs,
+      onPress: () =>
+        openLink("https://apps.apple.com/ca/app/tobewise-pro/id1156018700"),
     },
     {
       icon: "share",
-      title: "Tell A Friend",
-      onPress: async ()=> {
+      title: strings.settings.share,
+      onPress: async () => {
         try {
           const result = await Share.share({
-            message:
-              "Check Out ToBeWise on iOS: https://tobewise.co/"
+            message: strings.settings.shareMessage,
           });
           if (result.action === Share.sharedAction) {
             if (result.activityType) {
@@ -61,42 +68,56 @@ export const Settings = ({ navigation }: Props) => {
           // @ts-ignore
           alert(error.message);
         }
-      }
+      },
     },
     {
       icon: "help",
-      title: "Support",
-      onPress: ()=> openLink("https://tobewise.co/feedback/")
+      title: strings.settings.support,
+      onPress: () => openLink(strings.settings.urls.support),
     },
     {
       icon: "web",
-      title: "Terms",
-      onPress: ()=> openLink("https://tobewise.co/terms/")
+      title: strings.settings.terms,
+      onPress: () => openLink(strings.settings.urls.terms),
     },
     {
       icon: "people",
-      title: "Our Team",
-      onPress: ()=> openLink("https://tobewise.co/blog/meet-the-team/")
+      title: strings.settings.ourTeam,
+      onPress: () => openLink(strings.settings.urls.team),
     },
     {
-      title: "Version Number"
-    }
-  ]
+      icon: '',
+      title: strings.settings.versionNumberText,
+      onPress: () => {},
+    },
+  ];
 
   return (
     <View style={styles.container}>
-      <TopNav stickyHeader={true} title={strings.screenName.settings } backButton={false}/>
+      <TopNav
+        stickyHeader={true}
+        title={strings.screenName.settings}
+        backButton={false}
+      />
       <FlatList
-      style={styles.buttonList}
-      data={buttons}
-      renderItem={(button)=>{
-        return(
-          <SettingsButton icon={button.item.icon} title={button.item.title} onPress={button.item.onPress} />
-        )
-      }}
+        style={styles.buttonList}
+        data={buttons}
+        renderItem={(button) => {
+          return (
+            <SettingsButton
+              icon={button.item.icon}
+              title={button.item.title}
+              onPress={button.item.onPress}
+            />
+          );
+        }}
       />
 
-      <BottomNav navigation={navigation} screen={strings.screenName.settings} whatToInclude={IncludeInBottomNav.Nothing}/>
+      <BottomNav
+        navigation={navigation}
+        screen={strings.screenName.settings}
+        whatToInclude={IncludeInBottomNav.Nothing}
+      />
     </View>
   );
 };
@@ -104,10 +125,10 @@ export const Settings = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     height: Dimensions.get("window").height,
-    backgroundColor: "#000"
+    backgroundColor: "#000",
   },
   buttonList: {
     backgroundColor: GRAY_6,
-    height: "100%"
-  }
-})
+    height: "100%",
+  },
+});

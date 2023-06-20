@@ -15,7 +15,7 @@ export const strings = new LocalizedStrings({
       },
       database: {
         safeChar: "%",
-        defaultQuery: "Top 100",
+        defaultQuery: "🏆 Top 100",
         defaultFilter: "Subject",
       },
       filters: {
@@ -61,6 +61,23 @@ export const strings = new LocalizedStrings({
         favorites: "❤️ Favorite Quotations",
         top100: "🏆 Top 100"
       },
+      settings: {
+        notifications: "Schedule Notifications",
+        info: "More Info",
+        rateUs: "Rate Us On The App Store",
+        share: "Tell A Friend",
+        shareMessage: `Immerse yourself in the wisdom of over 900 of the greatest minds in history with ToBeWise™. This app offers you a curated collection of over 2,000 quotations on almost 200 different topics. ToBeWise™ is more than just an app; it's a treasure trove of wisdom from the greatest minds in history. From Aristotle and Socrates to Elon Musk and Steve Jobs, this app brings their wisdom to your fingertips.\n\n💡 Check Out ToBeWise on iOS: https://tobewise.co/`,
+        support: "Support",
+        terms: "Terms And Conditions",
+        ourTeam: "Meet Our Team",
+        versionNumberText: "Version Number",
+        urls: {
+          support: "https://tobewise.co/feedback/",
+          terms: "https://tobewise.co/terms/",
+          team: "https://tobewise.co/blog/meet-the-team/"
+        }
+      },
+
       
       testText: "The AppCopy.tsx text works 💩",
       navbarHomeDefaultText: "Subject: 🏆 Top 100",

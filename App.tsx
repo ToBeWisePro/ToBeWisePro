@@ -9,6 +9,7 @@ import { QuotationInterface } from './src/res/constants/Interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { scheduleNotifications } from './src/res/util/NotificationScheduler';
+import { Image } from 'react-native-elements';
 
 export default function App() {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>([]);

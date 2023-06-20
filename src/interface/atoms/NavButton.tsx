@@ -45,7 +45,7 @@ export const NavButton: React.FC<Props> = ({
       ]}
       onPress={async () => {
         if (navigationTarget == strings.screenName.home) {
-          await getShuffledQuotes("Top 100", strings.filters.subject).then((res: QuotationInterface[]) => {
+          await getShuffledQuotes(strings.database.defaultQuery, strings.filters.subject).then((res: QuotationInterface[]) => {
             navigation.push("Home", { currentQuotes: res, queryCategory: strings.database.defaultQuery });
           });
         } else {

@@ -8,6 +8,7 @@ function sleep(ms: number) {
 }
 
 export async function scheduleNotifications() {
+  console.log("Scheduling notifications")
   let allowNotifications = true;
 
   try {
@@ -31,81 +32,85 @@ export async function scheduleNotifications() {
     : strings.database.defaultFilter;
   const spacing = spacingValue ? JSON.parse(spacingValue) : 30;
 
-  const INTERVAL = spacing * 60 * 1000;
+  const ONE_DAY = 24 * 60 * 60 * 1000; // One day in milliseconds
+  const ONE_MINUTE = 60 * 1000; // One minute in milliseconds
+  const MAX_INTERVALS = 60 // Max number of notifications that can be scheduled at once
+  const spacingInMilliseconds = spacing * ONE_MINUTE;
 
-  // Adjust the start time to be one interval from the current time
-  const startTime = new Date(Date.now() + INTERVAL);
+  const startTime = new Date(Date.now() + spacingInMilliseconds);
 
-  if (allowNotifications) {
-    // get shuffled quotes once
-    const quotes = await getShuffledQuotes(query, filter);
-    if (quotes.length === 0) {
-      throw Error("No quotes available");
-    }
+  const durationAfterOneInterval = ONE_DAY - spacingInMilliseconds;
 
-    // calculate the number of intervals between the start and end time
-    const totalIntervals = Math.floor(
-      (24 * 60 * 60 * 1000 - INTERVAL) / INTERVAL
-    );
+  let totalIntervals = Math.floor(durationAfterOneInterval / spacingInMilliseconds);
 
-    const notificationRequests = []; // Array to store all notification requests
+  if (totalIntervals > MAX_INTERVALS) {
+    totalIntervals = MAX_INTERVALS;
+  }
 
-    let prevFireTime = 0; // Add this line before the loop
-
-    for (let i = 0; i <= totalIntervals; i++) {
-      const fireDate = new Date(startTime.getTime() + i * INTERVAL);
-
-      // pick a random quote from the shuffled quotes
-      const quote = quotes[Math.floor(Math.random() * quotes.length)];
-      if (quote.quoteText.length > 0) {
-        // Check if the fire time is less than or equal to the previous fire time + 5 seconds
-        if (fireDate.getTime() <= prevFireTime + 5000) {
-          console.log('Two quotes found that are scheduled too close together. Skipping one.');
-          continue; // Skip this iteration and move to the next
-        }
-        prevFireTime = fireDate.getTime(); // Set the new previous fire time
-
-        // Add each notification request to the array
-        notificationRequests.push({
-          content: {
-            title: "ToBeWise",
-            body: quote.quoteText + "\n\n-" + quote.author,
-            data: {
-              quote: quote,
+  if (allowNotifications && spacing > 0) {
+    const queue = await getShuffledQuotes(query, filter).then(async (quotes)=>{
+      console.log("Got quotes: " + quotes.length)
+      const notificationRequests = [];
+      const fireTimes = []; // Array to store the fire times
+      let prevFireTime = 0;
+  
+      for (let i = 0; i <= totalIntervals; i++) {
+        const fireDate = new Date(startTime.getTime() + (i * spacingInMilliseconds));
+        const quote = quotes[Math.floor(Math.random() * quotes.length)];
+        if (quote.quoteText.length > 0) {
+          if (fireDate.getTime() <= prevFireTime + 5000) {
+            console.log('Two quotes found that are scheduled too close together. Skipping one.');
+            continue;
+          }
+          prevFireTime = fireDate.getTime();
+          fireTimes.push(prevFireTime); // Add the fire time to the array
+          notificationRequests.push({
+            content: {
+              title: "ToBeWise",
+              body: quote.quoteText + "\n\n-" + quote.author,
+              data: {
+                quote: quote,
+              },
             },
-          },
-          trigger: {
-            date: fireDate.getTime(), // convert Date object to milliseconds
-          },
-        });
-      } else {
-        throw Error("Empty quote text");
+            trigger: {
+              date: fireDate.getTime(),
+            },
+          });
+        } else {
+          throw Error("Empty quote text");
+        }
       }
-    }
-
-    const finalFireDate = new Date(
-      startTime.getTime() + (totalIntervals + 1) * INTERVAL
-    );
-
-    // Add the final notification to the array
-    notificationRequests.push({
-      content: {
-        title: "ToBeWise",
-        body: "Open ToBeWise to queue more notifications",
-      },
-      trigger: {
-        date: finalFireDate.getTime(), // converting Date object to milliseconds
-      },
+  
+      const finalFireDate = new Date(startTime.getTime() + (totalIntervals + 1) * spacingInMilliseconds);
+      fireTimes.push(finalFireDate.getTime()); // Add the final fire time to the array
+      notificationRequests.push({
+        content: {
+          title: "ToBeWise",
+          body: "Open ToBeWise to queue more notifications",
+        },
+        trigger: {
+          date: finalFireDate.getTime(),
+        },
+      });
+  
+      for (const request of notificationRequests) {
+        try {
+          await Notifications.scheduleNotificationAsync(request);
+          // await sleep(1000);
+        } catch (e) {
+          console.error("Error scheduling notification:", e);
+        }
+      }
+  
+      // Calculate and log the difference in fire times
+      for (let i = 1; i < fireTimes.length; i++) {
+        const difference = (fireTimes[i] - fireTimes[i-1]) / 1000; // Difference in seconds
+        console.log(`Difference in seconds between notification ${i} and ${i+1}: ${difference}`);
+      }
+    }).catch((error)=>{
+      throw error;
     });
 
-    // Iterate over the array and schedule each notification
-    for (const request of notificationRequests) {
-      try {
-        await Notifications.scheduleNotificationAsync(request);
-        await sleep(1000);
-      } catch (e) {
-        console.error("Error scheduling notification:", e);
-      }
-    }
+   
   }
 }
