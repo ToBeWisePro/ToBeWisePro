@@ -46,12 +46,9 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const [currentPosition, setCurrentPosition] = useState(0);
 
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
-  // log hello world when the component mounts
-  useEffect(() => {
-    console.log("Hello World");
-  }, []);
-
-  const handlePress = (quote: QuotationInterface) => {
+  
+  // Memorize handlePress function to avoid unnecessary re-renders
+  const handlePress = useCallback((quote: QuotationInterface) => {
     let newQuotes: QuotationInterface[] = [quote];
     data.forEach((quote2) => {
       if (quote._id !== quote2._id) {
@@ -65,7 +62,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         query: query,
       },
     });
-  };
+  }, [data, navigation, filter, query]);
 
   // Function to set and store scroll speed
   const setAndStoreScrollSpeed = async (value) => {
@@ -90,8 +87,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     };
 
     fetchScrollSpeed();
-    // log out our quotes
-    console.log("DATAAAA ", data);
   }, []);
 
   useEffect(() => {
@@ -119,14 +114,14 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     scrollRef.current?.scrollToOffset({ offset: y, animated: false });
   };
 
-  const restartScroll = () => {
+  const restartScroll = useCallback(() => {
     setPlayPressed(false);
     scrollPosition.value = 0;
     setCurrentPosition(0);
     setTimeout(() => {
       scrollRef.current?.scrollToOffset({ offset: 0, animated: false });
     }, 500);
-  };
+  }, [setPlayPressed]);
 
   useDerivedValue(() => {
     runOnJS(scrollTo)(scrollPosition.value);
@@ -147,6 +142,12 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     [handlePress]
   );
 
+  const ListFooterComponent = useCallback(() => {
+    return data.length >= 3 ? (
+      <AppText style={styles.buttonText}>🔄 Restarting Soon...</AppText>
+    ) : null;
+  }, [data.length]);
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -158,11 +159,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         onTouchStart={() => setPlayPressed(false)}
         onScroll={handleScroll}
         contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }}
-        ListFooterComponent={() =>
-          data.length >= 3 ? (
-            <AppText style={styles.buttonText}>🔄 Restarting Soon...</AppText>
-          ) : null
-        }
+        ListFooterComponent={ListFooterComponent}
         onEndReached={data.length >= 3 ? restartScroll : null}
         onEndReachedThreshold={0}
         getItemLayout={(data, index) => ({
@@ -171,6 +168,12 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
           index,
         })}
         keyExtractor={(item) => item._id.toString()}
+        // Optimization props
+        initialNumToRender={10} // Arbitrary, you might want to adjust this number
+        maxToRenderPerBatch={10} // Arbitrary, you might want to adjust this number
+        windowSize={10} // Arbitrary, you might want to adjust this number
+        updateCellsBatchingPeriod={50} // Arbitrary, you might want to adjust this number
+        removeClippedSubviews
       />
       {data.length >= 1 ? (
         <Slider
