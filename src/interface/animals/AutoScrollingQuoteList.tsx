@@ -61,6 +61,8 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         filter: filter,
         query: query,
       },
+      query: query,
+      filter: filter,
     });
   }, [data, navigation, filter, query]);
 
@@ -115,6 +117,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   };
 
   const restartScroll = useCallback(() => {
+    console.log("Restarting scroll...")
     setPlayPressed(false);
     scrollPosition.value = 0;
     setCurrentPosition(0);
@@ -178,7 +181,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       {data.length >= 1 ? (
         <Slider
           minimumValue={0.005}
-          maximumValue={0.25}
+          maximumValue={0.1}
           onValueChange={setAndStoreScrollSpeed}
           value={scrollSpeed}
           minimumTrackTintColor={PRIMARY_BLUE}

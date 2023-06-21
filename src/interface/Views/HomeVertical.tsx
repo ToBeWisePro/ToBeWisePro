@@ -105,8 +105,6 @@ export const HomeVertical = ({
     const defaultFilter = strings.database.defaultFilter;
     const quoteSearch = route.params?.quoteSearch ? route.params.quoteSearch : {"query": defaultQuery, "filter": defaultFilter};
 
-    console.log(`Quote Search: ${JSON.stringify(quoteSearch)}`); // Log the quoteSearch object
-
     if (quoteSearch) {
       const { query, filter } = quoteSearch;
       try {

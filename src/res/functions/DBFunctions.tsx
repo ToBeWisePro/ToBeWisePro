@@ -153,8 +153,12 @@ export async function getShuffledQuotes(
 
   if (key === strings.customDiscoverHeaders.deleted) {
     query += ` WHERE deleted = 1 ORDER BY RANDOM()`;
-  } else if (key === strings.customDiscoverHeaders.top100) {
-    query += ` WHERE subjects LIKE ? AND deleted = 0`;
+  } 
+  else if (key === strings.customDiscoverHeaders.all){
+    query += ' WHERE deleted = 0 ORDER BY RANDOM()'
+  }
+  else if (key === strings.customDiscoverHeaders.top100) {
+    query += ` WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()`;
       params = [`%${"Top 100"}%`];
   } else if (filter === strings.filters.author) {
     query += ` WHERE deleted = 0 AND author LIKE '%${key}%' ORDER BY RANDOM()`;
@@ -162,6 +166,10 @@ export async function getShuffledQuotes(
     query += ` WHERE deleted = 0 AND subjects LIKE '%${key}%' ORDER BY RANDOM()`;
   } else if (key === strings.customDiscoverHeaders.favorites) {
     query += ` WHERE favorite === TRUE AND deleted = 0 ORDERY BY RANDOM()`; 
+  } 
+  else if (key === strings.customDiscoverHeaders.all) {
+    console.log("ALL QUOTES")
+    query += ` AND deleted = 1`; 
   } 
   else if (key === strings.customDiscoverHeaders.addedByMe) {
     query += ` WHERE contributeBy === '%${defaultUsername}%' AND deleted = 0 ORDER BY RANDOM()` 
@@ -263,24 +271,6 @@ export async function getQuoteById(
     });
   });
 }
-
-export const getAllQuotes = async (): Promise<QuotationInterface[]> => {
-  const db = await SQLite.openDatabase(dbName);
-
-  return new Promise<QuotationInterface[]>((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `SELECT * FROM ${dbName};`,
-        [],
-        (_, { rows }) => {
-          const objs: QuotationInterface[] = rows["_array"];
-          resolve(shuffle(objs));
-        },
-        (_, error) => reject(error)
-      );
-    });
-  });
-};
 
 export const getQuotesContributedByMe = async (): Promise<
   QuotationInterface[]

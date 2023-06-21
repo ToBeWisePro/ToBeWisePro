@@ -20,7 +20,7 @@ interface Props {
 export const Discover = ({ navigation }: Props) => {
   const [subjects, setSubjects] = useState<IData[]>([]);
   const [authors, setAuthors] = useState<IData[]>([]);
-  const [filter, setFilter] = useState<string>("");
+  const [filter, setFilter] = useState<string>(strings.database.defaultFilter);
   const [search, setSearch] = useState<string>("");
   const [tempSubjects, setTempSubjects] = useState<IData[]>([]);
   const [tempAuthors, setTempAuthors] = useState<IData[]>([]);
@@ -33,12 +33,12 @@ export const Discover = ({ navigation }: Props) => {
   useEffect(() => {
     // set authors and subjects
     const load = async () => {
-        const storedFilter = await AsyncStorage.getItem('filter');
-           if (storedFilter) {
-              setFilter(storedFilter);
-           } else {
-              setFilter(strings.filters.author);
-           }
+      const storedFilter = await AsyncStorage.getItem("filter");
+      if (storedFilter) {
+        setFilter(storedFilter);
+      } else {
+        setFilter(strings.filters.author);
+      }
       await getFromDB(strings.filters.subject).then((res) => {
         formatDataForAlphabetList(res, setSubjects);
       });

@@ -9,9 +9,13 @@ import { BottomNav } from "../organisms/BottomNav";
 import { NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
-import { getFromDB } from "../../res/functions/DBFunctions";
+import { getAllQuotes, getFromDB, getShuffledQuotes } from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
-import { SETTINGS_KEYS, loadSettings, saveSettings } from "./NotificationsScreen";
+import {
+  SETTINGS_KEYS,
+  loadSettings,
+  saveSettings,
+} from "./NotificationsScreen";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
 
 interface Props {
@@ -25,7 +29,7 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
   const [search, setSearch] = useState<string>("");
   const [tempSubjects, setTempSubjects] = useState<IData[]>([]);
   const [tempAuthors, setTempAuthors] = useState<IData[]>([]);
-  const [reinitialize, setReinitialize] = useState<number>(0)
+  const [reinitialize, setReinitialize] = useState<number>(0);
 
   useEffect(() => {
     // set authors and subjects
@@ -123,12 +127,22 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
           setFilter={setFilter}
           search={search}
           onPress={async (query: string, filter: string) => {
-            await saveSettings(SETTINGS_KEYS.query, query);
-            await saveSettings(SETTINGS_KEYS.filter, filter);
-            const savedQuery = await loadSettings(SETTINGS_KEYS.query);
-            const savedFilter = await loadSettings(SETTINGS_KEYS.filter);
-            scheduleNotifications();
-            navigation.goBack();
+            console.log("Saving query:-", query, "-and filter:-", filter);
+            await getShuffledQuotes(query, filter)
+              .then((res) => {
+                console.log(res.length);
+              })
+              .then(async () => {
+                await saveSettings(SETTINGS_KEYS.query, query)
+                  .then(async () => {
+                    await saveSettings(SETTINGS_KEYS.filter, filter);
+                  })
+                  .then(async () => {
+                    await scheduleNotifications().then(() => {
+                      navigation.goBack();
+                    });
+                  });
+              });
           }}
         />
       </View>

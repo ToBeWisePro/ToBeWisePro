@@ -60,7 +60,11 @@ export const loadSettings = async (key: string) => {
       return JSON.parse(value);
     }
   } catch (error) {
-    console.error("Error loading settings:", error);
+    // save the default filter
+    if (key === SETTINGS_KEYS.filter) {
+      console.log("Setting default filter")
+      await saveSettings(key, strings.database.defaultFilter);
+    }
   }
   return null;
 };

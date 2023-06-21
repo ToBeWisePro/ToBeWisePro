@@ -92,7 +92,7 @@ export const DiscoverTile: React.FC<Props> = ({
           // see if we're using a special query. If not, use the default query
           switch (query) {
             case strings.customDiscoverHeaders.all:
-              await getAllQuotes().then((res: QuotationInterface[]) =>
+              await getShuffledQuotes(strings.customDiscoverHeaders.all, strings.database.defaultFilter).then((res: QuotationInterface[]) =>
                 navPush(res)
               );
               break;

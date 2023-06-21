@@ -71,12 +71,32 @@ export default function App() {
         navigation.navigate("HomeVertical", { quote: data });
       }
     });
+
+    // Set a default filter if none is set
+    AsyncStorage.getItem("filter").then((res) => {
+      if (res === null) {
+        AsyncStorage.setItem("filter", strings.database.defaultFilter);
+      }
+    });
+
+    // set a default subject if none is set
+    AsyncStorage.getItem("subject").then((res) => {
+      if (res === null) {
+        AsyncStorage.setItem("subject", strings.database.defaultSubject);
+      }
+    });
+    // FIXME what are the implications of this?
   }, []);
 
   useEffect(() => {
     const i = async () => {
       // log the default query and filter
-      console.log( "Default query: " + strings.database.defaultQuery + "\nDefault filter: " + strings.database.defaultFilter);
+      console.log(
+        "Default query: " +
+          strings.database.defaultQuery +
+          "\nDefault filter: " +
+          strings.database.defaultFilter
+      );
       await dataImporter().then(async () =>
         getShuffledQuotes(
           strings.database.defaultQuery,
@@ -86,7 +106,8 @@ export default function App() {
         })
       );
     };
-    i().then(() => console.log("App loaded\n" + shuffledQuotes.length)).catch((error)=>Alert.alert("Error",error.message));
+    i()
+      .catch((error) => Alert.alert("Error", error.message));
   }, []);
 
   if (shuffledQuotes.length === 0) {

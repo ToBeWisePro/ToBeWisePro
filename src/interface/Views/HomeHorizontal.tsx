@@ -27,8 +27,8 @@ interface Props {
 }
 
 export const HomeHorizontal = ({ navigation, route }: Props) => {
-  const [title, setTitle] = useState("");
-  const [quotes, setQuotes] = useState<QuotationInterface[]>(route.params.currentQuotes);
+  const [title, setTitle] = useState(route.params.quoteSearch.filter + ": " + route.params.quoteSearch.query);
+  const [quotes, setQuotes] = useState<QuotationInterface[]>(route.params.currentQuotes ? route.params.currentQuotes : []);
   const [offset, setOffset] = useState(0);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState<number>(0);
   const [playPressed, setPlayPressed] = useState<boolean>(false);
@@ -49,13 +49,9 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
   };
 
   useEffect(() => {
-    // Initialize quotes, then set our current quote as the first quote
-    setQuotes(route.params.currentQuotes);
-  }, []);
-
-  useEffect(() => {
     // Every time the query changes, update the title.
     // setQuotes(route.params.currentQuotes);
+    console.log(route.params) // FIXME this is why title isn't setting properly
     setTitle(
       route.params.quoteSearch.filter + ": " + route.params.quoteSearch.query
     );
