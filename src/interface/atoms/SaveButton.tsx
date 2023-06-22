@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: LIGHT,
     fontWeight: "bold",
+    marginHorizontal: 10,
   },
   active: {
     backgroundColor: PRIMARY_GREEN,

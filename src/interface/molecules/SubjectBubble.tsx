@@ -6,6 +6,7 @@ import { AppText } from '../atoms/AppText'
 import { NavigationInterface } from '../../res/constants/Interfaces';
 import { getShuffledQuotes } from '../../res/functions/DBFunctions';
 import { strings } from '../../res/constants/Strings';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Props{
     subject: string
@@ -15,6 +16,8 @@ interface Props{
 export const SubjectBubble: React.FC<Props> = ({subject, navigation}:Props) => {
     return(
         <TouchableOpacity style={styles.container} onPress={async ()=>{
+            AsyncStorage.setItem("query", subject)
+            AsyncStorage.setItem("filter", strings.filters.subject)
 
             await getShuffledQuotes(subject, strings.filters.subject).then((res)=>navigation.push(strings.screenName.home, {currentQuotes: res, quoteSearch: {filter: strings.filters.subject, query: subject}}))
             

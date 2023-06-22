@@ -323,6 +323,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: 180,
+    marginHorizontal: 10
   },
   buttonText: {
     color: LIGHT,
