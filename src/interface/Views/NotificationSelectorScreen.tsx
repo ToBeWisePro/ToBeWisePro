@@ -9,7 +9,11 @@ import { BottomNav } from "../organisms/BottomNav";
 import { NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
-import { getAllQuotes, getFromDB, getShuffledQuotes } from "../../res/functions/DBFunctions";
+import {
+  getAllQuotes,
+  getFromDB,
+  getShuffledQuotes,
+} from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import {
   SETTINGS_KEYS,
@@ -127,7 +131,6 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
           setFilter={setFilter}
           search={search}
           onPress={async (query: string, filter: string) => {
-            console.log("Saving query:-", query, "-and filter:-", filter);
             await getShuffledQuotes(query, filter)
               .then((res) => {
                 console.log(res.length);
@@ -138,11 +141,20 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
                     await saveSettings(SETTINGS_KEYS.filter, filter);
                   })
                   .then(async () => {
-                    await scheduleNotifications().then(() => {
-                      navigation.goBack();
-                    });
+                    // log the current query and filter saved
+                    await loadSettings(SETTINGS_KEYS.query)
+                      .then((res) => {
+                        console.log("query: ", res);
+                      })
+                      .then(async () => {
+                        await loadSettings(SETTINGS_KEYS.filter).then((res) => {
+                          console.log("filter: ", res);
+                        });
+                      });
                   });
               });
+
+            navigation.goBack();
           }}
         />
       </View>

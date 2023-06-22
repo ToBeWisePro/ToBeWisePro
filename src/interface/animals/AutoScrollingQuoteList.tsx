@@ -7,7 +7,7 @@ import {
   runOnJS,
   cancelAnimation,
 } from "react-native-reanimated";
-import { SmallQuoteContainer } from "../organisms/SmallQuoteContainer";
+import SmallQuoteContainer from "../organisms/SmallQuoteContainer";
 import Slider from "@react-native-community/slider";
 import { LIGHT, PRIMARY_BLUE, PRIMARY_GREEN } from "../../../styles/Colors";
 import {
@@ -46,25 +46,29 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const [currentPosition, setCurrentPosition] = useState(0);
 
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
-  
+
   // Memorize handlePress function to avoid unnecessary re-renders
-  const handlePress = useCallback((quote: QuotationInterface) => {
-    let newQuotes: QuotationInterface[] = [quote];
-    data.forEach((quote2) => {
-      if (quote._id !== quote2._id) {
-        newQuotes.push(quote2);
-      }
-    });
-    navigation.push(strings.screenName.homeHorizontal, {
-      currentQuotes: newQuotes,
-      quoteSearch: {
-        filter: filter,
+  // Memorize handlePress function to avoid unnecessary re-renders
+  const handlePress = useCallback(
+    (quote: QuotationInterface) => {
+      let newQuotes: QuotationInterface[] = [quote];
+      data.forEach((quote2) => {
+        if (quote._id !== quote2._id) {
+          newQuotes.push(quote2);
+        }
+      });
+      navigation.push(strings.screenName.homeHorizontal, {
+        currentQuotes: newQuotes,
+        quoteSearch: {
+          filter: filter,
+          query: query,
+        },
         query: query,
-      },
-      query: query,
-      filter: filter,
-    });
-  }, [data, navigation, filter, query]);
+        filter: filter,
+      });
+    },
+    [] // Empty dependency array
+  );
 
   // Function to set and store scroll speed
   const setAndStoreScrollSpeed = async (value) => {
@@ -117,7 +121,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   };
 
   const restartScroll = useCallback(() => {
-    console.log("Restarting scroll...")
     setPlayPressed(false);
     scrollPosition.value = 0;
     setCurrentPosition(0);
@@ -135,19 +138,29 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   };
 
   const renderItem = useCallback(
-    ({ item: quote }) => (
-      <SmallQuoteContainer
-        key={quote._id}
-        passedInQuote={quote}
-        pressFunction={() => handlePress(quote)}
-      />
-    ),
+    ({ item: quote }) => {
+      console.log("Rendering item", quote._id); // Add this line
+      return (
+        <SmallQuoteContainer
+          key={quote._id}
+          passedInQuote={quote}
+          pressFunction={() => handlePress(quote)}
+        />
+      );
+    },
     [handlePress]
   );
 
   const ListFooterComponent = useCallback(() => {
     return data.length >= 3 ? (
-      <AppText style={styles.buttonText}>🔄 Restarting Soon...</AppText>
+      // create an AppText component with styles.buttonText that follows this format: The chosen set of NN quotations for author/subject XXXXXXX has been fully played out. For more please select *Discover* below and choose a different author/subject.
+      <AppText style={styles.buttonText}>
+        {"The chosen set of " +
+          data.length +
+          " quotations for " +
+          query +
+          " has been fully played out. For more please select *Discover* below and choose a different author/subject."}
+      </AppText>
     ) : null;
   }, [data.length]);
 
@@ -175,7 +188,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         initialNumToRender={10} // Arbitrary, you might want to adjust this number
         maxToRenderPerBatch={10} // Arbitrary, you might want to adjust this number
         windowSize={10} // Arbitrary, you might want to adjust this number
-        updateCellsBatchingPeriod={50} // Arbitrary, you might want to adjust this number
+        updateCellsBatchingPeriod={5} // Arbitrary, you might want to adjust this number
         removeClippedSubviews
       />
       {data.length >= 1 ? (

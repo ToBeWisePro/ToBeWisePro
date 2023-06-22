@@ -11,6 +11,7 @@ import { NavigationInterface } from "../../res/constants/Interfaces";
 import { GRAY_1 } from "../../../styles/Colors";
 import { DataButton } from "../atoms/DataButton";
 import { AppText } from "../atoms/AppText";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Props {
   filter: string;
@@ -42,7 +43,6 @@ const formatDataForAlphabetList = (data: String[]) => {
     { key: "d", value: strings.customDiscoverHeaders.favorites },
     { key: "c", value: strings.customDiscoverHeaders.top100 },
     { key: "e", value: strings.customDiscoverHeaders.deleted },
-    { key: "count", value: `Total items: ${subjectsArr.length}` }, // Append the count here
   ];
 
   return finalData;
@@ -91,6 +91,8 @@ export const AlphabetListSection = ({
           buttonText={"Author"}
           selected={filter == strings.filters.author}
           onPress={async () => {
+            // save query and filter to AsyncStorage
+
             const finalData = await getFromDB(
               strings.filters.author
             ).then(formatDataForAlphabetList);

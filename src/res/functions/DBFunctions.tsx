@@ -144,35 +144,35 @@ export async function removeQuote(quoteId: number) {
 }
 
 export async function getShuffledQuotes(
-  key: string,
+  userQuery: string,
   filter: string
 ): Promise<QuotationInterface[]> {
   const db = SQLite.openDatabase(dbName);
-  let query = `SELECT * FROM ${dbName}`;
+  let dbQuery = `SELECT * FROM ${dbName}`;
   let params: any[] = [];
 
-  if (key === strings.customDiscoverHeaders.deleted) {
-    query += ` WHERE deleted = 1 ORDER BY RANDOM()`;
+  if (userQuery === strings.customDiscoverHeaders.deleted) {
+    dbQuery += ` WHERE deleted = 1 ORDER BY RANDOM()`;
   } 
-  else if (key === strings.customDiscoverHeaders.all){
-    query += ' WHERE deleted = 0 ORDER BY RANDOM()'
+  else if (userQuery === strings.customDiscoverHeaders.all){
+    dbQuery += ' WHERE deleted = 0 ORDER BY RANDOM()'
   }
-  else if (key === strings.customDiscoverHeaders.top100) {
-    query += ` WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()`;
+  else if (userQuery === strings.customDiscoverHeaders.top100) {
+    dbQuery += ` WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()`;
       params = [`%${"Top 100"}%`];
   } else if (filter === strings.filters.author) {
-    query += ` WHERE deleted = 0 AND author LIKE '%${key}%' ORDER BY RANDOM()`;
+    dbQuery += ` WHERE deleted = 0 AND author LIKE '%${userQuery}%' ORDER BY RANDOM()`;
   } else if (filter === strings.filters.subject) {
-    query += ` WHERE deleted = 0 AND subjects LIKE '%${key}%' ORDER BY RANDOM()`;
-  } else if (key === strings.customDiscoverHeaders.favorites) {
-    query += ` WHERE favorite === TRUE AND deleted = 0 ORDERY BY RANDOM()`; 
+    dbQuery += ` WHERE deleted = 0 AND subjects LIKE '%${userQuery}%' ORDER BY RANDOM()`;
+  } else if (userQuery === strings.customDiscoverHeaders.favorites) {
+    dbQuery += ` WHERE favorite === TRUE AND deleted = 0 ORDERY BY RANDOM()`; 
   } 
-  else if (key === strings.customDiscoverHeaders.all) {
+  else if (userQuery === strings.customDiscoverHeaders.all) {
     console.log("ALL QUOTES")
-    query += ` AND deleted = 1`; 
+    dbQuery += ` AND deleted = 1`; 
   } 
-  else if (key === strings.customDiscoverHeaders.addedByMe) {
-    query += ` WHERE contributeBy === '%${defaultUsername}%' AND deleted = 0 ORDER BY RANDOM()` 
+  else if (userQuery === strings.customDiscoverHeaders.addedByMe) {
+    dbQuery += ` WHERE contributeBy === '%${defaultUsername}%' AND deleted = 0 ORDER BY RANDOM()` 
   }
   else {
     const string = `Invalid filter provided: ${filter}`;
@@ -182,7 +182,7 @@ export async function getShuffledQuotes(
   return new Promise<QuotationInterface[]>((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        query,
+        dbQuery,
         params,
         (_, result) => {
           const quotes: QuotationInterface[] = [];

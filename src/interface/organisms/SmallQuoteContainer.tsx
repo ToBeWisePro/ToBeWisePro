@@ -1,41 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { DARK, LIGHT } from "../../../styles/Colors";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { QuotationInterface } from "../../res/constants/Interfaces";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { AppText } from "../atoms/AppText";
-import { updateQuoteContainer } from "../../res/functions/DBFunctions";
-import { largeQuoteContainerRefreshRate as quoteContainerRefreshRate } from "../../res/constants/Values";
 
 interface Props {
   passedInQuote: QuotationInterface;
   pressFunction: () => void;
 }
 
-export const SmallQuoteContainer: React.FC<Props> = ({
+const SmallQuoteContainer: React.FC<Props> = ({
   passedInQuote,
   pressFunction,
 }: Props) => {
-  // const [orderedQuotes, setOrderQuotes] = useState<Quotation[]>([]);
-  const [quote, setQuote] = useState<QuotationInterface>(passedInQuote);
-
-  useEffect(() => {
-    // We need the orderedQuotes so that when a user navigates to the HomeHorizontal screen the quotes stay in order
-    // setOrderQuotes(quotes);
-    // updateQuoteContainer(quote, quoteContainerRefreshRate, setQuote);
-  }, []);
-
   return (
     <View style={styles.container}>
-      {/* <QuoteBlock quote={quote} size={ContainerSize.Small}/> */}
       <TouchableOpacity onPress={pressFunction} style={styles.quoteContainer}>
         <AppText style={globalStyles.quoteText} numberOfLines={6}>
-          {quote.quoteText}
+          {passedInQuote.quoteText}
         </AppText>
       </TouchableOpacity>
       <TouchableOpacity onPress={pressFunction} style={styles.authorContainer}>
-        <AppText style={globalStyles.authorText}>{quote.author}</AppText>
+        <AppText style={globalStyles.authorText}>
+          {passedInQuote.author}
+        </AppText>
       </TouchableOpacity>
     </View>
   );
@@ -75,3 +65,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
+export default React.memo(SmallQuoteContainer);

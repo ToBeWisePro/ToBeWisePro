@@ -43,6 +43,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@react-native-community/cli": "^10.2.5",
+    "@react-native-community/cli-debugger-ui": "^11.3.2",
     "@types/react": "~18.0.14",
     "typescript": "^4.9.4"
   },

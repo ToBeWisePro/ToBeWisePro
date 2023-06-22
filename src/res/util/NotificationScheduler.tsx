@@ -33,11 +33,11 @@ export async function scheduleNotifications() {
   // const query = queryValue
   //   ? JSON.parse(queryValue)
   //   : strings.database.defaultQuery;
-  let query;
+  let query: string;
   try {
     query = queryValue ? JSON.parse(queryValue) : strings.database.defaultQuery;
   } catch (error) {
-    Alert.alert("Error parsing queryValue:", error);
+    console.log("Error parsing queryValue:", error);
     query = strings.database.defaultQuery;
   }
 
@@ -51,8 +51,8 @@ export async function scheduleNotifications() {
   const MAX_INTERVALS = 60; // Max number of notifications that can be scheduled at once
   const spacingInMilliseconds = spacing * ONE_MINUTE;
 
-  const startTime = new Date(Date.now() + spacingInMilliseconds);
-
+  const startTime = new Date(Date.now() + 2500); // Fire the first notification 2.5s after queuing it
+  let finalNotificationMessage = ""
   const durationAfterOneInterval = ONE_DAY - spacingInMilliseconds;
 
   let totalIntervals = Math.floor(
@@ -64,19 +64,25 @@ export async function scheduleNotifications() {
   }
 
   if (allowNotifications && spacing > 0) {
+
     const queue = await getShuffledQuotes(query, filter)
       .then(async (quotes) => {
-        console.log("Notif quotes length: ", quotes.length);
-        // console.log("Got quotes: " + quotes.length)
+        
         const notificationRequests = [];
         const fireTimes = []; // Array to store the fire times
         let prevFireTime = 0;
-
-        for (let i = 0; i <= totalIntervals; i++) {
+        let numTimes = 0;
+        // set numTimes to be the lesser of totalIntervals and quotes.length
+        if (totalIntervals < quotes.length) {
+          numTimes = totalIntervals;
+        } else {
+          numTimes = quotes.length;
+        }
+        for (let i = 0; i < numTimes; i++) {
           const fireDate = new Date(
             startTime.getTime() + i * spacingInMilliseconds
           );
-          const quote = quotes[Math.floor(Math.random() * quotes.length)];
+          const quote = quotes[i];
           if (quote.quoteText.length > 0) {
             if (fireDate.getTime() <= prevFireTime + 5000) {
               console.log(
@@ -89,7 +95,7 @@ export async function scheduleNotifications() {
             notificationRequests.push({
               content: {
                 title: "ToBeWise",
-                body: quote.quoteText + "\n\n-" + quote.author,
+                body: quote.quoteText + "\n-" + quote.author,
                 data: {
                   quote: quote,
                 },
@@ -106,14 +112,52 @@ export async function scheduleNotifications() {
         const finalFireDate = new Date(
           startTime.getTime() + (totalIntervals + 1) * spacingInMilliseconds
         );
+
+        // build the final notification by setting the finalNotificationMessage to follow this format: The chosen set of NN quotations for author/subject XXXXXXX has been fully played out. For more please go to Settings – Notifications and choose a different author/subject
+
+        if (query === "author") {
+          finalNotificationMessage = 
+            "The chosen set of " +
+            quotes.length +
+            " quotations for author " +
+            query +
+            " has been fully played out. For more please go to Settings – Notifications and choose a different author.";
+        } else if (query === "subject") {
+          finalNotificationMessage =
+            "The chosen set of " +
+            quotes.length +
+            " quotations for subject " +
+            query +
+            " has been fully played out. For more please go to Settings – Notifications and choose a different subject.";
+        } else {
+          finalNotificationMessage =
+            "The chosen set of " +
+            quotes.length +
+            " quotations has been fully played out. For more please go to Settings – Notifications and choose a different author/subject.";
+        }
         fireTimes.push(finalFireDate.getTime()); // Add the final fire time to the array
         notificationRequests.push({
           content: {
             title: "ToBeWise",
-            body: "Open ToBeWise to queue more notifications",
+            body: finalNotificationMessage
           },
           trigger: {
             date: finalFireDate.getTime(),
+          },
+        });
+
+        // Send a notification immidiately which is randomly selected from the quotes array to show that the update worked
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        Notifications.scheduleNotificationAsync({
+          content: {
+            title: "ToBeWise",
+            body: randomQuote.quoteText + "\n\n-" + randomQuote.author,
+            data: {
+              quote: randomQuote,
+            },
+          },
+          trigger: {
+            date: new Date(Date.now() + 5000).getTime(),
           },
         });
 
@@ -133,6 +177,7 @@ export async function scheduleNotifications() {
         }
       })
       .catch((error) => {
+        console.log("tossing an error")
         throw error;
       });
   }

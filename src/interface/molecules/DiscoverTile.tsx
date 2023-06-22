@@ -16,6 +16,7 @@ import {
 } from "../../res/constants/Interfaces";
 import { BackButtonNavEnum } from "../../res/constants/Enums";
 import { strings } from "../../res/constants/Strings";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Props {
   query: string;
@@ -69,6 +70,9 @@ export const DiscoverTile: React.FC<Props> = ({
       style={styles.container}
       onPress={async () => {
         setLoading(true); // Add this line
+        // save query and filter to async storage
+        await AsyncStorage.setItem("query", query);
+        await AsyncStorage.setItem("filter", filter);
         if (onPress) {
           onPress(query, filter);
         } else {

@@ -62,7 +62,7 @@ export const loadSettings = async (key: string) => {
   } catch (error) {
     // save the default filter
     if (key === SETTINGS_KEYS.filter) {
-      console.log("Setting default filter")
+      console.log("Setting default filter");
       await saveSettings(key, strings.database.defaultFilter);
     }
   }
@@ -182,9 +182,11 @@ export const NotificationScreen: React.FC<Props> = ({
       />
       <View style={{ backgroundColor: LIGHT }}>
         <ScrollView
-        // refreshControl={
-        //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        // }
+          contentContainerStyle={{ paddingBottom: 100 }}
+
+          // refreshControl={
+          //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          // }
         >
           <View style={styles.main}>
             <View style={styles.menuOptionContainerBottom}>
@@ -246,7 +248,9 @@ export const NotificationScreen: React.FC<Props> = ({
                     })
                 }
               >
-                <AppText style={styles.buttonText}>Save</AppText>
+                <AppText style={styles.buttonText}>
+                  {strings.copy.saveNotificationsButton}
+                </AppText>
               </TouchableOpacity>
             </View>
           </View>

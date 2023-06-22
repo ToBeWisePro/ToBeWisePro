@@ -7,12 +7,13 @@ import {
   getShuffledQuotes,
 } from "./src/res/functions/DBFunctions";
 import { strings } from "./src/res/constants/Strings";
-import { RootNavigation } from "./src/res/util/RootNavigation";
+import { RootNavigation, navigationRef } from "./src/res/util/RootNavigation"; // updated import
 import { QuotationInterface } from "./src/res/constants/Interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { scheduleNotifications } from "./src/res/util/NotificationScheduler";
 import { Image } from "react-native-elements";
+import { CommonActions } from "@react-navigation/native"; // added import
 
 export default function App() {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
@@ -68,7 +69,9 @@ export default function App() {
     Notifications.addNotificationResponseReceivedListener(async (response) => {
       const data = response.notification.request.content.data.quote;
       if (data) {
-        navigation.navigate("HomeVertical", { quote: data });
+        navigationRef.current?.dispatch(
+          CommonActions.navigate("HomeVertical", { quote: data })
+        );
       }
     });
 
@@ -80,12 +83,11 @@ export default function App() {
     });
 
     // set a default subject if none is set
-    AsyncStorage.getItem("subject").then((res) => {
+    AsyncStorage.getItem("query").then((res) => {
       if (res === null) {
-        AsyncStorage.setItem("subject", strings.database.defaultSubject);
+        AsyncStorage.setItem("query", strings.database.defaultQuery);
       }
     });
-    // FIXME what are the implications of this?
   }, []);
 
   useEffect(() => {
@@ -106,11 +108,11 @@ export default function App() {
         })
       );
     };
-    i()
-      .catch((error) => Alert.alert("Error", error.message));
+    i().catch((error) => Alert.alert("Error", error.message));
   }, []);
 
   if (shuffledQuotes.length === 0) {
+    console.log("Loading...");
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" />

@@ -102,6 +102,7 @@ export const Settings = ({ navigation }: Props) => {
       <FlatList
         style={styles.buttonList}
         data={buttons}
+        contentContainerStyle={{ paddingBottom: 100 }}
         renderItem={(button) => {
           return (
             <SettingsButton

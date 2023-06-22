@@ -11,12 +11,17 @@ import { NotificationScreen } from "../../interface/Views/NotificationsScreen";
 import { QuotationInterface } from "../constants/Interfaces";
 import { NotificationSelectorScreen } from "../../interface/Views/NotificationSelectorScreen";
 import { NotificationDebugScreen } from "../../interface/Views/NotificationDebugScreen";
+import React from "react";
 
 interface RootProps {
   initialRoute: string;
   shuffledQuotes: QuotationInterface[];
 }
+export const navigationRef = React.createRef();
 
+export function navigate(name: string, params: { [key: string]: any}) {
+  navigationRef.current?.navigate(name, params);
+}
 const Stack = createStackNavigator();
 export const RootNavigation: React.FC<RootProps> = ({
   initialRoute,
@@ -50,7 +55,7 @@ export const RootNavigation: React.FC<RootProps> = ({
           component={EditQuotes}
           options={{ headerShown: false }}
         />
-         <Stack.Screen
+        <Stack.Screen
           name={strings.screenName.notificationDebugScreen}
           component={NotificationDebugScreen}
           options={{ headerShown: false }}

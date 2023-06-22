@@ -37,7 +37,8 @@ export const strings = new LocalizedStrings({
         subjects: "*Subjects (comma separated)"
       },
       copy: {
-        newNotificationsSet: "Updated notifications are on their way 🥳",
+        saveNotificationsButton: "Start Notifications Now",
+        newNotificationsSet: "Updated notifications have started 🥳",
         saveButton: "Save Changes",
         saveButtonBlank: "Add New Quote",
         editQuoteTitle: "Edit Quote",

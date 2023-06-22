@@ -17,6 +17,7 @@ import { IncludeInBottomNav } from "../../res/constants/Enums";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
 import { LargeQuoteContainer } from "../organisms/LargeQuoteContainer";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Props {
   navigation: {
@@ -27,7 +28,7 @@ interface Props {
 }
 
 export const HomeHorizontal = ({ navigation, route }: Props) => {
-  const [title, setTitle] = useState(route.params.quoteSearch.filter + ": " + route.params.quoteSearch.query);
+  const [title, setTitle] = useState('TODO title not set');
   const [quotes, setQuotes] = useState<QuotationInterface[]>(route.params.currentQuotes ? route.params.currentQuotes : []);
   const [offset, setOffset] = useState(0);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState<number>(0);
@@ -56,6 +57,25 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
       route.params.quoteSearch.filter + ": " + route.params.quoteSearch.query
     );
   }, [route]);
+
+  useEffect(()=>{
+    console.log(route.params)
+    // if route.params.filter and query have length > 0, set the title. If not, pull from AsyncStorage
+    if (route.params.quoteSearch.filter.length > 0 && route.params.quoteSearch.query.length > 0) {
+    setTitle(
+      route.params.quoteSearch.filter + ": " + route.params.quoteSearch.query
+    );
+    } else {
+      // get the filter and query from AsyncStorage based on how it's used elsewhere and keep the same naming convention
+
+      AsyncStorage.getItem("filter").then((filter) => {
+        AsyncStorage.getItem("query").then((query) => {
+          setTitle(filter + ": " + query);
+        })
+      })
+    }
+    
+  },[])
   useEffect(() => {
     // Every time the scrollPosition changes, check to see if we are on a new quote. If we are, change the quoteInEditing
     const i: number = getCurrentOffset(false);
