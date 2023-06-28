@@ -131,6 +131,9 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
           setFilter={setFilter}
           search={search}
           onPress={async (query: string, filter: string) => {
+            console.log("query: ", query);
+            console.log("filter: ", filter);
+            
             await getShuffledQuotes(query, filter)
               .then((res) => {
                 console.log(res.length);
@@ -144,11 +147,9 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
                     // log the current query and filter saved
                     await loadSettings(SETTINGS_KEYS.query)
                       .then((res) => {
-                        console.log("query: ", res);
                       })
                       .then(async () => {
                         await loadSettings(SETTINGS_KEYS.filter).then((res) => {
-                          console.log("filter: ", res);
                         });
                       });
                   });

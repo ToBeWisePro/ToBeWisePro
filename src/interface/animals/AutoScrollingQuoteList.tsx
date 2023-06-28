@@ -139,7 +139,9 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
 
   const renderItem = useCallback(
     ({ item: quote }) => {
-      console.log("Rendering item", quote._id); // Add this line
+      // console.log("Rendering item", quote._id); // Add this line
+      // console.log('Data length:', data.length); // New line
+
       return (
         <SmallQuoteContainer
           key={quote._id}
@@ -148,7 +150,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         />
       );
     },
-    [handlePress]
+    [handlePress, data.length]
   );
 
   const ListFooterComponent = useCallback(() => {

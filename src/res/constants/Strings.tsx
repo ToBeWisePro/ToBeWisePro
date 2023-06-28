@@ -15,7 +15,7 @@ export const strings = new LocalizedStrings({
       },
       database: {
         safeChar: "%",
-        defaultQuery: "🏆 Top 100",
+        defaultQuery: "Top 100",
         defaultFilter: "Subject",
       },
       filters: {
@@ -83,7 +83,7 @@ export const strings = new LocalizedStrings({
 
       
       testText: "The AppCopy.tsx text works 💩",
-      navbarHomeDefaultText: "Subject: 🏆 Top 100",
+      navbarHomeDefaultText: "Subject: Top 100",
       navbarDiscoverDefaultText: "Discover",
     },
   

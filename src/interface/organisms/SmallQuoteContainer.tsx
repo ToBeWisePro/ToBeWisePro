@@ -15,6 +15,8 @@ const SmallQuoteContainer: React.FC<Props> = ({
   passedInQuote,
   pressFunction,
 }: Props) => {
+  // console.log("Rendering SmallQuoteContainer", passedInQuote._id); // New line
+
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={pressFunction} style={styles.quoteContainer}>
