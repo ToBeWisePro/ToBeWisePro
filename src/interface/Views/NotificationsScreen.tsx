@@ -12,6 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { strings } from "../../res/constants/Strings";
 import {
   NavigationInterface,
+  QuotationInterface,
   RouteInterface,
 } from "../../res/constants/Interfaces";
 import {
@@ -30,6 +31,9 @@ import { AppText } from "../atoms/AppText";
 import { CustomTimeInput } from "../atoms/CustomTimeInput";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
 import { NotificationDebugScreen } from "./NotificationDebugScreen";
+// import notifications from expo
+import * as Notifications from "expo-notifications";
+import { getShuffledQuotes } from "../../res/functions/DBFunctions";
 
 interface Props {
   navigation: NavigationInterface;
@@ -151,6 +155,41 @@ export const NotificationScreen: React.FC<Props> = ({
     }
   };
 
+  const handleButtonPress = async () => {
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== "granted") {
+        alert("You need to grant permission to receive notifications");
+        return;
+      }
+      console.log("filter: ", filter.trim());
+      await getShuffledQuotes(query, filter).then(async (data) => {
+        if (data.length === 0) {
+          await getShuffledQuotes(
+            strings.database.defaultQuery,
+            strings.database.defaultFilter
+          ).then(async (data) => {
+            alert("Invalid query. Notifications database set to defaults");
+            const quote: QuotationInterface = data[0];
+            await Notifications.presentNotificationAsync({
+              title: strings.copy.notificationTitle,
+              body: quote.quoteText + "\n- " + quote.author,
+            });
+          });
+        } else {
+          const quote: QuotationInterface = data[0];
+          await Notifications.presentNotificationAsync({
+            title: strings.copy.notificationTitle,
+            body: quote.quoteText + "\n- " + quote.author,
+          });
+        }
+      });
+    } catch (error) {
+      console.log(error);
+      alert("An error occurred while trying to send the notification");
+    }
+  };
+
   const handleEndTimeChange = (time: Date) => {
     if (isValidTimeRange(startTime, time)) {
       setEndTime(time);
@@ -241,6 +280,7 @@ export const NotificationScreen: React.FC<Props> = ({
                 style={styles.button}
                 onPress={async () =>
                   await scheduleNotifications()
+                    .then(() => handleButtonPress())
                     .then(() => Alert.alert(strings.copy.newNotificationsSet))
                     .catch((err) => {
                       console.error(err);
@@ -323,7 +363,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: 180,
-    marginHorizontal: 10
+    marginHorizontal: 10,
   },
   buttonText: {
     color: LIGHT,

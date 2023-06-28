@@ -43,6 +43,7 @@ export const strings = new LocalizedStrings({
         saveButtonBlank: "Add New Quote",
         editQuoteTitle: "Edit Quote",
         editQuoteTitleBlank: "Add Quote",
+        notificationTitle: "ToBeWise",
         shareMessage: "on ToBeWise",
         searchBarTitle: "Search",
         searchBarPlaceholderText: "Enter search query",
