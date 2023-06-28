@@ -14,7 +14,7 @@ interface Props {
 export const SettingsButton: React.FC<Props> = ({ icon, title, onPress }) => {
   switch (title) {
     case "Version Number":
-      return <AppText style={{marginTop: 20, marginLeft: 10}}>ℹ️ Version Number: 7.1.34</AppText>;
+      return <AppText style={{marginTop: 20, marginLeft: 10}}>ℹ️ Version Number: 7.1.35</AppText>;
     default:
       return (
         <TouchableOpacity onPress={() => onPress()} style={styles.container}>

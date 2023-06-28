@@ -84,7 +84,7 @@ export const strings = new LocalizedStrings({
 
       
       testText: "The AppCopy.tsx text works 💩",
-      navbarHomeDefaultText: "Subject: Top 100",
+      navbarHomeDefaultText: "Subject: 🏆 Top 100",
       navbarDiscoverDefaultText: "Discover",
     },
   

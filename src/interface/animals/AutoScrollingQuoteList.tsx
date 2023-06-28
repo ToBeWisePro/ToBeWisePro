@@ -43,7 +43,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const scrollRef = useRef<FlatList>(null);
   const scrollPosition = useSharedValue(0);
   const [scrollSpeed, setScrollSpeed] = useState(0.0275);
-  const [currentPosition, setCurrentPosition] = useState(0);
+  const currentPosition = useRef(0);
 
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
 
@@ -71,10 +71,12 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   );
 
   // Function to set and store scroll speed
-  const setAndStoreScrollSpeed = async (value) => {
+  const setAndStoreScrollSpeed = async (value: React.SetStateAction<number>) => {
+    setScrollSpeed(value);
+    console.log(value);
     try {
-      await AsyncStorage.setItem("@scrollSpeed", JSON.stringify(value));
       setScrollSpeed(value);
+      await AsyncStorage.setItem("@scrollSpeed", JSON.stringify(value));
     } catch (e) {
       console.log(e);
     }
@@ -102,7 +104,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         easing: Easing.linear,
       });
     } else {
-      scrollPosition.value = currentPosition;
+      scrollPosition.value = currentPosition.current;
     }
   }, [playPressed]);
 
@@ -123,7 +125,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const restartScroll = useCallback(() => {
     setPlayPressed(false);
     scrollPosition.value = 0;
-    setCurrentPosition(0);
+    currentPosition.current = 0;
     setTimeout(() => {
       scrollRef.current?.scrollToOffset({ offset: 0, animated: false });
     }, 500);
@@ -133,9 +135,11 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     runOnJS(scrollTo)(scrollPosition.value);
   }, [scrollPosition]);
 
-  const handleScroll = (event: any) => {
-    setCurrentPosition(event.nativeEvent.contentOffset.y);
-  };
+  const handleScroll = (event: any)=>{
+    // save event.nativeEvent.contentOffset.y as an integer
+    currentPosition.current = event.nativeEvent.contentOffset.y;
+
+  }
 
   const renderItem = useCallback(
     ({ item: quote }) => {
@@ -165,6 +169,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       </AppText>
     ) : null;
   }, [data.length]);
+  console.log("rendering ASQL", new Date().toLocaleTimeString());
 
   return (
     <View style={styles.container}>
@@ -174,7 +179,11 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         scrollEventThrottle={16}
         ref={scrollRef}
         scrollEnabled={!playPressed}
-        onTouchStart={() => setPlayPressed(false)}
+        onTouchStart={() => {
+          setPlayPressed(false);
+          //set the current position
+          currentPosition.current = scrollPosition.value;
+        }}
         onScroll={handleScroll}
         contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }}
         ListFooterComponent={ListFooterComponent}
