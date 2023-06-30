@@ -44,23 +44,24 @@ export const HomeVertical = ({
     autoScrollIntervalTime
   );
   useEffect(() => {
-    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
         const quote = response.notification.request.content.data.quote;
         if (quote) {
           // Reset the quotes state and set the quote from the notification as the first item
           setQuotes([quote]);
           setTitle(strings.copy.notificationFrom + quote.author);
         }
-    });
+      }
+    );
 
     // Don't forget to unsubscribe when the component is unmounted
     return () => subscription.remove();
-}, [quotes]);
-
+  }, [quotes]);
 
   const fetchQueryAndFilter = async (filter, query) => {
-    setFilter(filter);
-    setQuery(query);
+    console.log("Passed", query, filter)
+
     await AsyncStorage.setItem("userQuery", query);
     await AsyncStorage.setItem("userFilter", filter);
     const title = filter + ": " + query;
@@ -69,12 +70,12 @@ export const HomeVertical = ({
   };
 
   const fetchFromStorageAndSet = async (defaultQuery, defaultFilter) => {
+    console.log("this is firing")
     const savedFilter =
       (await AsyncStorage.getItem("userFilter")) || defaultFilter;
     const savedQuery =
       (await AsyncStorage.getItem("userQuery")) || defaultQuery;
     const savedTitle = await AsyncStorage.getItem("title");
-
 
     setFilter(savedFilter);
     setQuery(savedQuery);
@@ -104,19 +105,34 @@ export const HomeVertical = ({
   useEffect(() => {
     const defaultQuery = strings.database.defaultQuery;
     const defaultFilter = strings.database.defaultFilter;
-    const quoteSearch = route.params?.quoteSearch ? route.params.quoteSearch : {"query": defaultQuery, "filter": defaultFilter};
+    const quoteSearch = route.params?.quoteSearch
+      ? route.params.quoteSearch
+      : { query: defaultQuery, filter: defaultFilter };
 
     if (quoteSearch) {
       const { query, filter } = quoteSearch;
       try {
         setQuotes(route.params.currentQuotes);
+        console.log(query, filter)
+        setQuery(query);
+        setFilter(filter);
         fetchQueryAndFilter(filter, query);
       } catch (error) {
         console.error(error);
       }
     } else {
       try {
-        fetchFromStorageAndSet(defaultQuery, defaultFilter);
+        if (route.params.quoteSearch.query && route.params.quoteSearch.filter) {
+          fetchFromStorageAndSet(
+            route.params.quoteSearch.query,
+            route.params.quoteSearch.filter
+          );
+          setQuery(route.params.quoteSearch.query);
+          setFilter(route.params.quoteSearch.filter);
+        } else {
+          console.log("using default query and filter")
+          fetchFromStorageAndSet(defaultQuery, defaultFilter);
+        }
       } catch (error) {
         console.error(`Error fetching data from storage: ${error}`); // Log the error when fetching from storage
         setTitle(strings.navbarHomeDefaultText);

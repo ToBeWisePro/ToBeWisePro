@@ -9,7 +9,7 @@ import {
 } from "react-native-reanimated";
 import SmallQuoteContainer from "../organisms/SmallQuoteContainer";
 import Slider from "@react-native-community/slider";
-import { LIGHT, PRIMARY_BLUE, PRIMARY_GREEN } from "../../../styles/Colors";
+import { DARK, LIGHT, PRIMARY_BLUE, PRIMARY_GREEN } from "../../../styles/Colors";
 import {
   NavigationInterface,
   QuotationInterface,
@@ -169,7 +169,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       </AppText>
     ) : null;
   }, [data.length]);
-  console.log("rendering ASQL", new Date().toLocaleTimeString());
 
   return (
     <View style={styles.container}>
@@ -226,7 +225,7 @@ const styles = StyleSheet.create({
     marginBottom: globalStyles.navbar.height * 2,
   },
   buttonText: {
-    color: LIGHT,
+    color: DARK,
     fontWeight: "bold",
   },
 });

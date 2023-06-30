@@ -15,7 +15,7 @@ export const strings = new LocalizedStrings({
       },
       database: {
         safeChar: "%",
-        defaultQuery: "Top 100",
+        defaultQuery: "🏆 Top 100",
         defaultFilter: "Subject",
       },
       filters: {

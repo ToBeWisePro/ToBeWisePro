@@ -18,7 +18,7 @@ interface Props {
   setFilter: (filter: string) => void;
   navigation: NavigationInterface;
   search: string;
-  onPress?: (query: string, filter: string) => Promise<void>;  
+  onPress?: (query: string, filter: string) => Promise<void>;
 }
 
 const formatDataForAlphabetList = (data: String[]) => {
@@ -53,7 +53,7 @@ export const AlphabetListSection = ({
   setFilter,
   navigation,
   search,
-  onPress
+  onPress,
 }: Props) => {
   const [subjects, setSubjects] = useState([]);
   const [authors, setAuthors] = useState([]);
@@ -93,9 +93,9 @@ export const AlphabetListSection = ({
           onPress={async () => {
             // save query and filter to AsyncStorage
 
-            const finalData = await getFromDB(
-              strings.filters.author
-            ).then(formatDataForAlphabetList);
+            const finalData = await getFromDB(strings.filters.author).then(
+              formatDataForAlphabetList
+            );
             setAuthors(finalData);
             setFilter(strings.filters.author);
           }}
@@ -104,9 +104,9 @@ export const AlphabetListSection = ({
           buttonText={"Subject"}
           selected={filter == strings.filters.subject}
           onPress={async () => {
-            const finalData = await getFromDB(
-              strings.filters.subject
-            ).then(formatDataForAlphabetList);
+            const finalData = await getFromDB(strings.filters.subject).then(
+              formatDataForAlphabetList
+            );
             setSubjects(finalData);
             setFilter(strings.filters.subject);
           }}
@@ -114,12 +114,14 @@ export const AlphabetListSection = ({
       </View>
       <AlphabetList
         style={styles.scrollView}
-        indexLetterContainerStyle={{ width: "100%" }}
+        indexLetterContainerStyle={{ width: 40, height: 17, marginRight: 7 }}
         indexContainerStyle={{ width: 30 }}
-        contentContainerStyle={{paddingBottom: 125}}
+        contentContainerStyle={{ paddingBottom: 125 }}
         data={data}
         uncategorizedAtTop={true}
-        indexLetterStyle={search ? styles.indexLetterTextClear : styles.indexLetterText}
+        indexLetterStyle={
+          search ? styles.indexLetterTextClear : styles.indexLetterText
+        }
         renderCustomItem={(item) => (
           <DiscoverTile
             key={item.key}
@@ -133,7 +135,9 @@ export const AlphabetListSection = ({
         renderCustomSectionHeader={(section) => (
           <DiscoverSectionHeader label={section.title} />
         )}
-        ListFooterComponent={<AppText style={styles.countText}>Total items: {data.length}</AppText>}
+        ListFooterComponent={
+          <AppText style={styles.countText}>Total items: {data.length}</AppText>
+        }
       />
     </View>
   );
@@ -160,13 +164,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: GRAY_1,
   },
-  indexLetterTextClear:{
+  indexLetterTextClear: {
     fontWeight: "800",
     fontSize: 12,
-    color: 'transparent',
+    color: "transparent",
   },
   countText: {
     fontSize: 16,
-    margin:5
+    margin: 5,
   },
 });

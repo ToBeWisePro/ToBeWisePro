@@ -150,35 +150,24 @@ export async function getShuffledQuotes(
   const db = SQLite.openDatabase(dbName);
   let dbQuery = `SELECT * FROM ${dbName}`;
   let params: any[] = [];
-  console.log("UserQuery: ", userQuery);
-  console.log(
-    "Does userquery equal favorites? ",
-    userQuery === strings.customDiscoverHeaders.favorites
-  );
+ 
   if (userQuery === strings.customDiscoverHeaders.deleted) {
-    console.log("deleted is firing");
     dbQuery += ` WHERE deleted = 1 ORDER BY RANDOM()`;
   } else if (userQuery === strings.customDiscoverHeaders.all) {
     console.log("ALL QUOTES");
     dbQuery += " WHERE deleted = 0 ORDER BY RANDOM()";
   } else if (userQuery === strings.customDiscoverHeaders.top100) {
-    console.log("Top 100 is firing");
     dbQuery += ` WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()`;
     params = [`%${"Top 100"}%`];
   } else if (userQuery === strings.customDiscoverHeaders.favorites) {
-    console.log("favorites firing");
     dbQuery += ` WHERE favorite = 1 AND deleted = 0 ORDER BY RANDOM()`;
   } else if (userQuery === strings.customDiscoverHeaders.all) {
-    console.log("ALL QUOTES");
     dbQuery += ` AND deleted = 1`;
   } else if (userQuery === strings.customDiscoverHeaders.addedByMe) {
-    console.log("added by me is firing");
     dbQuery += ` WHERE contributeBy === '%${defaultUsername}%' AND deleted = 0 ORDER BY RANDOM()`;
   } else if (filter === strings.filters.author) {
-    console.log("author is firing");
     dbQuery += ` WHERE deleted = 0 AND author LIKE '%${userQuery}%' ORDER BY RANDOM()`;
   } else if (filter === strings.filters.subject) {
-    console.log("subject is firing");
     dbQuery += ` WHERE deleted = 0 AND subjects LIKE '%${userQuery}%' ORDER BY RANDOM()`;
   } else {
     const string = `Invalid filter provided: ${filter}`;
