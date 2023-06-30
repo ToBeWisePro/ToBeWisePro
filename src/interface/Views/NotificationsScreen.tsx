@@ -162,27 +162,25 @@ export const NotificationScreen: React.FC<Props> = ({
         alert("You need to grant permission to receive notifications");
         return;
       }
+  
       console.log("filter: ", filter.trim());
-      await getShuffledQuotes(query, filter).then(async (data) => {
-        if (data.length === 0) {
-          await getShuffledQuotes(
-            strings.database.defaultQuery,
-            strings.database.defaultFilter
-          ).then(async (data) => {
-            alert("Invalid query. Notifications database set to defaults");
-            const quote: QuotationInterface = data[0];
-            await Notifications.presentNotificationAsync({
-              title: strings.copy.notificationTitle,
-              body: quote.quoteText + "\n- " + quote.author,
-            });
-          });
-        } else {
-          const quote: QuotationInterface = data[0];
-          await Notifications.presentNotificationAsync({
-            title: strings.copy.notificationTitle,
-            body: quote.quoteText + "\n- " + quote.author,
-          });
-        }
+      let data = await getShuffledQuotes(query, filter);
+  
+      if (data.length === 0) {
+        alert("Invalid query. Notifications database set to defaults");
+        data = await getShuffledQuotes(
+          strings.database.defaultQuery,
+          strings.database.defaultFilter
+        );
+      }
+  
+      const quote: QuotationInterface = data[0];
+      await Notifications.presentNotificationAsync({
+        title: strings.copy.notificationTitle,
+        body: quote.quoteText + "\n- " + quote.author,
+        data: {
+          quote: quote,
+        },
       });
     } catch (error) {
       console.log(error);

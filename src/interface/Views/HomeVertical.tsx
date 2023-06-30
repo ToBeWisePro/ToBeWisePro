@@ -145,7 +145,7 @@ export const HomeVertical = ({
       setBackButton(false);
     }
   }, [route]);
-
+  console.log("Home screen re-rendered")
   return (
     <View style={styles.container}>
       <TopNav

@@ -38,7 +38,7 @@ export const strings = new LocalizedStrings({
       },
       copy: {
         saveNotificationsButton: "Start Notifications Now",
-        newNotificationsSet: "Updated notifications have started 🥳",
+        newNotificationsSet: "Updated notifications have started 🥳. Head back to the home screen to keep scrolling.",
         saveButton: "Save Changes",
         saveButtonBlank: "Add New Quote",
         editQuoteTitle: "Edit Quote",

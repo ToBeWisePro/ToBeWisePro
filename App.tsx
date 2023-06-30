@@ -7,18 +7,16 @@ import {
   getShuffledQuotes,
 } from "./src/res/functions/DBFunctions";
 import { strings } from "./src/res/constants/Strings";
-import { RootNavigation, navigationRef } from "./src/res/util/RootNavigation"; // updated import
+import { RootNavigation, navigationRef } from "./src/res/util/RootNavigation";
 import { QuotationInterface } from "./src/res/constants/Interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { scheduleNotifications } from "./src/res/util/NotificationScheduler";
 import { Image } from "react-native-elements";
-import { CommonActions } from "@react-navigation/native"; // added import
+import { CommonActions } from "@react-navigation/native";
 
 export default function App() {
-  const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
-    []
-  );
+  const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>([]);
   const [frequency, setFrequency] = useState<number>(1);
   const [query, setQuery] = useState(strings.database.defaultQuery);
 
@@ -65,13 +63,25 @@ export default function App() {
       }
     })();
 
-    // Added this part
     Notifications.addNotificationResponseReceivedListener(async (response) => {
-      const data = response.notification.request.content.data.quote;
-      if (data) {
-        navigationRef.current?.dispatch(
-          CommonActions.navigate("HomeVertical", { quote: data })
+      const quote = response.notification.request.content.data.quote;
+      console.log("Received data from notification:", quote);
+      if (quote) {
+        // log if navigationref exists
+        console.log("Navigation ref exists:", navigationRef.current);
+        const result = navigationRef.current?.dispatch(
+          CommonActions.navigate(strings.screenName.homeHorizontal, {
+            quoteSearch: {
+              query: quote.subjects,
+              filter: "",
+            },
+            currentQuotes: [quote],
+            showBackButton: false
+          })
         );
+        console.log("Navigation dispatch result:", result);
+      } else {
+        console.log("Data from notification is not defined");
       }
     });
 
@@ -121,7 +131,7 @@ export default function App() {
   }
 
   return (
-    <RootNavigation initialRoute={"Home"} shuffledQuotes={shuffledQuotes} />
+    <RootNavigation initialRoute={"Home"} shuffledQuotes={shuffledQuotes} ref={navigationRef}/>
   );
 }
 

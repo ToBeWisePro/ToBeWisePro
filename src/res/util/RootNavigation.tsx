@@ -28,7 +28,7 @@ export const RootNavigation: React.FC<RootProps> = ({
   shuffledQuotes,
 }: RootProps) => {
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <StatusBar barStyle={"dark-content"} />
       <Stack.Navigator
         initialRouteName={initialRoute}
