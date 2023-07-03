@@ -150,7 +150,7 @@ export async function getShuffledQuotes(
   const db = SQLite.openDatabase(dbName);
   let dbQuery = `SELECT * FROM ${dbName}`;
   let params: any[] = [];
- 
+
   if (userQuery === strings.customDiscoverHeaders.deleted) {
     dbQuery += ` WHERE deleted = 1 ORDER BY RANDOM()`;
   } else if (userQuery === strings.customDiscoverHeaders.all) {
@@ -168,7 +168,8 @@ export async function getShuffledQuotes(
   } else if (filter === strings.filters.author) {
     dbQuery += ` WHERE deleted = 0 AND author LIKE '%${userQuery}%' ORDER BY RANDOM()`;
   } else if (filter === strings.filters.subject) {
-    dbQuery += ` WHERE deleted = 0 AND subjects LIKE '%${userQuery}%' ORDER BY RANDOM()`;
+    dbQuery += ` WHERE deleted = 0 AND (subjects LIKE ? OR subjects LIKE ? OR subjects LIKE ?) ORDER BY RANDOM()`;
+    params = [`${userQuery},%`, `%, ${userQuery},%`, `%,${userQuery}`];
   } else {
     const string = `Invalid filter provided: ${filter}`;
     throw new Error(string);
@@ -321,8 +322,8 @@ export async function getQuoteCount(
       params = [key];
       break;
     case strings.filters.subject:
-      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE subjects LIKE ? AND deleted = 0`;
-      params = [`%${key}%`];
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE (subjects LIKE ? OR subjects LIKE ? OR subjects LIKE ?) AND deleted = 0`;
+      params = [`${key},%`, `%, ${key},%`, `%,${key}`];
       break;
     case strings.customDiscoverHeaders.all:
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0`;

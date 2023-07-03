@@ -17,7 +17,6 @@ import { strings } from "../../res/constants/Strings";
 import { AutoScrollingQuoteList } from "../animals/AutoScrollingQuoteList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
-import { TestFlatListWithAnimation } from "../animals/TestFlatListWithAnimations";
 
 interface Props {
   navigation: NavigationInterface;

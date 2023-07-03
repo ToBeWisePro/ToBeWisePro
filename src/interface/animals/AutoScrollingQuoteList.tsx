@@ -186,8 +186,8 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         onScroll={handleScroll}
         contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }}
         ListFooterComponent={ListFooterComponent}
-        onEndReached={data.length >= 3 ? restartScroll : null}
-        onEndReachedThreshold={0}
+        // onEndReached={data.length >= 3 ? restartScroll : null}
+        // onEndReachedThreshold={0}
         getItemLayout={(data, index) => ({
           length: QUOTE_ITEM_HEIGHT,
           offset: QUOTE_ITEM_HEIGHT * index,
