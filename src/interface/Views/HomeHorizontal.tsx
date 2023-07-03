@@ -1,16 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Dimensions,
-  FlatList,
-  ScrollView,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
 import { GRADIENT_START, GRADIENT_END } from "../../../styles/Colors";
-import { QuotationInterface, RouteInterface } from "../../res/constants/Interfaces";
+import {
+  QuotationInterface,
+  RouteInterface,
+} from "../../res/constants/Interfaces";
 import { SubjectBubble } from "../molecules/SubjectBubble";
 import { BottomNav } from "../organisms/BottomNav";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
@@ -18,6 +14,8 @@ import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
 import { LargeQuoteContainer } from "../organisms/LargeQuoteContainer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { FlatList } from "react-native-gesture-handler";
+import * as Notifications from "expo-notifications";
 
 interface Props {
   navigation: {
@@ -28,63 +26,52 @@ interface Props {
 }
 
 export const HomeHorizontal = ({ navigation, route }: Props) => {
-  const [title, setTitle] = useState('TODO title not set');
-  const [quotes, setQuotes] = useState<QuotationInterface[]>(route.params.currentQuotes ? route.params.currentQuotes : []);
-  const [offset, setOffset] = useState(0);
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState<number>(0);
-  const [playPressed, setPlayPressed] = useState<boolean>(false);
+  const [title, setTitle] = useState("");
+  const [firstQuote, setFirstQuote] = useState<QuotationInterface | undefined>(
+    route.params.currentQuotes ? route.params.currentQuotes[0] : undefined
+  );
 
-  const flatListRef = useRef<FlatList<QuotationInterface>>(null);
-
-  const getCurrentOffset = (incremented: boolean) => {
-    // returns the index of the current quote. If you want to increment, set incremented to true
-    let currentPosition: number = parseInt(
-      String(offset / globalStyles.largeQuoteContainer.width)
-    );
-    if (incremented) {
-      currentPosition +=
-        globalStyles.largeQuoteContainer.width +
-        globalStyles.largeQuoteContainer.marginLeft;
-    }
-    return currentPosition;
+  // function to update title
+  const updateTitle = (filter: string, query: string) => {
+    setTitle(filter + ": " + query);
   };
 
+  // Set title from AsyncStorage if it's not set yet
   useEffect(() => {
-    // Every time the query changes, update the title.
-    // setQuotes(route.params.currentQuotes);
-    console.log(route.params) // FIXME this is why title isn't setting properly
-    setTitle(
-      route.params.quoteSearch.filter + ": " + route.params.quoteSearch.query
-    );
-  }, [route]);
-
-  useEffect(()=>{
-    console.log(route.params)
-    // if route.params.filter and query have length > 0, set the title. If not, pull from AsyncStorage
-    if (route.params.quoteSearch.filter.length > 0 && route.params.quoteSearch.query.length > 0) {
-    setTitle(
-      route.params.quoteSearch.filter + ": " + route.params.quoteSearch.query
-    );
-    } else {
-      // get the filter and query from AsyncStorage based on how it's used elsewhere and keep the same naming convention
-
+    if (title === "") {
       AsyncStorage.getItem("filter").then((filter) => {
         AsyncStorage.getItem("query").then((query) => {
-          setTitle(filter + ": " + query);
-        })
-      })
+          if (filter && query) updateTitle(filter, query);
+        });
+      });
     }
-    
-  },[])
+  }, [title]);
+
+  // Set title based on notification
   useEffect(() => {
-    // Every time the scrollPosition changes, check to see if we are on a new quote. If we are, change the quoteInEditing
-    const i: number = getCurrentOffset(false);
-    if (i != 0) {
-      // console.log("BLOCKED offset useEffect setting quote to ", quotes[i].quoteText)
-      // setCurrentQuoteIndex(quotes[i]);
-      setCurrentQuoteIndex(i);
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const quote = response.notification.request.content.data.quote;
+        if (quote) {
+          // Set the quote from the notification as the first item
+          setFirstQuote(quote);
+          setTitle(strings.copy.notificationFrom + quote.author);
+        }
+      }
+    );
+
+    // Don't forget to unsubscribe when the component is unmounted
+    return () => subscription.remove();
+  }, []);
+
+  // Set default title if it's not set yet
+  useEffect(() => {
+    if (title === "") {
+      setTitle(
+        route.params.quoteSearch.filter + ": " + route.params.quoteSearch.query
+      );
     }
-  }, [offset]);
+  }, [title, route.params.quoteSearch.filter, route.params.quoteSearch.query]);
 
   return (
     <View style={styles.container}>
@@ -100,94 +87,55 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
         colors={[GRADIENT_START, GRADIENT_END]}
         style={styles.background}
       >
-        <View>
-          <ScrollView horizontal={true} style={styles.subjectScrollView}>
-            {quotes[currentQuoteIndex]?.subjects.split(",").map((tag) => {
-              return (
-                <SubjectBubble
-                  key={tag}
-                  subject={tag}
-                  navigation={navigation}
-                />
-              );
-            })}
-          </ScrollView>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              setPlayPressed(false);
-            }}
-          >
-            <FlatList
-              // flatListRef={React.createRef()}
-              ref={flatListRef}
-              data={quotes}
-              horizontal={true}
-              snapToAlignment={"center"}
-              onScrollToIndexFailed={(info) => {
-                const wait = new Promise((resolve) => setTimeout(resolve, 500));
-                wait.then(() => {
-                  console.log("Scroll to index failed");
-                  setPlayPressed(false);
-                  flatListRef.current?.scrollToIndex({
-                    index: currentQuoteIndex,
-                    animated: true,
-                    viewPosition: 0,
-                  });
-                });
-              }}
-              onScroll={(ev) => {
-                if (!playPressed) {
-                  // This stops offset from resetting if autoscroll is on
-                  setOffset(ev.nativeEvent.contentOffset.x);
-                }
-              }}
-              contentContainerStyle={{ paddingTop: 10 }}
-              snapToInterval={
-                globalStyles.largeQuoteContainer.width +
-                globalStyles.largeQuoteContainer.marginLeft
-              }
-              decelerationRate={0}
-              style={styles.flatListStyle}
-              renderItem={(quote) => {
-                return (
-                  <LargeQuoteContainer
-                    passedInQuote={quote.item}
-                    key={quote.item._id}
-                    navigation={navigation}
-                  />
-                );
-              }}
-              keyExtractor={(item) => item.quoteText}
-            />
-          </TouchableWithoutFeedback>
+        <FlatList
+          data={firstQuote?.subjects.split(",")}
+          horizontal={true}
+          style={styles.flastList}
+          renderItem={({ item }) => (
+            <SubjectBubble key={item} subject={item} navigation={navigation} />
+          )}
+        />
+        <View style={styles.quoteContainer}>
+          <LargeQuoteContainer
+            passedInQuote={firstQuote}
+            navigation={navigation}
+            route={route}
+          />
         </View>
       </LinearGradient>
       <BottomNav
         navigation={navigation}
         screen={strings.screenName.home}
         whatToInclude={IncludeInBottomNav.PlayButton}
-        setPlayPressed={()=> navigation.push(strings.screenName.home, {currentQuotes: quotes})}
-        playPressed={playPressed}
+        setPlayPressed={() =>
+          navigation.push(strings.screenName.home, {
+            currentQuotes: [firstQuote],
+          })
+        }
       />
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     height: "100%",
     width: "100%",
     backgroundColor: "#000",
   },
-  flatListStyle: {
-    height: Dimensions.get("window").height - globalStyles.navbar.height - 150,
-    marginBottom: globalStyles.navbar.height * 2.5,
-  },
   background: {
     width: "100%",
     height: "100%",
+    paddingTop: 30,
   },
-  subjectScrollView: {
+  quoteContainer: {
+    alignItems: "center",
+    height:
+      Dimensions.get("window").height - 40 - globalStyles.navbar.height - 300,
+    alignContent: "flex-start",
+  },
+  flastList: {
     height: 40,
-    marginTop: 10,
+    flexGrow: 0,
   },
 });

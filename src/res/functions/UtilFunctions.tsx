@@ -7,6 +7,33 @@ import { PRIMARY_BLUE } from "../../../styles/Colors";
 import { Alert, Linking } from "react-native";
 import { globalStyles } from "../../../styles/GlobalStyles";
 
+import { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from "expo-notifications";
+
+export const useTitle = () => {
+  const [title, setTitle] = useState("");
+  
+  const updateTitle = (filter: string, query: string) => {
+    const title = filter + ": " + query;
+    setTitle(title);
+    AsyncStorage.setItem("title", title);
+  };
+
+  useEffect(() => {
+    const getTitle = async () => {
+      const savedTitle = await AsyncStorage.getItem("title");
+      if (savedTitle) {
+        setTitle(savedTitle);
+      }
+    };
+    getTitle();
+  }, []);
+
+  return { title, updateTitle };
+};
+
+
 export const shuffle = (unshuffledQuotes: QuotationInterface[]) => {
   const shuffledQuotes: QuotationInterface[] = [];
   let i = unshuffledQuotes.length,
@@ -68,6 +95,3 @@ export const openLink = async (url: string) => {
     throw error;
   }
 };
-
-
-

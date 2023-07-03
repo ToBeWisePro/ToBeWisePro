@@ -16,7 +16,7 @@ export const globalStyles = StyleSheet.create({
     paddingTop: 20
   },
   largeQuoteContainer:{
-    width: 335,
+    width: 375,
     height: 580,
     marginLeft: 12
   },

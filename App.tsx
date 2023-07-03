@@ -65,10 +65,8 @@ export default function App() {
 
     Notifications.addNotificationResponseReceivedListener(async (response) => {
       const quote = response.notification.request.content.data.quote;
-      console.log("Received data from notification:", quote);
       if (quote) {
         // log if navigationref exists
-        console.log("Navigation ref exists:", navigationRef.current);
         const result = navigationRef.current?.dispatch(
           CommonActions.navigate(strings.screenName.homeHorizontal, {
             quoteSearch: {
@@ -79,7 +77,7 @@ export default function App() {
             showBackButton: false
           })
         );
-        console.log("Navigation dispatch result:", result);
+        // console.log("Navigation dispatch result:", result);
       } else {
         console.log("Data from notification is not defined");
       }

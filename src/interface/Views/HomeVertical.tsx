@@ -61,8 +61,8 @@ export const HomeVertical = ({
   const fetchQueryAndFilter = async (filter, query) => {
     console.log("Passed", query, filter)
 
-    await AsyncStorage.setItem("userQuery", query);
-    await AsyncStorage.setItem("userFilter", filter);
+    await AsyncStorage.setItem("query", query);
+    await AsyncStorage.setItem("filter", filter);
     const title = filter + ": " + query;
     setTitle(title);
     await AsyncStorage.setItem("title", title);

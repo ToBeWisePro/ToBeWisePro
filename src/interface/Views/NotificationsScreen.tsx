@@ -66,7 +66,7 @@ export const loadSettings = async (key: string) => {
   } catch (error) {
     // save the default filter
     if (key === SETTINGS_KEYS.filter) {
-      console.log("Setting default filter");
+      console.log("Setting default filter", SETTINGS_KEYS.filter);
       await saveSettings(key, strings.database.defaultFilter);
     }
   }

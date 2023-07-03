@@ -79,10 +79,9 @@ export const LargeQuoteContainer: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   container: {
-    height: "70%",
+    height: "100%",
     width: globalStyles.largeQuoteContainer.width,
     justifyContent: "flex-end",
-    marginLeft: globalStyles.largeQuoteContainer.marginLeft,
     padding: 20,
     borderRadius: 5,
     backgroundColor: LIGHT,
