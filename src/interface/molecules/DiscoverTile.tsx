@@ -78,11 +78,18 @@ export const DiscoverTile: React.FC<Props> = ({
         } else {
           const getQuotesFromQuery = async () => {
             safeQuery = query.replaceAll("'", strings.database.safeChar);
+            
             await getShuffledQuotes(safeQuery, filter).then(
               (res: QuotationInterface[]) => navPush(res)
             );
           };
           const navPush = (res: QuotationInterface[]) => {
+            // log how many items are being passed
+            console.log(
+              "DiscoverTile.tsx: " +
+                res.length +
+                " items being passed to Home.tsx"
+            );
             navigation.push("Home", {
               currentQuotes: res,
               quoteSearch: {
@@ -112,7 +119,7 @@ export const DiscoverTile: React.FC<Props> = ({
               });
               break;
             case strings.customDiscoverHeaders.top100:
-              await getShuffledQuotes("Top 100", strings.filters.subject).then(
+              await getShuffledQuotes(strings.customDiscoverHeaders.top100, strings.filters.subject).then(
                 (res: QuotationInterface[]) => navPush(res)
               );
               break;

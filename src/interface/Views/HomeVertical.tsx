@@ -112,7 +112,6 @@ export const HomeVertical = ({
       const { query, filter } = quoteSearch;
       try {
         setQuotes(route.params.currentQuotes);
-        console.log(query, filter)
         setQuery(query);
         setFilter(filter);
         fetchQueryAndFilter(filter, query);
@@ -144,7 +143,7 @@ export const HomeVertical = ({
       setBackButton(false);
     }
   }, [route]);
-  console.log("Home screen re-rendered")
+  // console.log("Home screen re-rendered")
   return (
     <View style={styles.container}>
       <TopNav
