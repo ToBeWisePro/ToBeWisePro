@@ -14,6 +14,9 @@ import * as Notifications from "expo-notifications";
 import { scheduleNotifications } from "./src/res/util/NotificationScheduler";
 import { Image } from "react-native-elements";
 import { CommonActions } from "@react-navigation/native";
+import { SETTINGS_KEYS } from "./src/interface/Views/NotificationsScreen";
+import { useAsyncStorage } from '@react-native-community/hooks'; // Import this
+
 
 export default function App() {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>([]);
@@ -64,6 +67,7 @@ export default function App() {
     })();
 
     Notifications.addNotificationResponseReceivedListener(async (response) => {
+      await AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, strings.copy.notificationFrom + response.notification.request.content.data.quote.author);
       const quote = response.notification.request.content.data.quote;
       if (quote) {
         // log if navigationref exists

@@ -16,6 +16,8 @@ import { LargeQuoteContainer } from "../organisms/LargeQuoteContainer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native-gesture-handler";
 import * as Notifications from "expo-notifications";
+import { SETTINGS_KEYS } from "./NotificationsScreen";
+import { useAsyncStorage } from "@react-native-community/hooks"; // Import this
 
 interface Props {
   navigation: {
@@ -31,48 +33,48 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
     route.params.currentQuotes ? route.params.currentQuotes[0] : undefined
   );
 
-  // function to update title
-  const updateTitle = (filter: string, query: string) => {
-    setTitle(filter + ": " + query);
-  };
-
-  // Set title from AsyncStorage if it's not set yet
+  // Set title from AsyncStorage or from route params
   useEffect(() => {
-    if (title === "") {
-      AsyncStorage.getItem("filter").then((filter) => {
-        AsyncStorage.getItem("query").then((query) => {
-          if (filter && query) updateTitle(filter, query);
-        });
+    AsyncStorage.getItem("filter").then((filter) => {
+      AsyncStorage.getItem("query").then((query) => {
+        if (filter && query) {
+          AsyncStorage.getItem(SETTINGS_KEYS.notifTitle).then((notifTitle) => {
+            if (notifTitle && notifTitle !== title && notifTitle.length > 0) {
+              setTitle(notifTitle);
+              AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, "");
+            } else if (title === "") {
+              setTitle(
+                route.params.quoteSearch.filter +
+                  ": " +
+                  route.params.quoteSearch.query
+              );
+            } else {
+              setTitle(filter + ": " + query);
+            }
+          });
+        }
       });
-    }
-  }, [title]);
+    });
+  }, []);
 
-  // Set title based on notification
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
         const quote = response.notification.request.content.data.quote;
         if (quote) {
-          // Set the quote from the notification as the first item
           setFirstQuote(quote);
-          setTitle(strings.copy.notificationFrom + quote.author);
+          AsyncStorage.getItem(SETTINGS_KEYS.notifTitle).then((notifTitle) => {
+            if (notifTitle && notifTitle !== title) {
+              setTitle(notifTitle);
+              AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, "");
+            }
+          });
         }
       }
     );
 
-    // Don't forget to unsubscribe when the component is unmounted
     return () => subscription.remove();
   }, []);
-
-  // Set default title if it's not set yet
-  useEffect(() => {
-    if (title === "") {
-      setTitle(
-        route.params.quoteSearch.filter + ": " + route.params.quoteSearch.query
-      );
-    }
-  }, [title, route.params.quoteSearch.filter, route.params.quoteSearch.query]);
-
   return (
     <View style={styles.container}>
       <TopNav
