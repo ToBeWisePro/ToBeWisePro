@@ -3,7 +3,7 @@
     "name": "ToBeWise Pro",
     "icon": "./assets/appstore.png",
     "slug": "ToBeWise",
-    "version": "7.1.37",
+    "version": "7.1.39",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
@@ -16,7 +16,8 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.app.tobewise.pro"
+      "bundleIdentifier": "com.app.tobewise.pro",
+      "bitcode": false
     },
     "android": {
       "adaptiveIcon": {

@@ -29,7 +29,7 @@ interface Props {
 export const NotificationSelectorScreen = ({ navigation }: Props) => {
   const [subjects, setSubjects] = useState<IData[]>([]);
   const [authors, setAuthors] = useState<IData[]>([]);
-  const [filter, setFilter] = useState<string>("");
+  const [filter, setFilter] = useState<string>(strings.filters.subject);
   const [search, setSearch] = useState<string>("");
   const [tempSubjects, setTempSubjects] = useState<IData[]>([]);
   const [tempAuthors, setTempAuthors] = useState<IData[]>([]);
@@ -46,7 +46,7 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
         formatDataForAlphabetList(res, setTempAuthors);
       });
     };
-    setFilter(strings.filters.author);
+    setFilter(strings.filters.subject);
 
     load();
   }, []);

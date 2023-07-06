@@ -41,7 +41,7 @@ export const QuoteButtonBar: React.FC<Props> = ({
 
   const onShare = async () => {
     try {
-      const message = `"${quote.quoteText}"\n-${quote.author}\n\nRead more on ToBeWise™ at https://www.ToBeWiseApp.com`;
+      const message = `"${quote.quoteText}"\n-${quote.author}\n\nRead more on ToBeWise™ at https://www.ToBeWise.co`;
 
       const result = await Share.share({ message });
 

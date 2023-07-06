@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
@@ -17,6 +17,8 @@ import { strings } from "../../res/constants/Strings";
 import { AutoScrollingQuoteList } from "../animals/AutoScrollingQuoteList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
+import { ScrollContext } from "../../res/util/ScrollContext";
+import { useSharedValue } from "react-native-reanimated";
 
 interface Props {
   navigation: NavigationInterface;
@@ -42,6 +44,15 @@ export const HomeVertical = ({
   const [scrollSpeed, setScrollSpeed] = useState<number>(
     autoScrollIntervalTime
   );
+  const scrollPosition = useSharedValue(0)
+  const resetScrollPosition = useCallback(() => {
+    scrollPosition.value = 0;
+  }, []);
+  useEffect(()=>{
+    console.log("HV q/f ", query, filter)
+
+  },[])
+  
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
@@ -53,13 +64,13 @@ export const HomeVertical = ({
         }
       }
     );
-
     // Don't forget to unsubscribe when the component is unmounted
     return () => subscription.remove();
+    
   }, [quotes]);
 
   const fetchQueryAndFilter = async (filter, query) => {
-    console.log("Passed", query, filter)
+    console.log("Passed", query, filter);
 
     await AsyncStorage.setItem("query", query);
     await AsyncStorage.setItem("filter", filter);
@@ -69,7 +80,7 @@ export const HomeVertical = ({
   };
 
   const fetchFromStorageAndSet = async (defaultQuery, defaultFilter) => {
-    console.log("this is firing")
+    console.log("this is firing");
     const savedFilter =
       (await AsyncStorage.getItem("userFilter")) || defaultFilter;
     const savedQuery =
@@ -128,7 +139,7 @@ export const HomeVertical = ({
           setQuery(route.params.quoteSearch.query);
           setFilter(route.params.quoteSearch.filter);
         } else {
-          console.log("using default query and filter")
+          console.log("using default query and filter");
           fetchFromStorageAndSet(defaultQuery, defaultFilter);
         }
       } catch (error) {
@@ -165,6 +176,8 @@ export const HomeVertical = ({
           navigation={navigation}
           query={query}
           filter={filter}
+          scrollPosition={scrollPosition}
+
         />
       </LinearGradient>
       <BottomNav
@@ -175,6 +188,8 @@ export const HomeVertical = ({
         setPlayPressed={setPlayPressed}
         scrollSpeed={scrollSpeed}
         setScrollSpeed={setScrollSpeed}
+        resetScrollPosition={resetScrollPosition}
+
       />
     </View>
   );

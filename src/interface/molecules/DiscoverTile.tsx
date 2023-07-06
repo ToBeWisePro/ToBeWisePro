@@ -17,6 +17,7 @@ import {
 import { BackButtonNavEnum } from "../../res/constants/Enums";
 import { strings } from "../../res/constants/Strings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SETTINGS_KEYS } from "../Views/NotificationsScreen";
 
 interface Props {
   query: string;
@@ -85,11 +86,8 @@ export const DiscoverTile: React.FC<Props> = ({
           };
           const navPush = (res: QuotationInterface[]) => {
             // log how many items are being passed
-            console.log(
-              "DiscoverTile.tsx: " +
-                res.length +
-                " items being passed to Home.tsx"
-            );
+            AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, ""); //required for title in HomeHorizontal to work properly
+
             navigation.push("Home", {
               currentQuotes: res,
               quoteSearch: {

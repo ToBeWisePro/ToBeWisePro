@@ -3,7 +3,10 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { StyleSheet, View } from "react-native";
 import { AppText } from "./AppText";
 import { strings } from "../../res/constants/Strings";
-import { QuotationInterface } from "../../res/constants/Interfaces";
+import {
+  NavigationInterface,
+  QuotationInterface,
+} from "../../res/constants/Interfaces";
 import { getShuffledQuotes } from "../../res/functions/DBFunctions";
 import { IconFactory } from "./IconFactory";
 import { LIGHT, PRIMARY_BLUE, PRIMARY_GREEN } from "../../../styles/Colors";
@@ -12,9 +15,7 @@ interface Props {
   buttonText: string;
   selected: boolean;
   navigationTarget: string;
-  navigation: {
-    push: (ev: string, {}) => void;
-  };
+  navigation: NavigationInterface;
 }
 
 const renderIcon = (screen: string, selected: boolean) => {
@@ -43,13 +44,11 @@ export const NavButton: React.FC<Props> = ({
         styles.container,
         { backgroundColor: selected ? PRIMARY_GREEN : PRIMARY_BLUE },
       ]}
-      onPress={async () => {
+      onPress={() => {
         if (navigationTarget == strings.screenName.home) {
-         
-            navigation.navigate(strings.screenName.home);
-
+          navigation.navigate(strings.screenName.home);
         } else {
-          navigation.push(navigationTarget, {});
+          navigation.navigate(navigationTarget);
         }
       }}
     >

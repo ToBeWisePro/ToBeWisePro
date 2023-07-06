@@ -71,16 +71,23 @@ export default function App() {
       const quote = response.notification.request.content.data.quote;
       if (quote) {
         // log if navigationref exists
-        const result = navigationRef.current?.dispatch(
-          CommonActions.navigate(strings.screenName.homeHorizontal, {
-            quoteSearch: {
-              query: quote.subjects,
-              filter: "",
-            },
-            currentQuotes: [quote],
-            showBackButton: false
-          })
-        );
+        console.log(quote)
+        await AsyncStorage.setItem(SETTINGS_KEYS.notifQuote, JSON.stringify(quote)).then(()=>{
+          const result = navigationRef.current?.dispatch(
+            CommonActions.navigate(strings.screenName.homeHorizontal, {
+              quoteSearch: {
+                query: quote.subjects,
+                filter: "",
+              },
+              currentQuotes: [quote],
+              showBackButton: false
+            })
+          );
+        }).catch((error)=>{
+          console.log("Error saving quote:", error);
+        })
+
+       
         // console.log("Navigation dispatch result:", result);
       } else {
         console.log("Data from notification is not defined");

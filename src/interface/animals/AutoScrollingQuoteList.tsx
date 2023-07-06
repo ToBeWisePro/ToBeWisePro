@@ -9,7 +9,12 @@ import {
 } from "react-native-reanimated";
 import SmallQuoteContainer from "../organisms/SmallQuoteContainer";
 import Slider from "@react-native-community/slider";
-import { DARK, LIGHT, PRIMARY_BLUE, PRIMARY_GREEN } from "../../../styles/Colors";
+import {
+  DARK,
+  LIGHT,
+  PRIMARY_BLUE,
+  PRIMARY_GREEN,
+} from "../../../styles/Colors";
 import {
   NavigationInterface,
   QuotationInterface,
@@ -28,8 +33,8 @@ interface Props {
   playPressed: boolean;
   setPlayPressed: (value: boolean) => void;
   navigation: NavigationInterface;
-  query?: string;
-  filter?: (quote: QuotationInterface) => boolean;
+  query: string;
+  filter:string;
 }
 
 export const AutoScrollingQuoteList: React.FC<Props> = ({
@@ -44,11 +49,10 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const scrollPosition = useSharedValue(0);
   const [scrollSpeed, setScrollSpeed] = useState(0.0275);
   const currentPosition = useRef(0);
+  console.log("ASQL q/f", query, filter)
 
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
 
-  // Memorize handlePress function to avoid unnecessary re-renders
-  // Memorize handlePress function to avoid unnecessary re-renders
   const handlePress = useCallback(
     (quote: QuotationInterface) => {
       let newQuotes: QuotationInterface[] = [quote];
@@ -63,15 +67,15 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
           filter: filter,
           query: query,
         },
-        query: query,
-        filter: filter,
       });
     },
-    [] // Empty dependency array
+    [filter, query, data, navigation] // Add your props here
   );
 
   // Function to set and store scroll speed
-  const setAndStoreScrollSpeed = async (value: React.SetStateAction<number>) => {
+  const setAndStoreScrollSpeed = async (
+    value: React.SetStateAction<number>
+  ) => {
     setScrollSpeed(value);
     console.log(value);
     try {
@@ -135,11 +139,10 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     runOnJS(scrollTo)(scrollPosition.value);
   }, [scrollPosition]);
 
-  const handleScroll = (event: any)=>{
+  const handleScroll = (event: any) => {
     // save event.nativeEvent.contentOffset.y as an integer
     currentPosition.current = event.nativeEvent.contentOffset.y;
-
-  }
+  };
 
   const renderItem = useCallback(
     ({ item: quote }) => {
@@ -186,8 +189,8 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         onScroll={handleScroll}
         contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }}
         ListFooterComponent={ListFooterComponent}
-        // onEndReached={data.length >= 3 ? restartScroll : null}
-        // onEndReachedThreshold={0}
+        onEndReached={() => setPlayPressed(!playPressed)}
+        onEndReachedThreshold={0}
         getItemLayout={(data, index) => ({
           length: QUOTE_ITEM_HEIGHT,
           offset: QUOTE_ITEM_HEIGHT * index,

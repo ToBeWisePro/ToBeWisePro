@@ -48,6 +48,7 @@ export const SETTINGS_KEYS = {
   query: "query",
   filter: "filter",
   notifTitle: "notifTitle",
+  notifQuote: "notifQuote",
 };
 
 export const saveSettings = async (key: string, value: any) => {

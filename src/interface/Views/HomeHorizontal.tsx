@@ -17,7 +17,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native-gesture-handler";
 import * as Notifications from "expo-notifications";
 import { SETTINGS_KEYS } from "./NotificationsScreen";
-import { useAsyncStorage } from "@react-native-community/hooks"; // Import this
 
 interface Props {
   navigation: {
@@ -32,55 +31,41 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
   const [firstQuote, setFirstQuote] = useState<QuotationInterface | undefined>(
     route.params.currentQuotes ? route.params.currentQuotes[0] : undefined
   );
+  const [backButton, showBackButton] = useState(true);
 
   // Set title from AsyncStorage or from route params
   useEffect(() => {
-    AsyncStorage.getItem("filter").then((filter) => {
-      AsyncStorage.getItem("query").then((query) => {
+    const fetchData = async () => {
+      try {
+        const filter = await AsyncStorage.getItem("filter");
+        const query = await AsyncStorage.getItem("query");
         if (filter && query) {
-          AsyncStorage.getItem(SETTINGS_KEYS.notifTitle).then((notifTitle) => {
-            if (notifTitle && notifTitle !== title && notifTitle.length > 0) {
-              setTitle(notifTitle);
-              AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, "");
-            } else if (title === "") {
-              setTitle(
-                route.params.quoteSearch.filter +
-                  ": " +
-                  route.params.quoteSearch.query
-              );
-            } else {
-              setTitle(filter + ": " + query);
+          const notifTitle = await AsyncStorage.getItem(SETTINGS_KEYS.notifTitle);
+          if (notifTitle && notifTitle !== title && notifTitle.length > 0) {
+            setTitle(notifTitle);
+            const notifQuote = await AsyncStorage.getItem(SETTINGS_KEYS.notifQuote);
+            if (notifQuote) {
+              setFirstQuote(JSON.parse(notifQuote));
             }
-          });
+            showBackButton(false);
+          } else {
+            setTitle(filter + ": " + query);
+          }
         }
-      });
-    });
-  }, []);
-
-  useEffect(() => {
-    const subscription = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        const quote = response.notification.request.content.data.quote;
-        if (quote) {
-          setFirstQuote(quote);
-          AsyncStorage.getItem(SETTINGS_KEYS.notifTitle).then((notifTitle) => {
-            if (notifTitle && notifTitle !== title) {
-              setTitle(notifTitle);
-              AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, "");
-            }
-          });
-        }
+      } catch (error) {
+        console.log(error);
       }
-    );
-
-    return () => subscription.remove();
+    };
+    fetchData();
   }, []);
+  
+
   return (
     <View style={styles.container}>
       <TopNav
         title={title}
         stickyHeader={true}
-        backButton={true}
+        backButton={backButton}
         backFunction={() => {
           navigation.goBack();
         }}
@@ -109,11 +94,7 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
         navigation={navigation}
         screen={strings.screenName.home}
         whatToInclude={IncludeInBottomNav.PlayButton}
-        setPlayPressed={() =>
-          navigation.push(strings.screenName.home, {
-            currentQuotes: [firstQuote],
-          })
-        }
+        setPlayPressed={() => navigation.goBack()}
       />
     </View>
   );

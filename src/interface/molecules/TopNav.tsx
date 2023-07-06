@@ -23,9 +23,9 @@ export const TopNav: React.FC<Props> = ({
     <View
       style={[styles.topNavBarRoot, stickyHeader && styles.topNavBarSticky]}
     >
-      <View>
+      <View style={styles.backButton}>
         {backButton && (
-          <TouchableOpacity onPress={backFunction} style={styles.backButton}>
+          <TouchableOpacity onPress={backFunction}>
             <IconFactory icon={"arrow-back-ios"} selected={true} />
           </TouchableOpacity>
         )}
@@ -39,7 +39,7 @@ export const TopNav: React.FC<Props> = ({
           {title}
         </AppText>
       </View>
-      <View></View>
+      <View style={styles.backButton}></View>
     </View>
   );
 };
