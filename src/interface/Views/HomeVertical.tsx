@@ -45,9 +45,7 @@ export const HomeVertical = ({
     autoScrollIntervalTime
   );
   const scrollPosition = useSharedValue(0)
-  const resetScrollPosition = useCallback(() => {
-    scrollPosition.value = 0;
-  }, []);
+
   useEffect(()=>{
     console.log("HV q/f ", query, filter)
 
@@ -177,20 +175,9 @@ export const HomeVertical = ({
           query={query}
           filter={filter}
           scrollPosition={scrollPosition}
-
         />
       </LinearGradient>
-      <BottomNav
-        navigation={navigation}
-        screen={strings.screenName.home}
-        whatToInclude={IncludeInBottomNav.PlayButton}
-        playPressed={playPressed}
-        setPlayPressed={setPlayPressed}
-        scrollSpeed={scrollSpeed}
-        setScrollSpeed={setScrollSpeed}
-        resetScrollPosition={resetScrollPosition}
-
-      />
+     
     </View>
   );
 };
@@ -204,10 +191,6 @@ const styles = StyleSheet.create({
   background: {
     width: "100%",
     alignItems: "center",
-    height:
-      Dimensions.get("window").height -
-      globalStyles.navbar.height -
-      globalStyles.scrollButtonBar.height -
-      35,
+    height: "100%",
   },
 });

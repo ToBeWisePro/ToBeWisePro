@@ -25,6 +25,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
 import { AppText } from "../atoms/AppText";
+import { BottomNav } from "../organisms/BottomNav";
+import { IncludeInBottomNav } from "../../res/constants/Enums";
 
 const QUOTE_ITEM_HEIGHT = globalStyles.smallQuoteContainer.height;
 
@@ -34,7 +36,7 @@ interface Props {
   setPlayPressed: (value: boolean) => void;
   navigation: NavigationInterface;
   query: string;
-  filter:string;
+  filter: string;
 }
 
 export const AutoScrollingQuoteList: React.FC<Props> = ({
@@ -50,7 +52,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const [scrollSpeed, setScrollSpeed] = useState(0.0275);
   const currentPosition = useRef(0);
   const [hitBottom, setHitBottom] = useState(false);
-  
 
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
 
@@ -101,14 +102,17 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
 
     fetchScrollSpeed();
   }, []);
-
+  const resetScrollPosition = useCallback(() => {
+    scrollPosition.value = 0;
+    setPlayPressed(false);
+  }, []);
   useEffect(() => {
     if (playPressed) {
-      if(hitBottom){
-        console.log('firing')
+      if (hitBottom) {
+        console.log("firing");
         // put the user back up top
         restartScroll();
-        setPlayPressed(true)
+        setPlayPressed(true);
         setHitBottom(false);
       }
       scrollPosition.value = withTiming(totalScrollDistance, {
@@ -151,7 +155,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     // save event.nativeEvent.contentOffset.y as an integer
     currentPosition.current = event.nativeEvent.contentOffset.y;
   };
-
 
   const renderItem = useCallback(
     ({ item: quote }) => {
@@ -199,8 +202,8 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }}
         ListFooterComponent={ListFooterComponent}
         onEndReached={() => {
-          setPlayPressed(!playPressed)
-          setHitBottom(true)
+          setPlayPressed(!playPressed);
+          setHitBottom(true);
         }}
         // onEndReachedThreshold={100}
         getItemLayout={(data, index) => ({
@@ -219,6 +222,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       {data.length >= 1 ? (
         <Slider
           minimumValue={0.005}
+          style={{ marginBottom: 180, marginHorizontal: 20 }}
           maximumValue={0.1}
           onValueChange={setAndStoreScrollSpeed}
           value={scrollSpeed}
@@ -229,6 +233,17 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
           There are currently no quotes that match your selection
         </AppText>
       )}
+
+      <BottomNav
+        navigation={navigation}
+        screen={strings.screenName.home}
+        whatToInclude={IncludeInBottomNav.PlayButton}
+        playPressed={playPressed}
+        setPlayPressed={setPlayPressed}
+        scrollSpeed={scrollSpeed}
+        setScrollSpeed={setScrollSpeed}
+        resetScrollPosition={resetScrollPosition}
+      />
     </View>
   );
 };
@@ -237,7 +252,8 @@ const styles = StyleSheet.create({
   container: {
     height: "100%",
     flex: 1,
-    marginBottom: globalStyles.navbar.height * 2,
+    marginBottom: globalStyles.navbar.height + 38,
+    width: "100%",
   },
   buttonText: {
     color: DARK,

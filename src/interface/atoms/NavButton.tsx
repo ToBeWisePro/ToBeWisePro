@@ -16,6 +16,7 @@ interface Props {
   selected: boolean;
   navigationTarget: string;
   navigation: NavigationInterface;
+  resetScrollPosition: () => void;
 }
 
 const renderIcon = (screen: string, selected: boolean) => {
@@ -37,6 +38,7 @@ export const NavButton: React.FC<Props> = ({
   selected,
   navigationTarget,
   navigation,
+  resetScrollPosition
 }: Props) => {
   return (
     <TouchableWithoutFeedback
@@ -46,6 +48,9 @@ export const NavButton: React.FC<Props> = ({
       ]}
       onPress={() => {
         if (navigationTarget == strings.screenName.home) {
+          if(resetScrollPosition){
+            resetScrollPosition();
+          }
           navigation.navigate(strings.screenName.home);
         } else {
           navigation.navigate(navigationTarget);

@@ -29,9 +29,7 @@ export const BottomNav: React.FC<Props> = ({
   whatToInclude,
   setPlayPressed,
   playPressed,
-  scrollSpeed,
   resetScrollPosition,
-  setScrollSpeed,
 }: Props) => {
   const navButtons: NavButtonInterface[] = [
     {
