@@ -49,7 +49,8 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const scrollPosition = useSharedValue(0);
   const [scrollSpeed, setScrollSpeed] = useState(0.0275);
   const currentPosition = useRef(0);
-  console.log("ASQL q/f", query, filter)
+  const [hitBottom, setHitBottom] = useState(false);
+  
 
   const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
 
@@ -103,6 +104,13 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
 
   useEffect(() => {
     if (playPressed) {
+      if(hitBottom){
+        console.log('firing')
+        // put the user back up top
+        restartScroll();
+        setPlayPressed(true)
+        setHitBottom(false);
+      }
       scrollPosition.value = withTiming(totalScrollDistance, {
         duration: totalScrollDistance / scrollSpeed,
         easing: Easing.linear,
@@ -143,6 +151,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     // save event.nativeEvent.contentOffset.y as an integer
     currentPosition.current = event.nativeEvent.contentOffset.y;
   };
+
 
   const renderItem = useCallback(
     ({ item: quote }) => {
@@ -189,8 +198,11 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         onScroll={handleScroll}
         contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }}
         ListFooterComponent={ListFooterComponent}
-        onEndReached={() => setPlayPressed(!playPressed)}
-        onEndReachedThreshold={0}
+        onEndReached={() => {
+          setPlayPressed(!playPressed)
+          setHitBottom(true)
+        }}
+        // onEndReachedThreshold={100}
         getItemLayout={(data, index) => ({
           length: QUOTE_ITEM_HEIGHT,
           offset: QUOTE_ITEM_HEIGHT * index,
