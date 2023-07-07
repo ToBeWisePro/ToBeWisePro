@@ -9,15 +9,10 @@ import {
   RouteInterface,
 } from "../../res/constants/Interfaces";
 import { getShuffledQuotes } from "../../res/functions/DBFunctions";
-import { BottomNav } from "../organisms/BottomNav";
-import { IncludeInBottomNav } from "../../res/constants/Enums";
-import { globalStyles } from "../../../styles/GlobalStyles";
 import { autoScrollIntervalTime } from "../../res/constants/Values";
 import { strings } from "../../res/constants/Strings";
 import { AutoScrollingQuoteList } from "../animals/AutoScrollingQuoteList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Notifications from "expo-notifications";
-import { ScrollContext } from "../../res/util/ScrollContext";
 import { useSharedValue } from "react-native-reanimated";
 
 interface Props {
@@ -75,7 +70,7 @@ export const HomeVertical = ({
 
     try {
       const res = await getShuffledQuotes(savedQuery, savedFilter);
-      
+
       setQuotes(res);
     } catch (error) {
       console.error("Error getting shuffled quotes: ", error);

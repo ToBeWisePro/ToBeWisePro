@@ -66,13 +66,21 @@ export const loadSettings = async (key: string) => {
       return JSON.parse(value);
     }
   } catch (error) {
-    // save the default filter
-    if (key === SETTINGS_KEYS.filter) {
-      console.log("Setting default filter", SETTINGS_KEYS.filter);
-      await saveSettings(key, strings.database.defaultFilter);
-    }
+    console.log(error);
+    await AsyncStorage.getAllKeys().then(async (keys) => {
+      keys.forEach(async (key) => {
+        await AsyncStorage.getItem(key).then((value) => {
+          console.log(key + ", " + value?.substring(0, 20));
+        });
+      });
+      // save the default filter
+      if (key === SETTINGS_KEYS.filter) {
+        console.log("Setting default filter", SETTINGS_KEYS.filter);
+        await saveSettings(key, strings.database.defaultFilter);
+      }
+    });
+    return null;
   }
-  return null;
 };
 
 export const NotificationScreen: React.FC<Props> = ({
@@ -94,7 +102,7 @@ export const NotificationScreen: React.FC<Props> = ({
     const savedStartTime = await loadSettings(SETTINGS_KEYS.startTime);
     const savedEndTime = await loadSettings(SETTINGS_KEYS.endTime);
     const savedSpacing = await loadSettings(SETTINGS_KEYS.spacing);
-    const savedQuery = await loadSettings(SETTINGS_KEYS.query);
+    const savedQuery = await loadSettings("notificationQuery");
     const savedFilter = await loadSettings(SETTINGS_KEYS.filter);
 
     if (savedQuery !== null) {
@@ -164,10 +172,10 @@ export const NotificationScreen: React.FC<Props> = ({
         alert("You need to grant permission to receive notifications");
         return;
       }
-  
+
       console.log("filter: ", filter.trim());
       let data = await getShuffledQuotes(query, filter);
-  
+
       if (data.length === 0) {
         alert("Invalid query. Notifications database set to defaults");
         data = await getShuffledQuotes(
@@ -203,25 +211,26 @@ export const NotificationScreen: React.FC<Props> = ({
         endTime.getMinutes(),
         endTime.getSeconds()
       );
-      if (
-        currentDateTime >= startDateTime &&
-        currentDateTime <= endDateTime
-      ) {
-   Alert.alert(strings.copy.newNotificationsSet)
+      if (currentDateTime >= startDateTime && currentDateTime <= endDateTime) {
+        Alert.alert(strings.copy.newNotificationsSet);
 
         const quote: QuotationInterface = data[0];
-      await Notifications.presentNotificationAsync({
-        title: strings.copy.notificationTitle,
-        body: quote.quoteText + "\n- " + quote.author,
-        data: {
-          quote: quote,
-        },
-      });
+        await Notifications.presentNotificationAsync({
+          title: strings.copy.notificationTitle,
+          body: quote.quoteText + "\n- " + quote.author,
+          data: {
+            quote: quote,
+          },
+        });
       } else {
-        Alert.alert("Notifications will be sent between " + startTime.toLocaleTimeString() + " and " + endTime.toLocaleTimeString() + ".");
+        Alert.alert(
+          "Notifications will be sent between " +
+            startTime.toLocaleTimeString() +
+            " and " +
+            endTime.toLocaleTimeString() +
+            "."
+        );
       }
-  
-      
     } catch (error) {
       console.log(error);
       alert("An error occurred while trying to send the notification");

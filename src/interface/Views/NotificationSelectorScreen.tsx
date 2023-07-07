@@ -21,6 +21,8 @@ import {
   saveSettings,
 } from "./NotificationsScreen";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
+import { AppText } from "../atoms/AppText";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Props {
   navigation: NavigationInterface;
@@ -131,12 +133,9 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
           setFilter={setFilter}
           search={search}
           onPress={async (query: string, filter: string) => {
-            console.log("query: ", query);
-            console.log("filter: ", filter);
-            
+            await saveSettings("notificationQuery", query);
             await getShuffledQuotes(query, filter)
               .then((res) => {
-                console.log(res.length);
               })
               .then(async () => {
                 await saveSettings(SETTINGS_KEYS.query, query)
@@ -144,7 +143,6 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
                     await saveSettings(SETTINGS_KEYS.filter, filter);
                   })
                   .then(async () => {
-                    // log the current query and filter saved
                     await loadSettings(SETTINGS_KEYS.query)
                       .then((res) => {
                       })

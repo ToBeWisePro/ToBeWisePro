@@ -67,7 +67,7 @@ export default function App() {
     })();
 
     Notifications.addNotificationResponseReceivedListener(async (response) => {
-      await AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, strings.copy.notificationFrom + response.notification.request.content.data.quote.author);
+      await AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, strings.copy.notificationFrom);
       const quote = response.notification.request.content.data.quote;
       if (quote) {
         // log if navigationref exists

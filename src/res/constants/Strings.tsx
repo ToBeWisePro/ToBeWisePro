@@ -50,7 +50,7 @@ export const strings = new LocalizedStrings({
         errorMessages:{
           screenFailedToLoad: "Our developer isn't great, his bad code broke the app. Please quit and restart it"
         },
-        notificationFrom: "🔔 Notification From: "
+        notificationFrom: "🔔 Notification"
       },
       playPauseButtons: {
         play: "play-circle-outline",
