@@ -84,9 +84,9 @@ export const DiscoverTile: React.FC<Props> = ({
               (res: QuotationInterface[]) => navPush(res)
             );
           };
-          const navPush = (res: QuotationInterface[]) => {
+          const navPush = async (res: QuotationInterface[]) => {
             // log how many items are being passed
-            AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, ""); //required for title in HomeHorizontal to work properly
+            await AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, ""); //required for title in HomeHorizontal to work properly
 
             navigation.push("Home", {
               currentQuotes: res,
@@ -101,8 +101,8 @@ export const DiscoverTile: React.FC<Props> = ({
           // see if we're using a special query. If not, use the default query
           switch (query) {
             case strings.customDiscoverHeaders.all:
-              await getShuffledQuotes(strings.customDiscoverHeaders.all, strings.database.defaultFilter).then((res: QuotationInterface[]) =>
-                navPush(res)
+              await getShuffledQuotes(strings.customDiscoverHeaders.all, strings.database.defaultFilter).then(async (res: QuotationInterface[]) =>
+               await navPush(res)
               );
               break;
             case strings.customDiscoverHeaders.addedByMe:

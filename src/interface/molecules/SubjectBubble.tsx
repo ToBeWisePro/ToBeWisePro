@@ -16,8 +16,8 @@ interface Props{
 export const SubjectBubble: React.FC<Props> = ({subject, navigation}:Props) => {
     return(
         <TouchableOpacity style={styles.container} onPress={async ()=>{
-            AsyncStorage.setItem("query", subject)
-            AsyncStorage.setItem("filter", strings.filters.subject)
+            await AsyncStorage.setItem("query", subject)
+            await AsyncStorage.setItem("filter", strings.filters.subject)
 
             await getShuffledQuotes(subject, strings.filters.subject).then((res)=>navigation.push(strings.screenName.home, {currentQuotes: res, quoteSearch: {filter: strings.filters.subject, query: subject}}))
             

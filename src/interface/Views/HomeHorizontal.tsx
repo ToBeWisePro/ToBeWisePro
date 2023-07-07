@@ -20,7 +20,7 @@ import * as Notifications from "expo-notifications";
 import { SETTINGS_KEYS } from "./NotificationsScreen";
 
 interface Props {
-  navigation: NavigationInterface
+  navigation: NavigationInterface;
   route: RouteInterface;
 }
 
@@ -30,27 +30,33 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
     route.params.currentQuotes ? route.params.currentQuotes[0] : undefined
   );
   const [backButton, showBackButton] = useState(true);
+  const [renderingFromNotification, setRenderingFromNotification] =
+    useState(false);
 
+  // Set title from AsyncStorage or from route params
   // Set title from AsyncStorage or from route params
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const filter = await AsyncStorage.getItem("filter");
-        const query = await AsyncStorage.getItem("query");
-        if (filter && query) {
-          const notifTitle = await AsyncStorage.getItem(
-            SETTINGS_KEYS.notifTitle
+        const notifTitle = await AsyncStorage.getItem(SETTINGS_KEYS.notifTitle);
+        if (notifTitle && notifTitle === strings.copy.notificationFrom) {
+          // Navigated to this screen via a notification
+          setRenderingFromNotification(true);
+          const notifQuote = await AsyncStorage.getItem(
+            SETTINGS_KEYS.notifQuote
           );
-          if (notifTitle && notifTitle !== title && notifTitle.length > 0) {
+          if (notifQuote) {
             setTitle(notifTitle);
-            const notifQuote = await AsyncStorage.getItem(
-              SETTINGS_KEYS.notifQuote
-            );
-            if (notifQuote) {
-              setFirstQuote(JSON.parse(notifQuote));
-            }
+            setFirstQuote(JSON.parse(notifQuote));
             showBackButton(false);
-          } else {
+            await AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, "");
+          }
+        } else {
+          // Navigated to this screen via normal navigation
+          setRenderingFromNotification(false);
+          const filter = await AsyncStorage.getItem("filter");
+          const query = await AsyncStorage.getItem("query");
+          if (filter && query) {
             setTitle(filter + ": " + query);
           }
         }
@@ -60,6 +66,12 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
     };
     fetchData();
   }, []);
+
+  useEffect(()=>{
+    if(title.includes('"')){
+      setTitle(title.replaceAll('"','' ))
+    }
+  },[title])
 
   return (
     <View style={styles.container}>

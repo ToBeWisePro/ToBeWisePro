@@ -133,25 +133,18 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
           setFilter={setFilter}
           search={search}
           onPress={async (query: string, filter: string) => {
-            await saveSettings("notificationQuery", query);
-            await getShuffledQuotes(query, filter)
-              .then((res) => {
+            await saveSettings(SETTINGS_KEYS.query, query)
+              .then(async () => {
+                await saveSettings(SETTINGS_KEYS.filter, filter);
               })
               .then(async () => {
-                await saveSettings(SETTINGS_KEYS.query, query)
+                await loadSettings(SETTINGS_KEYS.query)
+                  .then((res) => {})
                   .then(async () => {
-                    await saveSettings(SETTINGS_KEYS.filter, filter);
-                  })
-                  .then(async () => {
-                    await loadSettings(SETTINGS_KEYS.query)
-                      .then((res) => {
-                      })
-                      .then(async () => {
-                        await loadSettings(SETTINGS_KEYS.filter).then((res) => {
-                        });
-                      });
+                    await loadSettings(SETTINGS_KEYS.filter).then((res) => {});
                   });
               });
+            await saveSettings("notificationQuery", query);
 
             navigation.goBack();
           }}

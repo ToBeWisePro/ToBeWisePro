@@ -47,6 +47,8 @@ export default function App() {
       await saveDefaultValue("endTime", defaultEndTime);
       await saveDefaultValue("frequency", 5);
       await saveDefaultValue("notificationDB", "default");
+      await saveDefaultValue("notificationQuery", strings.database.defaultQuery);
+      await saveDefaultValue(SETTINGS_KEYS.spacing, 30)
 
       const savedFrequency = await AsyncStorage.getItem("frequency");
       if (savedFrequency !== null) {
@@ -95,18 +97,22 @@ export default function App() {
     });
 
     // Set a default filter if none is set
-    AsyncStorage.getItem("filter").then((res) => {
-      if (res === null) {
-        AsyncStorage.setItem("filter", strings.database.defaultFilter);
-      }
-    });
-
-    // set a default subject if none is set
-    AsyncStorage.getItem("query").then((res) => {
-      if (res === null) {
-        AsyncStorage.setItem("query", strings.database.defaultQuery);
-      }
-    });
+    const i = async ()=>{
+      await AsyncStorage.getItem("filter").then(async (res) => {
+        if (res === null) {
+          await AsyncStorage.setItem("filter", strings.database.defaultFilter);
+        }
+      });
+  
+      // set a default subject if none is set
+    await  AsyncStorage.getItem("query").then(async (res) => {
+        if (res === null) {
+         await AsyncStorage.setItem("query", strings.database.defaultQuery);
+        }
+      });
+    }
+    i()
+   
   }, []);
 
   useEffect(() => {

@@ -14,10 +14,10 @@ import * as Notifications from "expo-notifications";
 export const useTitle = () => {
   const [title, setTitle] = useState("");
   
-  const updateTitle = (filter: string, query: string) => {
+  const updateTitle = async (filter: string, query: string) => {
     const title = filter + ": " + query;
     setTitle(title);
-    AsyncStorage.setItem("title", title);
+    await AsyncStorage.setItem("title", title);
   };
 
   useEffect(() => {
