@@ -175,8 +175,41 @@ export const NotificationScreen: React.FC<Props> = ({
           strings.database.defaultFilter
         );
       }
-  
-      const quote: QuotationInterface = data[0];
+
+      // if the current time (ignoring date) is less than the end time and if the current time is greater than the start time (also ignoring date), send a message
+      const currentTime = new Date();
+      const currentDateTime = new Date(
+        0,
+        0,
+        0,
+        currentTime.getHours(),
+        currentTime.getMinutes(),
+        currentTime.getSeconds()
+      );
+      const startDateTime = new Date(
+        0,
+
+        0,
+        0,
+        startTime.getHours(),
+        startTime.getMinutes(),
+        startTime.getSeconds()
+      );
+      const endDateTime = new Date(
+        0,
+        0,
+        0,
+        endTime.getHours(),
+        endTime.getMinutes(),
+        endTime.getSeconds()
+      );
+      if (
+        currentDateTime >= startDateTime &&
+        currentDateTime <= endDateTime
+      ) {
+   Alert.alert(strings.copy.newNotificationsSet)
+
+        const quote: QuotationInterface = data[0];
       await Notifications.presentNotificationAsync({
         title: strings.copy.notificationTitle,
         body: quote.quoteText + "\n- " + quote.author,
@@ -184,6 +217,11 @@ export const NotificationScreen: React.FC<Props> = ({
           quote: quote,
         },
       });
+      } else {
+        Alert.alert("Notifications will be sent between " + startTime.toLocaleTimeString() + " and " + endTime.toLocaleTimeString() + ".");
+      }
+  
+      
     } catch (error) {
       console.log(error);
       alert("An error occurred while trying to send the notification");
@@ -281,7 +319,6 @@ export const NotificationScreen: React.FC<Props> = ({
                 onPress={async () =>
                   await scheduleNotifications()
                     .then(() => handleButtonPress())
-                    .then(() => Alert.alert(strings.copy.newNotificationsSet))
                     .catch((err) => {
                       console.error(err);
                       Alert.alert(err.toString());

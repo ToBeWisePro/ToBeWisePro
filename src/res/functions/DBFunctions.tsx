@@ -148,7 +148,6 @@ export async function getShuffledQuotes(
   filter: string
 ): Promise<QuotationInterface[]> {
   // log what was passed and what should be returned
-  console.log("getShuffledQuotes() called with:", userQuery, filter);
 
   const db = SQLite.openDatabase(dbName);
   let dbQuery = `SELECT * FROM ${dbName}`;
@@ -178,7 +177,6 @@ export async function getShuffledQuotes(
     throw new Error(string);
   }
 
-  console.log("Using query:", dbQuery);
 
   return new Promise<QuotationInterface[]>((resolve, reject) => {
     db.transaction((tx) => {
