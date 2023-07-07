@@ -1,7 +1,6 @@
 import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View, PanResponder } from "react-native";
 import { DARK, LIGHT } from "../../../styles/Colors";
-import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { QuotationInterface } from "../../res/constants/Interfaces";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { AppText } from "../atoms/AppText";
@@ -15,20 +14,23 @@ const SmallQuoteContainer: React.FC<Props> = ({
   passedInQuote,
   pressFunction,
 }: Props) => {
-  // console.log("Rendering SmallQuoteContainer", passedInQuote._id); // New line
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderGrant: pressFunction,
+  });
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={pressFunction} style={styles.quoteContainer}>
+    <View {...panResponder.panHandlers} style={styles.container}>
+      <View style={styles.quoteContainer}>
         <AppText style={globalStyles.quoteText} numberOfLines={6}>
           {passedInQuote.quoteText}
         </AppText>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={pressFunction} style={styles.authorContainer}>
+      </View>
+      <View style={styles.authorContainer}>
         <AppText style={globalStyles.authorText}>
           {passedInQuote.author}
         </AppText>
-      </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -56,7 +58,6 @@ const styles = StyleSheet.create({
     height: globalStyles.smallQuoteContainer.height - 70,
   },
   authorContainer: {
-    // paddingTop: 10,
     justifyContent: "flex-end",
     alignContent: "flex-end",
     height: 40,
