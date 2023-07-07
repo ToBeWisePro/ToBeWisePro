@@ -50,22 +50,7 @@ export const HomeVertical = ({
     console.log("HV q/f ", query, filter)
 
   },[])
-  
-  useEffect(() => {
-    const subscription = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        const quote = response.notification.request.content.data.quote;
-        if (quote) {
-          // Reset the quotes state and set the quote from the notification as the first item
-          setQuotes([quote]);
-          setTitle(strings.copy.notificationFrom + quote.author);
-        }
-      }
-    );
-    // Don't forget to unsubscribe when the component is unmounted
-    return () => subscription.remove();
-    
-  }, [quotes]);
+
 
   const fetchQueryAndFilter = async (filter, query) => {
     console.log("Passed", query, filter);
@@ -90,6 +75,7 @@ export const HomeVertical = ({
 
     try {
       const res = await getShuffledQuotes(savedQuery, savedFilter);
+      
       setQuotes(res);
     } catch (error) {
       console.error("Error getting shuffled quotes: ", error);

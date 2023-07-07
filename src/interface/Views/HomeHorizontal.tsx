@@ -4,6 +4,7 @@ import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
 import { GRADIENT_START, GRADIENT_END } from "../../../styles/Colors";
 import {
+  NavigationInterface,
   QuotationInterface,
   RouteInterface,
 } from "../../res/constants/Interfaces";
@@ -19,10 +20,7 @@ import * as Notifications from "expo-notifications";
 import { SETTINGS_KEYS } from "./NotificationsScreen";
 
 interface Props {
-  navigation: {
-    push: (ev: string, {}) => void;
-    goBack: () => void;
-  };
+  navigation: NavigationInterface
   route: RouteInterface;
 }
 
@@ -40,10 +38,14 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
         const filter = await AsyncStorage.getItem("filter");
         const query = await AsyncStorage.getItem("query");
         if (filter && query) {
-          const notifTitle = await AsyncStorage.getItem(SETTINGS_KEYS.notifTitle);
+          const notifTitle = await AsyncStorage.getItem(
+            SETTINGS_KEYS.notifTitle
+          );
           if (notifTitle && notifTitle !== title && notifTitle.length > 0) {
             setTitle(notifTitle);
-            const notifQuote = await AsyncStorage.getItem(SETTINGS_KEYS.notifQuote);
+            const notifQuote = await AsyncStorage.getItem(
+              SETTINGS_KEYS.notifQuote
+            );
             if (notifQuote) {
               setFirstQuote(JSON.parse(notifQuote));
             }
@@ -58,7 +60,6 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
     };
     fetchData();
   }, []);
-  
 
   return (
     <View style={styles.container}>
@@ -94,7 +95,9 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
         navigation={navigation}
         screen={strings.screenName.home}
         whatToInclude={IncludeInBottomNav.PlayButton}
-        setPlayPressed={() => navigation.goBack()}
+        setPlayPressed={() => {
+          navigation.navigate(strings.screenName.home);
+        }}
       />
     </View>
   );
