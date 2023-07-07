@@ -102,10 +102,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
 
     fetchScrollSpeed();
   }, []);
-  const resetScrollPosition = useCallback(() => {
-    scrollPosition.value = 0;
-    setPlayPressed(false);
-  }, []);
+
   useEffect(() => {
     if (playPressed) {
       if (hitBottom) {
@@ -155,6 +152,10 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     // save event.nativeEvent.contentOffset.y as an integer
     currentPosition.current = event.nativeEvent.contentOffset.y;
   };
+
+  const resetScrollPosition = useCallback(() => {
+    restartScroll();
+  }, [restartScroll]);
 
   const renderItem = useCallback(
     ({ item: quote }) => {

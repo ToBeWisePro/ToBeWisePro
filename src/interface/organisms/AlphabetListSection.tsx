@@ -21,33 +21,6 @@ interface Props {
   onPress?: (query: string, filter: string) => Promise<void>;
 }
 
-const formatDataForAlphabetList = (data: String[]) => {
-  const subjectsSet = new Set<string>();
-  data.forEach((string) => {
-    const subjectArr = string.split(",");
-    subjectArr.forEach((subject) => {
-      subjectsSet.add(subject.trim());
-    });
-  });
-
-  const subjectsArr = Array.from(subjectsSet)
-    .sort()
-    .map((subject) => {
-      return { key: Math.random().toString(), value: subject };
-    });
-
-  const finalData = [
-    ...subjectsArr,
-    { key: "a", value: strings.customDiscoverHeaders.all },
-    { key: "b", value: strings.customDiscoverHeaders.addedByMe },
-    { key: "d", value: strings.customDiscoverHeaders.favorites },
-    { key: "c", value: strings.customDiscoverHeaders.top100 },
-    { key: "e", value: strings.customDiscoverHeaders.deleted },
-  ];
-
-  return finalData;
-};
-
 export const AlphabetListSection = ({
   filter,
   setFilter,
@@ -57,6 +30,35 @@ export const AlphabetListSection = ({
 }: Props) => {
   const [subjects, setSubjects] = useState([]);
   const [authors, setAuthors] = useState([]);
+
+  const formatDataForAlphabetList = (data: String[]) => {
+    if (!data) return [];
+
+    const subjectsSet = new Set<string>();
+    data.forEach((string) => {
+      const subjectArr = string.split(",");
+      subjectArr.forEach((subject) => {
+        subjectsSet.add(subject.trim());
+      });
+    });
+
+    const subjectsArr = Array.from(subjectsSet)
+      .sort()
+      .map((subject) => {
+        return { key: Math.random().toString(), value: subject };
+      });
+
+    const finalData = [
+      ...subjectsArr,
+      { key: "a", value: strings.customDiscoverHeaders.all },
+      { key: "b", value: strings.customDiscoverHeaders.addedByMe },
+      { key: "d", value: strings.customDiscoverHeaders.favorites },
+      { key: "c", value: strings.customDiscoverHeaders.top100 },
+      { key: "e", value: strings.customDiscoverHeaders.deleted },
+    ];
+
+    return finalData;
+  };
 
   useEffect(() => {
     // set authors and subjects
@@ -83,7 +85,7 @@ export const AlphabetListSection = ({
 
   const data =
     filter == strings.filters.author ? filteredAuthors : filteredSubjects;
-
+  console.log(data.slice(0, 20));
   return (
     <View style={styles.container}>
       <View style={styles.dataSelector}>
@@ -94,7 +96,7 @@ export const AlphabetListSection = ({
             // save query and filter to AsyncStorage
 
             const finalData = await getFromDB(strings.filters.author).then(
-              formatDataForAlphabetList
+              (res) => formatDataForAlphabetList(res)
             );
             setAuthors(finalData);
             setFilter(strings.filters.author);
@@ -105,7 +107,7 @@ export const AlphabetListSection = ({
           selected={filter == strings.filters.subject}
           onPress={async () => {
             const finalData = await getFromDB(strings.filters.subject).then(
-              formatDataForAlphabetList
+              (res) => formatDataForAlphabetList(res)
             );
             setSubjects(finalData);
             setFilter(strings.filters.subject);
@@ -122,16 +124,19 @@ export const AlphabetListSection = ({
         indexLetterStyle={
           search ? styles.indexLetterTextClear : styles.indexLetterText
         }
-        renderCustomItem={(item) => (
-          <DiscoverTile
-            key={item.key}
-            text={item.value}
-            navigation={navigation}
-            filter={filter}
-            query={item.value}
-            onPress={onPress}
-          />
-        )}
+        renderCustomItem={(item) => {
+          console.log(item);
+          return (
+            <DiscoverTile
+              key={item.key}
+              text={item.value}
+              navigation={navigation}
+              filter={filter}
+              query={item.value}
+              onPress={onPress}
+            />
+          );
+        }}
         renderCustomSectionHeader={(section) => (
           <DiscoverSectionHeader label={section.title} />
         )}
