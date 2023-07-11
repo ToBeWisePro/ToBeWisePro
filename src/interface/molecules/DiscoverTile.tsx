@@ -4,21 +4,15 @@ import { GRAY_3, LIGHT } from "../../../styles/Colors";
 import { AppText } from "../atoms/AppText";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import {
-  getAllQuotes,
-  getShuffledQuotes,
-  getQuotesContributedByMe,
-  getFavoriteQuotes,
   getQuoteCount,
 } from "../../res/functions/DBFunctions";
 import {
   QuotationInterface,
   NavigationInterface,
 } from "../../res/constants/Interfaces";
-import { BackButtonNavEnum } from "../../res/constants/Enums";
 import { strings } from "../../res/constants/Strings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { SETTINGS_KEYS } from "../Views/NotificationsScreen";
-
+import { ASYNC_KEYS } from "../../res/constants/Enums";
 interface Props {
   query: string;
   navigation: NavigationInterface;
@@ -71,66 +65,14 @@ export const DiscoverTile: React.FC<Props> = ({
       style={styles.container}
       onPress={async () => {
         setLoading(true); // Add this line
-        // save query and filter to async storage
-        await AsyncStorage.setItem("query", query);
-        await AsyncStorage.setItem("filter", filter);
         if (onPress) {
           onPress(query, filter);
         } else {
-          const getQuotesFromQuery = async () => {
-            safeQuery = query.replaceAll("'", strings.database.safeChar);
-            
-            await getShuffledQuotes(safeQuery, filter).then(
-              (res: QuotationInterface[]) => navPush(res)
-            );
-          };
-          const navPush = async (res: QuotationInterface[]) => {
-            // log how many items are being passed
-            await AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, ""); //required for title in HomeHorizontal to work properly
 
-            navigation.push("Home", {
-              currentQuotes: res,
-              quoteSearch: {
-                query: query,
-                filter: filter,
-              },
-              backButtonNavigationFunction: BackButtonNavEnum.GoBack,
-            });
-          };
-          let safeQuery: string = query;
-          // see if we're using a special query. If not, use the default query
-          switch (query) {
-            case strings.customDiscoverHeaders.all:
-              await getShuffledQuotes(strings.customDiscoverHeaders.all, strings.database.defaultFilter).then(async (res: QuotationInterface[]) =>
-               await navPush(res)
-              );
-              break;
-            case strings.customDiscoverHeaders.addedByMe:
-              await getQuotesContributedByMe().then(
-                (res: QuotationInterface[]) => navPush(res)
-              );
-              break;
-            // case strings.customDiscoverHeaders.deleted:
-            case strings.customDiscoverHeaders.favorites:
-              await getFavoriteQuotes().then((res: QuotationInterface[]) => {
-                navPush(res);
-              });
-              break;
-            case strings.customDiscoverHeaders.top100:
-              await getShuffledQuotes(strings.customDiscoverHeaders.top100, strings.filters.subject).then(
-                (res: QuotationInterface[]) => navPush(res)
-              );
-              break;
-            case strings.customDiscoverHeaders.deleted:
-              await getShuffledQuotes(
-                strings.customDiscoverHeaders.deleted,
-                strings.filters.subject
-              ).then((res: QuotationInterface[]) => navPush(res));
-              break;
-            default:
-              getQuotesFromQuery();
-              break;
-          }
+          await AsyncStorage.setItem(ASYNC_KEYS.query, query);
+          await AsyncStorage.setItem(ASYNC_KEYS.filter, filter);
+          await AsyncStorage.setItem(ASYNC_KEYS.notifTitle, ""); //required for title in HomeHorizontal to work properly
+          navigation.navigate(strings.screenName.home);
         }
         setLoading(false); // Add this line
       }}

@@ -85,7 +85,11 @@ export const AlphabetListSection = ({
 
   const data =
     filter == strings.filters.author ? filteredAuthors : filteredSubjects;
-  console.log(data.slice(0, 20));
+  const getData = () => {
+    // console.log(data.length + " items")
+    // console.log(data.slice(0, 10))
+    return data
+  }
   return (
     <View style={styles.container}>
       <View style={styles.dataSelector}>
@@ -94,6 +98,7 @@ export const AlphabetListSection = ({
           selected={filter == strings.filters.author}
           onPress={async () => {
             // save query and filter to AsyncStorage
+         
 
             const finalData = await getFromDB(strings.filters.author).then(
               (res) => formatDataForAlphabetList(res)
@@ -119,13 +124,12 @@ export const AlphabetListSection = ({
         indexLetterContainerStyle={{ width: 40, height: 17, marginRight: 7 }}
         indexContainerStyle={{ width: 30 }}
         contentContainerStyle={{ paddingBottom: 125 }}
-        data={data}
+        data={getData()}
         uncategorizedAtTop={true}
         indexLetterStyle={
           search ? styles.indexLetterTextClear : styles.indexLetterText
         }
         renderCustomItem={(item) => {
-          console.log(item);
           return (
             <DiscoverTile
               key={item.key}

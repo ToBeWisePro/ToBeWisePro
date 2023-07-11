@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
@@ -17,8 +17,8 @@ import { LargeQuoteContainer } from "../organisms/LargeQuoteContainer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native-gesture-handler";
 import * as Notifications from "expo-notifications";
-import { SETTINGS_KEYS } from "./NotificationsScreen";
-
+import { ASYNC_KEYS } from "../../res/constants/Enums";
+import { useFocusEffect } from "@react-navigation/native";
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;
@@ -30,34 +30,59 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
     route.params.currentQuotes ? route.params.currentQuotes[0] : undefined
   );
   const [backButton, showBackButton] = useState(true);
-  const [renderingFromNotification, setRenderingFromNotification] =
-    useState(false);
+
+  // set the title and firstQuote (which was passed to us via route). Also determine whether or not there should be a back button
+  useFocusEffect(
+    useCallback(() => {
+      const getData = async () => {
+        let query, filter;
+        await Promise.all([
+          await AsyncStorage.getItem(ASYNC_KEYS.query),
+          await AsyncStorage.getItem(ASYNC_KEYS.filter),
+        ]).then(async ([savedQuery, savedFilter]) => {
+          query = savedQuery;
+          filter = savedFilter;
+          const retrievedQuery = savedQuery
+            ? savedQuery
+            : strings.database.defaultQuery;
+          const retrievedFilter = savedFilter
+            ? savedFilter
+            : strings.database.defaultFilter;
+
+          console.log(
+            "HomeHorizontal retrieved query and filter of: ",
+            retrievedQuery,
+            retrievedFilter
+          );
+
+          setTitle(retrievedFilter + ": " + retrievedQuery);
+        });
+      };
+      getData();
+    }, [])
+  );
 
   // Set title from AsyncStorage or from route params
   // Set title from AsyncStorage or from route params
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const notifTitle = await AsyncStorage.getItem(SETTINGS_KEYS.notifTitle);
+        const notifTitle = await AsyncStorage.getItem(ASYNC_KEYS.notifTitle);
         if (notifTitle && notifTitle === strings.copy.notificationFrom) {
           // Navigated to this screen via a notification
-          setRenderingFromNotification(true);
-          const notifQuote = await AsyncStorage.getItem(
-            SETTINGS_KEYS.notifQuote
-          );
+          const notifQuote = await AsyncStorage.getItem(ASYNC_KEYS.notifQuote);
           if (notifQuote) {
             setTitle(notifTitle);
             setFirstQuote(JSON.parse(notifQuote));
             showBackButton(false);
-            await AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, "");
+            await AsyncStorage.setItem(ASYNC_KEYS.notifTitle, "");
           }
         } else {
           // Navigated to this screen via normal navigation
-          setRenderingFromNotification(false);
-          const filter = await AsyncStorage.getItem("filter");
-          const query = await AsyncStorage.getItem("query");
+          const filter = await AsyncStorage.getItem(ASYNC_KEYS.filter);
+          const query = await AsyncStorage.getItem(ASYNC_KEYS.query);
           if (filter && query) {
-            setTitle(filter + ": " + query);
+            // setTitle(filter + ": " + query);
           }
         }
       } catch (error) {
@@ -66,12 +91,6 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
     };
     fetchData();
   }, []);
-
-  useEffect(()=>{
-    if(title.includes('"')){
-      setTitle(title.replaceAll('"','' ))
-    }
-  },[title])
 
   return (
     <View style={styles.container}>

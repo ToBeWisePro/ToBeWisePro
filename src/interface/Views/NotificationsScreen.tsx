@@ -24,7 +24,7 @@ import {
   PRIMARY_GREEN,
 } from "../../../styles/Colors";
 import { BottomNav } from "../organisms/BottomNav";
-import { IncludeInBottomNav } from "../../res/constants/Enums";
+import { ASYNC_KEYS, IncludeInBottomNav } from "../../res/constants/Enums";
 import { TopNav } from "../molecules/TopNav";
 import { ScrollView, Switch } from "react-native-gesture-handler";
 import { AppText } from "../atoms/AppText";
@@ -40,16 +40,7 @@ interface Props {
   route: RouteInterface;
 }
 
-export const SETTINGS_KEYS = {
-  allowNotifications: "allowNotifications",
-  startTime: "startTime",
-  endTime: "endTime",
-  spacing: "spacing",
-  query: "query",
-  filter: "filter",
-  notifTitle: "notifTitle",
-  notifQuote: "notifQuote",
-};
+
 
 export const saveSettings = async (key: string, value: any) => {
   try {
@@ -67,18 +58,18 @@ export const loadSettings = async (key: string) => {
     }
   } catch (error) {
     console.log(error);
-    await AsyncStorage.getAllKeys().then(async (keys) => {
-      keys.forEach(async (key) => {
-        await AsyncStorage.getItem(key).then((value) => {
-          console.log(key + ", " + value?.substring(0, 20));
-        });
-      });
-      // save the default filter
-      if (key === SETTINGS_KEYS.filter) {
-        console.log("Setting default filter", SETTINGS_KEYS.filter);
-        await saveSettings(key, strings.database.defaultFilter);
-      }
-    });
+    // await AsyncStorage.getAllKeys().then(async (keys) => {
+    //   keys.forEach(async (key) => {
+    //     await AsyncStorage.getItem(key).then((value) => {
+    //       console.log(key + ", " + value?.substring(0, 20));
+    //     });
+    //   });
+    //   // save the default filter
+    //   if (key === ASYNC_KEYS.filter) {
+    //     console.log("Setting default filter", ASYNC_KEYS.filter);
+    //     await saveSettings(key, strings.database.defaultFilter);
+    //   }
+    // });
     return null;
   }
 };
@@ -97,13 +88,13 @@ export const NotificationScreen: React.FC<Props> = ({
 
   const loadSavedSettings = async () => {
     const savedAllowNotifications = await loadSettings(
-      SETTINGS_KEYS.allowNotifications
+      ASYNC_KEYS.allowNotifications
     );
-    const savedStartTime = await loadSettings(SETTINGS_KEYS.startTime);
-    const savedEndTime = await loadSettings(SETTINGS_KEYS.endTime);
-    const savedSpacing = await loadSettings(SETTINGS_KEYS.spacing);
-    const savedQuery = await loadSettings("notificationQuery");
-    const savedFilter = await loadSettings(SETTINGS_KEYS.filter);
+    const savedStartTime = await loadSettings(ASYNC_KEYS.startTime);
+    const savedEndTime = await loadSettings(ASYNC_KEYS.endTime);
+    const savedSpacing = await loadSettings(ASYNC_KEYS.spacing);
+    const savedQuery = await loadSettings(ASYNC_KEYS.notificationQuery);
+    const savedFilter = await loadSettings(ASYNC_KEYS.filter);
 
     if (savedQuery !== null) {
       setQuery(savedQuery);
@@ -143,7 +134,7 @@ export const NotificationScreen: React.FC<Props> = ({
   const toggleSwitch = () => {
     const updatedAllowNotifications = !allowNotifications;
     setAllowNotifications(updatedAllowNotifications);
-    saveSettings(SETTINGS_KEYS.allowNotifications, updatedAllowNotifications);
+    saveSettings(ASYNC_KEYS.allowNotifications, updatedAllowNotifications);
   };
   const isValidTimeRange = (start: Date, end: Date) => {
     if (start.getHours() < end.getHours()) {
@@ -157,7 +148,7 @@ export const NotificationScreen: React.FC<Props> = ({
   const handleStartTimeChange = (time: Date) => {
     if (isValidTimeRange(time, endTime)) {
       setStartTime(time);
-      saveSettings(SETTINGS_KEYS.startTime, time);
+      saveSettings(ASYNC_KEYS.startTime, time);
     } else {
       alert(
         'Start Time "${time.toLocaleTimeString()}" must be less than or equal to End Time "${endTime.toLocaleTimeString()}".'
@@ -172,15 +163,13 @@ export const NotificationScreen: React.FC<Props> = ({
         alert("You need to grant permission to receive notifications");
         return;
       }
-
-      console.log("filter: ", filter.trim());
-      let data = await getShuffledQuotes(query, filter);
-
+      let data = await getShuffledQuotes(true);
       if (data.length === 0) {
         alert("Invalid query. Notifications database set to defaults");
+        await AsyncStorage.setItem(ASYNC_KEYS.notificationFilter, strings.database.defaultFilter);  
+        await AsyncStorage.setItem(ASYNC_KEYS.notificationQuery, strings.database.defaultQuery);
         data = await getShuffledQuotes(
-          strings.database.defaultQuery,
-          strings.database.defaultFilter
+          false
         );
       }
 
@@ -240,7 +229,7 @@ export const NotificationScreen: React.FC<Props> = ({
   const handleEndTimeChange = (time: Date) => {
     if (isValidTimeRange(startTime, time)) {
       setEndTime(time);
-      saveSettings(SETTINGS_KEYS.endTime, time);
+      saveSettings(ASYNC_KEYS.endTime, time);
       scheduleNotifications();
     } else {
       alert(
@@ -250,7 +239,7 @@ export const NotificationScreen: React.FC<Props> = ({
   };
 
   const handleSpacingChange = async (value: number) => {
-    await saveSettings(SETTINGS_KEYS.spacing, value).then(async () => {
+    await saveSettings(ASYNC_KEYS.spacing, value).then(async () => {
       setSpacing(value);
       await scheduleNotifications()
         .then(() => console.log("notifs scheduled"))

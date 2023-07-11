@@ -6,6 +6,8 @@ import { strings } from "../constants/Strings";
 import { dbName, defaultUsername } from "../constants/Values";
 import { shuffle } from "./UtilFunctions";
 import * as SQLite from "expo-sqlite";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ASYNC_KEYS } from "../constants/Enums";
 
 export async function dataImporter() {
   const db = SQLite.openDatabase(dbName);
@@ -144,11 +146,20 @@ export async function removeQuote(quoteId: number) {
 }
 
 export async function getShuffledQuotes(
-  userQuery: string,
-  filter: string
+  forNotifications?: boolean
 ): Promise<QuotationInterface[]> {
   // log what was passed and what should be returned
-
+  let userQuery, filter
+  if (forNotifications) {
+    // TODO I can't for the life of me figure out why these sometimes get wrapped in quotation marks
+    await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery).then((res)=> userQuery = res?.replaceAll('"', ''))
+    await AsyncStorage.getItem(ASYNC_KEYS.notificationFilter).then((res) => filter = res?.replaceAll('"', ''))
+    console.log("Filter ", filter)
+    console.log("User Query ", userQuery)
+  } else {
+   await AsyncStorage.getItem(ASYNC_KEYS.query).then((res) => userQuery = res?.replaceAll('"', ''))
+   await AsyncStorage.getItem(ASYNC_KEYS.filter).then((res) => filter = res?.replaceAll('"', ''))
+  }
   const db = SQLite.openDatabase(dbName);
   let dbQuery = `SELECT * FROM ${dbName}`;
   let params: any[] = [];
@@ -176,8 +187,7 @@ export async function getShuffledQuotes(
     const string = `Invalid filter provided: ${filter}`;
     throw new Error(string);
   }
-
-
+  
   return new Promise<QuotationInterface[]>((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
@@ -286,25 +296,6 @@ export const getQuotesContributedByMe = async (): Promise<
           resolve(shuffle(objs));
         },
         (_, error) => reject(error)
-      );
-    });
-  });
-};
-
-export const getFavoriteQuotes = async (): Promise<QuotationInterface[]> => {
-  const db = SQLite.openDatabase(dbName);
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `SELECT * FROM ${dbName} WHERE favorite = 1 AND deleted = 0;`,
-        [],
-        (_, { rows }) => {
-          const objs: QuotationInterface[] = rows["_array"];
-          resolve(shuffle(objs));
-        },
-        (_, error) => {
-          reject(error);
-        }
       );
     });
   });

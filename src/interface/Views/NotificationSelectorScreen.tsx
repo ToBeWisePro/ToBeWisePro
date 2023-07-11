@@ -9,20 +9,10 @@ import { BottomNav } from "../organisms/BottomNav";
 import { NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
-import {
-  getAllQuotes,
-  getFromDB,
-  getShuffledQuotes,
-} from "../../res/functions/DBFunctions";
+import { getFromDB } from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
-import {
-  SETTINGS_KEYS,
-  loadSettings,
-  saveSettings,
-} from "./NotificationsScreen";
-import { scheduleNotifications } from "../../res/util/NotificationScheduler";
-import { AppText } from "../atoms/AppText";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { loadSettings, saveSettings } from "./NotificationsScreen";
+import { ASYNC_KEYS } from "../../res/constants/Enums";
 
 interface Props {
   navigation: NavigationInterface;
@@ -133,19 +123,11 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
           setFilter={setFilter}
           search={search}
           onPress={async (query: string, filter: string) => {
-            await saveSettings(SETTINGS_KEYS.query, query)
-              .then(async () => {
-                await saveSettings(SETTINGS_KEYS.filter, filter);
-              })
-              .then(async () => {
-                await loadSettings(SETTINGS_KEYS.query)
-                  .then((res) => {})
-                  .then(async () => {
-                    await loadSettings(SETTINGS_KEYS.filter).then((res) => {});
-                  });
-              });
-            await saveSettings("notificationQuery", query);
-
+            await saveSettings(ASYNC_KEYS.notificationQuery, query).then(
+              async () => {
+                await saveSettings(ASYNC_KEYS.notificationFilter, filter);
+              }
+            );
             navigation.goBack();
           }}
         />

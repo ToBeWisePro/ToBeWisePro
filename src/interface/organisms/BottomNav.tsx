@@ -19,7 +19,7 @@ interface Props {
   playPressed?: boolean;
   scrollSpeed?: number;
   setScrollSpeed?: (x: number) => void;
-  resetScrollPosition: () => void;
+  resetScrollPosition?: () => void;
 
 }
 

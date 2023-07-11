@@ -4,6 +4,7 @@ import { DARK, LIGHT } from "../../../styles/Colors";
 import { QuotationInterface } from "../../res/constants/Interfaces";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { AppText } from "../atoms/AppText";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 interface Props {
   passedInQuote: QuotationInterface;
@@ -14,13 +15,14 @@ const SmallQuoteContainer: React.FC<Props> = ({
   passedInQuote,
   pressFunction,
 }: Props) => {
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderGrant: pressFunction,
-  });
+  // const panResponder = PanResponder.create({
+  //   onStartShouldSetPanResponder: () => true,
+  //   onPanResponderGrant: pressFunction,
+  // });
 
   return (
-    <View {...panResponder.panHandlers} style={styles.container}>
+    // <View {...panResponder.panHandlers} style={styles.container}>
+    <TouchableWithoutFeedback style={styles.container} onPress={pressFunction}>
       <View style={styles.quoteContainer}>
         <AppText style={globalStyles.quoteText} numberOfLines={6}>
           {passedInQuote.quoteText}
@@ -31,7 +33,7 @@ const SmallQuoteContainer: React.FC<Props> = ({
           {passedInQuote.author}
         </AppText>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 

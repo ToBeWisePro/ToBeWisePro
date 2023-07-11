@@ -7,7 +7,6 @@ import {
   NavigationInterface,
   QuotationInterface,
 } from "../../res/constants/Interfaces";
-import { getShuffledQuotes } from "../../res/functions/DBFunctions";
 import { IconFactory } from "./IconFactory";
 import { LIGHT, PRIMARY_BLUE, PRIMARY_GREEN } from "../../../styles/Colors";
 

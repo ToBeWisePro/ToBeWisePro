@@ -17,6 +17,7 @@ export interface RouteInterface {
 }
 
 export interface NavigationInterface {
+  navigate: any;
   push: (ev: string, {}) => void;
   goBack: () => void;
 }

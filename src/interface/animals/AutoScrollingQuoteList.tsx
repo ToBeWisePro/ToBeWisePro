@@ -26,7 +26,7 @@ import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
 import { AppText } from "../atoms/AppText";
 import { BottomNav } from "../organisms/BottomNav";
-import { IncludeInBottomNav } from "../../res/constants/Enums";
+import { ASYNC_KEYS, IncludeInBottomNav } from "../../res/constants/Enums";
 
 const QUOTE_ITEM_HEIGHT = globalStyles.smallQuoteContainer.height;
 
@@ -82,7 +82,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     console.log(value);
     try {
       setScrollSpeed(value);
-      await AsyncStorage.setItem("@scrollSpeed", JSON.stringify(value));
+      await AsyncStorage.setItem(ASYNC_KEYS.scrollSpeed, JSON.stringify(value));
     } catch (e) {
       console.log(e);
     }
@@ -91,7 +91,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   useEffect(() => {
     const fetchScrollSpeed = async () => {
       try {
-        const value = await AsyncStorage.getItem("@scrollSpeed");
+        const value = await AsyncStorage.getItem(ASYNC_KEYS.scrollSpeed);
         if (value !== null) {
           setScrollSpeed(JSON.parse(value));
         }
@@ -203,7 +203,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }}
         ListFooterComponent={ListFooterComponent}
         onEndReached={() => {
-          setPlayPressed(!playPressed);
+          setPlayPressed(false);
           setHitBottom(true);
         }}
         // onEndReachedThreshold={100}

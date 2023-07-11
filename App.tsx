@@ -14,12 +14,12 @@ import * as Notifications from "expo-notifications";
 import { scheduleNotifications } from "./src/res/util/NotificationScheduler";
 import { Image } from "react-native-elements";
 import { CommonActions } from "@react-navigation/native";
-import { SETTINGS_KEYS } from "./src/interface/Views/NotificationsScreen";
-import { useAsyncStorage } from '@react-native-community/hooks'; // Import this
-
+import { ASYNC_KEYS } from "./src/res/constants/Enums";
 
 export default function App() {
-  const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>([]);
+  const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
+    []
+  );
   const [frequency, setFrequency] = useState<number>(1);
   const [query, setQuery] = useState(strings.database.defaultQuery);
 
@@ -42,20 +42,17 @@ export default function App() {
       const defaultEndTime = new Date();
       defaultEndTime.setHours(17, 0, 0, 0);
 
-      await saveDefaultValue("allowNotifications", true);
-      await saveDefaultValue("startTime", defaultStartTime);
-      await saveDefaultValue("endTime", defaultEndTime);
-      await saveDefaultValue("frequency", 5);
-      await saveDefaultValue("notificationDB", "default");
-      await saveDefaultValue("notificationQuery", strings.database.defaultQuery);
-      await saveDefaultValue(SETTINGS_KEYS.spacing, 30)
+      await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
+      await saveDefaultValue(ASYNC_KEYS.startTime, defaultStartTime);
+      await saveDefaultValue(ASYNC_KEYS.endTime, defaultEndTime);
+      await saveDefaultValue(
+        ASYNC_KEYS.notificationQuery,
+        strings.database.defaultQuery
+      );
+      await saveDefaultValue(ASYNC_KEYS.notificationFilter, strings.database.defaultFilter);
+      await saveDefaultValue(ASYNC_KEYS.spacing, 30);
 
-      const savedFrequency = await AsyncStorage.getItem("frequency");
-      if (savedFrequency !== null) {
-        setFrequency(Number(savedFrequency));
-      }
-
-      const savedQuery = await AsyncStorage.getItem("query");
+      const savedQuery = await AsyncStorage.getItem(ASYNC_KEYS.query);
       if (savedQuery !== null) {
         setQuery(savedQuery);
       }
@@ -69,27 +66,30 @@ export default function App() {
     })();
 
     Notifications.addNotificationResponseReceivedListener(async (response) => {
-      await AsyncStorage.setItem(SETTINGS_KEYS.notifTitle, strings.copy.notificationFrom);
+      await AsyncStorage.setItem(
+        ASYNC_KEYS.notifTitle,
+        strings.copy.notificationFrom
+      );
       const quote = response.notification.request.content.data.quote;
       if (quote) {
         // log if navigationref exists
-        console.log(quote)
-        await AsyncStorage.setItem(SETTINGS_KEYS.notifQuote, JSON.stringify(quote)).then(()=>{
-          const result = navigationRef.current?.dispatch(
-            CommonActions.navigate(strings.screenName.homeHorizontal, {
-              quoteSearch: {
-                query: quote.subjects,
-                filter: "",
-              },
-              currentQuotes: [quote],
-              showBackButton: false
-            })
-          );
-        }).catch((error)=>{
-          console.log("Error saving quote:", error);
-        })
+        await AsyncStorage.setItem(ASYNC_KEYS.notifQuote, JSON.stringify(quote))
+          .then(() => {
+            const result = navigationRef.current?.dispatch(
+              CommonActions.navigate(strings.screenName.homeHorizontal, {
+                quoteSearch: {
+                  query: quote.subjects,
+                  filter: "",
+                },
+                currentQuotes: [quote],
+                showBackButton: false,
+              })
+            );
+          })
+          .catch((error) => {
+            console.log("Error saving quote:", error);
+          });
 
-       
         // console.log("Navigation dispatch result:", result);
       } else {
         console.log("Data from notification is not defined");
@@ -97,22 +97,27 @@ export default function App() {
     });
 
     // Set a default filter if none is set
-    const i = async ()=>{
-      await AsyncStorage.getItem("filter").then(async (res) => {
+    const i = async () => {
+      await AsyncStorage.getItem(ASYNC_KEYS.filter).then(async (res) => {
         if (res === null) {
-          await AsyncStorage.setItem("filter", strings.database.defaultFilter);
+          await AsyncStorage.setItem(
+            ASYNC_KEYS.filter,
+            strings.database.defaultFilter
+          );
         }
       });
-  
+
       // set a default subject if none is set
-    await  AsyncStorage.getItem("query").then(async (res) => {
+      await AsyncStorage.getItem(ASYNC_KEYS.query).then(async (res) => {
         if (res === null) {
-         await AsyncStorage.setItem("query", strings.database.defaultQuery);
+          await AsyncStorage.setItem(
+            ASYNC_KEYS.query,
+            strings.database.defaultQuery
+          );
         }
       });
-    }
-    i()
-   
+    };
+    i();
   }, []);
 
   useEffect(() => {
@@ -124,14 +129,11 @@ export default function App() {
           "\nDefault filter: " +
           strings.database.defaultFilter
       );
-      await dataImporter().then(async () =>
-        getShuffledQuotes(
-          strings.database.defaultQuery,
-          strings.database.defaultFilter
-        ).then((res) => {
+      await dataImporter().then(async () => {
+        await getShuffledQuotes(false).then((res) => {
           setShuffledQuotes(res);
-        })
-      );
+        });
+      });
     };
     i().catch((error) => Alert.alert("Error", error.message));
   }, []);
@@ -146,7 +148,11 @@ export default function App() {
   }
 
   return (
-    <RootNavigation initialRoute={"Home"} shuffledQuotes={shuffledQuotes} ref={navigationRef}/>
+    <RootNavigation
+      initialRoute={"Home"}
+      shuffledQuotes={shuffledQuotes}
+      ref={navigationRef}
+    />
   );
 }
 
