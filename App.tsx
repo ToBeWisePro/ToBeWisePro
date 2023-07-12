@@ -20,7 +20,6 @@ export default function App() {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     []
   );
-  const [frequency, setFrequency] = useState<number>(1);
   const [query, setQuery] = useState(strings.database.defaultQuery);
 
   const saveDefaultValue = async (key: string, value: any) => {
@@ -49,7 +48,10 @@ export default function App() {
         ASYNC_KEYS.notificationQuery,
         strings.database.defaultQuery
       );
-      await saveDefaultValue(ASYNC_KEYS.notificationFilter, strings.database.defaultFilter);
+      await saveDefaultValue(
+        ASYNC_KEYS.notificationFilter,
+        strings.database.defaultFilter
+      );
       await saveDefaultValue(ASYNC_KEYS.spacing, 30);
 
       const savedQuery = await AsyncStorage.getItem(ASYNC_KEYS.query);
@@ -64,33 +66,37 @@ export default function App() {
         console.log("Notification permissions not granted.");
       }
     })();
-
     Notifications.addNotificationResponseReceivedListener(async (response) => {
-      await AsyncStorage.setItem(
-        ASYNC_KEYS.notifTitle,
-        strings.copy.notificationFrom
-      );
       const quote = response.notification.request.content.data.quote;
       if (quote) {
-        // log if navigationref exists
-        await AsyncStorage.setItem(ASYNC_KEYS.notifQuote, JSON.stringify(quote))
-          .then(() => {
-            const result = navigationRef.current?.dispatch(
-              CommonActions.navigate(strings.screenName.homeHorizontal, {
-                quoteSearch: {
-                  query: quote.subjects,
-                  filter: "",
-                },
-                currentQuotes: [quote],
-                showBackButton: false,
-              })
-            );
-          })
-          .catch((error) => {
-            console.log("Error saving quote:", error);
-          });
+        try {
+          await AsyncStorage.setItem(
+            ASYNC_KEYS.notifQuote,
+            JSON.stringify(quote)
+          );
+          await AsyncStorage.setItem(
+            ASYNC_KEYS.notifTitle,
+            strings.copy.notificationFrom
+          );
 
-        // console.log("Navigation dispatch result:", result);
+          const quoteFromStorage = await AsyncStorage.getItem(
+            ASYNC_KEYS.notifQuote
+          );
+          console.log("notifQuote:", quoteFromStorage);
+
+          navigationRef.current?.dispatch(
+            CommonActions.navigate(strings.screenName.homeHorizontal, {
+              quoteSearch: {
+                query: quote.subjects,
+                filter: "",
+              },
+              currentQuotes: [quote],
+              showBackButton: false,
+            })
+          );
+        } catch (error) {
+          console.log("Error saving quote:", error);
+        }
       } else {
         console.log("Data from notification is not defined");
       }

@@ -34,11 +34,11 @@ export const LargeQuoteContainer: React.FC<Props> = ({
     } catch {
       setContributedBy("");
     }
-  }, []);
+  }, [passedInQuote]);
 
-  useEffect(() => {
-    updateQuoteContainer(quote, largeQuoteContainerRefreshRate, setQuote);
-  }, []);
+  // useEffect(() => {
+  //   updateQuoteContainer(quote, largeQuoteContainerRefreshRate, setQuote);
+  // }, []);
   try {
     // try/catch block is here in case the user is in a author/subject quote view and they delete the last quote
     return (

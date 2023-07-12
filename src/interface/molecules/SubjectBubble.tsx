@@ -7,6 +7,7 @@ import { NavigationInterface } from '../../res/constants/Interfaces';
 import { strings } from '../../res/constants/Strings';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ASYNC_KEYS } from '../../res/constants/Enums';
+import { getShuffledQuotes } from '../../res/functions/DBFunctions';
 
 interface Props{
     subject: string
@@ -18,6 +19,7 @@ export const SubjectBubble: React.FC<Props> = ({subject, navigation}:Props) => {
         <TouchableOpacity style={styles.container} onPress={async ()=>{
             await AsyncStorage.setItem(ASYNC_KEYS.query, subject)
             await AsyncStorage.setItem(ASYNC_KEYS.filter, strings.filters.subject)
+            
             navigation.navigate(strings.screenName.home)            
         }}>
             <AppText style={styles.textStyle}>{subject}</AppText>

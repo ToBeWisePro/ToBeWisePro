@@ -35,62 +35,43 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
   useFocusEffect(
     useCallback(() => {
       const getData = async () => {
-        let query, filter;
+        console.log("HomeHorizontal: firing");
         await Promise.all([
           await AsyncStorage.getItem(ASYNC_KEYS.query),
           await AsyncStorage.getItem(ASYNC_KEYS.filter),
-        ]).then(async ([savedQuery, savedFilter]) => {
-          query = savedQuery;
-          filter = savedFilter;
-          const retrievedQuery = savedQuery
-            ? savedQuery
-            : strings.database.defaultQuery;
-          const retrievedFilter = savedFilter
-            ? savedFilter
-            : strings.database.defaultFilter;
-
-          console.log(
-            "HomeHorizontal retrieved query and filter of: ",
-            retrievedQuery,
-            retrievedFilter
-          );
-
-          setTitle(retrievedFilter + ": " + retrievedQuery);
+          await AsyncStorage.getItem(ASYNC_KEYS.notifTitle),
+          await AsyncStorage.getItem(ASYNC_KEYS.notifQuote),
+        ]).then(async ([savedQuery, savedFilter, notifTitle, notifQuote]) => {
+          if (notifTitle !== null && notifQuote !== null) {
+            setTitle(notifTitle);
+            showBackButton(false);
+            setFirstQuote(JSON.parse(notifQuote));
+          } else {
+            const retrievedQuery = savedQuery
+              ? savedQuery
+              : strings.database.defaultQuery;
+            const retrievedFilter = savedFilter
+              ? savedFilter
+              : strings.database.defaultFilter;
+            setTitle(retrievedFilter + ": " + retrievedQuery);
+            console.log("Using route.params to set quote");
+            setFirstQuote(route.params.currentQuotes[0]);
+          }
         });
       };
+
       getData();
-    }, [])
+      return () => {
+        AsyncStorage.removeItem(ASYNC_KEYS.notifTitle);
+        AsyncStorage.removeItem(ASYNC_KEYS.notifQuote);
+        console.log("HomeHorizontal: clearing");
+      };
+    }, [navigation, route])
   );
 
   // Set title from AsyncStorage or from route params
   // Set title from AsyncStorage or from route params
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const notifTitle = await AsyncStorage.getItem(ASYNC_KEYS.notifTitle);
-        if (notifTitle && notifTitle === strings.copy.notificationFrom) {
-          // Navigated to this screen via a notification
-          const notifQuote = await AsyncStorage.getItem(ASYNC_KEYS.notifQuote);
-          if (notifQuote) {
-            setTitle(notifTitle);
-            setFirstQuote(JSON.parse(notifQuote));
-            showBackButton(false);
-            await AsyncStorage.setItem(ASYNC_KEYS.notifTitle, "");
-          }
-        } else {
-          // Navigated to this screen via normal navigation
-          const filter = await AsyncStorage.getItem(ASYNC_KEYS.filter);
-          const query = await AsyncStorage.getItem(ASYNC_KEYS.query);
-          if (filter && query) {
-            // setTitle(filter + ": " + query);
-          }
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchData();
-  }, []);
+  useEffect(() => {}, []);
 
   return (
     <View style={styles.container}>

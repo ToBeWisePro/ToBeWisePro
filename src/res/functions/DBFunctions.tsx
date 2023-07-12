@@ -149,16 +149,22 @@ export async function getShuffledQuotes(
   forNotifications?: boolean
 ): Promise<QuotationInterface[]> {
   // log what was passed and what should be returned
-  let userQuery, filter
+  let userQuery, filter;
   if (forNotifications) {
     // TODO I can't for the life of me figure out why these sometimes get wrapped in quotation marks
-    await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery).then((res)=> userQuery = res?.replaceAll('"', ''))
-    await AsyncStorage.getItem(ASYNC_KEYS.notificationFilter).then((res) => filter = res?.replaceAll('"', ''))
-    console.log("Filter ", filter)
-    console.log("User Query ", userQuery)
+    await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery).then(
+      (res) => (userQuery = res?.replaceAll('"', ""))
+    );
+    await AsyncStorage.getItem(ASYNC_KEYS.notificationFilter).then(
+      (res) => (filter = res?.replaceAll('"', ""))
+    );
   } else {
-   await AsyncStorage.getItem(ASYNC_KEYS.query).then((res) => userQuery = res?.replaceAll('"', ''))
-   await AsyncStorage.getItem(ASYNC_KEYS.filter).then((res) => filter = res?.replaceAll('"', ''))
+    await AsyncStorage.getItem(ASYNC_KEYS.query).then(
+      (res) => (userQuery = res?.replaceAll('"', ""))
+    );
+    await AsyncStorage.getItem(ASYNC_KEYS.filter).then(
+      (res) => (filter = res?.replaceAll('"', ""))
+    );
   }
   const db = SQLite.openDatabase(dbName);
   let dbQuery = `SELECT * FROM ${dbName}`;
@@ -187,7 +193,7 @@ export async function getShuffledQuotes(
     const string = `Invalid filter provided: ${filter}`;
     throw new Error(string);
   }
-  
+  console.log("dbQuery: ", dbQuery);
   return new Promise<QuotationInterface[]>((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
