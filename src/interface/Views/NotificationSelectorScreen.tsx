@@ -9,18 +9,10 @@ import { BottomNav } from "../organisms/BottomNav";
 import { NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
-import {
-  getAllQuotes,
-  getFromDB,
-  getShuffledQuotes,
-} from "../../res/functions/DBFunctions";
+import { getFromDB } from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
-import {
-  SETTINGS_KEYS,
-  loadSettings,
-  saveSettings,
-} from "./NotificationsScreen";
-import { scheduleNotifications } from "../../res/util/NotificationScheduler";
+import { loadSettings, saveSettings } from "./NotificationsScreen";
+import { ASYNC_KEYS } from "../../res/constants/Enums";
 
 interface Props {
   navigation: NavigationInterface;
@@ -29,7 +21,7 @@ interface Props {
 export const NotificationSelectorScreen = ({ navigation }: Props) => {
   const [subjects, setSubjects] = useState<IData[]>([]);
   const [authors, setAuthors] = useState<IData[]>([]);
-  const [filter, setFilter] = useState<string>("");
+  const [filter, setFilter] = useState<string>(strings.filters.subject);
   const [search, setSearch] = useState<string>("");
   const [tempSubjects, setTempSubjects] = useState<IData[]>([]);
   const [tempAuthors, setTempAuthors] = useState<IData[]>([]);
@@ -46,7 +38,7 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
         formatDataForAlphabetList(res, setTempAuthors);
       });
     };
-    setFilter(strings.filters.author);
+    setFilter(strings.filters.subject);
 
     load();
   }, []);
@@ -117,53 +109,34 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <TopNav
-        title={"Select Notification Database"}
-        stickyHeader={true}
-        backButton={false}
-      />
-      <View style={styles.background}>
-        <SearchBar state={search} setState={setSearch} />
-        <AlphabetListSection
-          navigation={navigation}
-          data={filter == strings.filters.author ? tempAuthors : tempSubjects}
-          filter={filter}
-          setFilter={setFilter}
-          search={search}
-          onPress={async (query: string, filter: string) => {
-            console.log("query: ", query);
-            console.log("filter: ", filter);
-            
-            await getShuffledQuotes(query, filter)
-              .then((res) => {
-                console.log(res.length);
-              })
-              .then(async () => {
-                await saveSettings(SETTINGS_KEYS.query, query)
-                  .then(async () => {
-                    await saveSettings(SETTINGS_KEYS.filter, filter);
-                  })
-                  .then(async () => {
-                    // log the current query and filter saved
-                    await loadSettings(SETTINGS_KEYS.query)
-                      .then((res) => {
-                      })
-                      .then(async () => {
-                        await loadSettings(SETTINGS_KEYS.filter).then((res) => {
-                        });
-                      });
-                  });
-              });
-
-            navigation.goBack();
-          }}
+        <TopNav
+          title={"Select Notification Database"}
+          stickyHeader={true}
+          backButton={false}
         />
-      </View>
-      <BottomNav
-        navigation={navigation}
-        screen={strings.screenName.discover}
-        whatToInclude={IncludeInBottomNav.Nothing}
-      />
+        <View style={styles.background}>
+          <SearchBar state={search} setState={setSearch} />
+          <AlphabetListSection
+            navigation={navigation}
+            data={filter == strings.filters.author ? tempAuthors : tempSubjects}
+            filter={filter}
+            setFilter={setFilter}
+            search={search}
+            onPress={async (query: string, filter: string) => {
+              await saveSettings(ASYNC_KEYS.notificationQuery, query).then(
+                async () => {
+                  await saveSettings(ASYNC_KEYS.notificationFilter, filter);
+                }
+              );
+              navigation.goBack();
+            }}
+          />
+        </View>
+        <BottomNav
+          navigation={navigation}
+          screen={strings.screenName.discover}
+          whatToInclude={IncludeInBottomNav.Nothing}
+        />
     </View>
   );
 };

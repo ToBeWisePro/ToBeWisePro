@@ -38,6 +38,7 @@ export const strings = new LocalizedStrings({
       },
       copy: {
         saveNotificationsButton: "Start Notifications Now",
+        countZeroErrorText: "Please select an author or filter with more than 0 quotes",
         newNotificationsSet: "Updated notifications have started 🥳. Head back to the home screen to keep scrolling.",
         saveButton: "Save Changes",
         saveButtonBlank: "Add New Quote",
@@ -50,7 +51,7 @@ export const strings = new LocalizedStrings({
         errorMessages:{
           screenFailedToLoad: "Our developer isn't great, his bad code broke the app. Please quit and restart it"
         },
-        notificationFrom: "🔔 Notification From: "
+        notificationFrom: "🔔 Notification"
       },
       playPauseButtons: {
         play: "play-circle-outline",

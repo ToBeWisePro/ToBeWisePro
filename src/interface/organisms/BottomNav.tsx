@@ -19,6 +19,8 @@ interface Props {
   playPressed?: boolean;
   scrollSpeed?: number;
   setScrollSpeed?: (x: number) => void;
+  resetScrollPosition?: () => void;
+
 }
 
 export const BottomNav: React.FC<Props> = ({
@@ -27,8 +29,7 @@ export const BottomNav: React.FC<Props> = ({
   whatToInclude,
   setPlayPressed,
   playPressed,
-  scrollSpeed,
-  setScrollSpeed,
+  resetScrollPosition,
 }: Props) => {
   const navButtons: NavButtonInterface[] = [
     {
@@ -75,6 +76,7 @@ export const BottomNav: React.FC<Props> = ({
               navigationTarget={button.navigationTarget}
               navigation={button.navigation}
               key={Math.random()}
+              resetScrollPosition={resetScrollPosition}
             />
           </View>
         ))}

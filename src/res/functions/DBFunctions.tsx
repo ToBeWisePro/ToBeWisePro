@@ -6,6 +6,8 @@ import { strings } from "../constants/Strings";
 import { dbName, defaultUsername } from "../constants/Values";
 import { shuffle } from "./UtilFunctions";
 import * as SQLite from "expo-sqlite";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ASYNC_KEYS } from "../constants/Enums";
 
 export async function dataImporter() {
   const db = SQLite.openDatabase(dbName);
@@ -96,8 +98,8 @@ export async function saveQuoteToDatabase(quote: QuotationInterface) {
 
   const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  console.log("Attempting to save quote:", quote);
-  console.log("Using insert query:", insertQuery);
+  // console.log("Attempting to save quote:", quote);
+  // console.log("Using insert query:", insertQuery);
 
   return await new Promise((resolve, reject) => {
     db.transaction((tx) => {
@@ -144,15 +146,31 @@ export async function removeQuote(quoteId: number) {
 }
 
 export async function getShuffledQuotes(
-  userQuery: string,
-  filter: string
+  forNotifications?: boolean
 ): Promise<QuotationInterface[]> {
   // log what was passed and what should be returned
-  console.log("getShuffledQuotes() called with:", userQuery, filter);
-
+  let userQuery, filter;
+  if (forNotifications) {
+    // TODO I can't for the life of me figure out why these sometimes get wrapped in quotation marks
+    await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery).then(
+      (res) => (userQuery = res?.replaceAll('"', ""))
+    );
+    await AsyncStorage.getItem(ASYNC_KEYS.notificationFilter).then(
+      (res) => (filter = res?.replaceAll('"', ""))
+    );
+  } else {
+    await AsyncStorage.getItem(ASYNC_KEYS.query).then(
+      (res) => (userQuery = res?.replaceAll('"', ""))
+    );
+    await AsyncStorage.getItem(ASYNC_KEYS.filter).then(
+      (res) => (filter = res?.replaceAll('"', ""))
+    );
+  }
   const db = SQLite.openDatabase(dbName);
   let dbQuery = `SELECT * FROM ${dbName}`;
   let params: any[] = [];
+  console.log("userQuery in getShuffledQuotes: ", userQuery);
+  console.log("filter in getShuffledQuotes: ", filter);
 
   if (userQuery === strings.customDiscoverHeaders.deleted) {
     dbQuery += ` WHERE deleted = 1 ORDER BY RANDOM()`;
@@ -167,19 +185,22 @@ export async function getShuffledQuotes(
   } else if (userQuery === strings.customDiscoverHeaders.all) {
     dbQuery += ` AND deleted = 1`;
   } else if (userQuery === strings.customDiscoverHeaders.addedByMe) {
-    dbQuery += ` WHERE contributeBy === '%${defaultUsername}%' AND deleted = 0 ORDER BY RANDOM()`;
+    dbQuery += ` WHERE contributedBy = ? AND deleted = 0 ORDER BY RANDOM()`;
+    params = [defaultUsername]; // ensure the correct username is used here
   } else if (filter === strings.filters.author) {
     dbQuery += ` WHERE deleted = 0 AND author LIKE '%${userQuery}%' ORDER BY RANDOM()`;
   } else if (filter === strings.filters.subject) {
     dbQuery += ` WHERE deleted = 0 AND (subjects LIKE ? OR subjects LIKE ? OR subjects LIKE ?) ORDER BY RANDOM()`;
-    params = [`${userQuery},%`, `%, ${userQuery},%`, `%,${userQuery}`];
+    params = [
+      `%${userQuery.trim()}%`,
+      `%${userQuery.trim()},%`,
+      `%,${userQuery.trim()}%`,
+    ];
   } else {
     const string = `Invalid filter provided: ${filter}`;
     throw new Error(string);
   }
-
-  console.log("Using query:", dbQuery);
-
+  console.log("dbQuery: ", dbQuery);
   return new Promise<QuotationInterface[]>((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
@@ -190,6 +211,7 @@ export async function getShuffledQuotes(
           for (let i = 0; i < result.rows.length; i++) {
             quotes.push(result.rows.item(i));
           }
+          console.log("Length of quotes that we're resolving: ", quotes.length);
           resolve(quotes);
         },
         (_, error) => {
@@ -293,25 +315,6 @@ export const getQuotesContributedByMe = async (): Promise<
   });
 };
 
-export const getFavoriteQuotes = async (): Promise<QuotationInterface[]> => {
-  const db = SQLite.openDatabase(dbName);
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `SELECT * FROM ${dbName} WHERE favorite = 1 AND deleted = 0;`,
-        [],
-        (_, { rows }) => {
-          const objs: QuotationInterface[] = rows["_array"];
-          resolve(shuffle(objs));
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
-  });
-};
-
 export async function getQuoteCount(
   key: string,
   filter: string
@@ -327,8 +330,8 @@ export async function getQuoteCount(
       params = [key];
       break;
     case strings.filters.subject:
-      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE (subjects LIKE ? OR subjects LIKE ? OR subjects LIKE ?) AND deleted = 0`;
-      params = [`${key},%`, `%, ${key},%`, `%,${key}`];
+      query += `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0 AND (subjects LIKE ? OR subjects LIKE ? OR subjects LIKE ?) ORDER BY RANDOM()`;
+      params = [`%${key.trim()}%`, `%${key.trim()},%`, `%,${key.trim()}%`];
       break;
     case strings.customDiscoverHeaders.all:
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0`;

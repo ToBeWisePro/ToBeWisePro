@@ -8,7 +8,7 @@ import { GRAY_1, GRAY_6, LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
 import { BottomNav } from "../organisms/BottomNav";
 import { NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
-import { IncludeInBottomNav } from "../../res/constants/Enums";
+import { ASYNC_KEYS, IncludeInBottomNav } from "../../res/constants/Enums";
 import { getFromDB } from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,18 +22,13 @@ export const Discover = ({ navigation }: Props) => {
   const [authors, setAuthors] = useState<IData[]>([]);
   const [filter, setFilter] = useState<string>(strings.database.defaultFilter);
   const [search, setSearch] = useState<string>("");
-  const [tempSubjects, setTempSubjects] = useState<IData[]>([]);
-  const [tempAuthors, setTempAuthors] = useState<IData[]>([]);
+  const [tempSubjects, setTempSubjects] = useState<IData[]>([]); // used for search
+  const [tempAuthors, setTempAuthors] = useState<IData[]>([]); // used for search
 
-  useEffect(() => {
-    if (filter) {
-      AsyncStorage.setItem("filter", filter);
-    }
-  }, [filter]);
   useEffect(() => {
     // set authors and subjects
     const load = async () => {
-      const storedFilter = await AsyncStorage.getItem("filter");
+      const storedFilter = await AsyncStorage.getItem(ASYNC_KEYS.filter);
       if (storedFilter) {
         setFilter(storedFilter);
       } else {
@@ -80,13 +75,6 @@ export const Discover = ({ navigation }: Props) => {
     setFunction(dataObjects);
   };
 
-  /**
- * This function updates the temporary list of authors and subjects based on the search text entered by the user.
- * If the search text is empty, the temporary lists are reset to the original authors and subjects.
- * If the filter is "author", the function filters the temporary authors list and updates it.
- * If the filter is "subject", the function filters the temporary subjects list and updates it.
-
- */
   useEffect(() => {
     const filterList = (list: IData[], filter: string) => {
       let newList: IData[] = [];
@@ -131,6 +119,22 @@ export const Discover = ({ navigation }: Props) => {
           filter={filter}
           setFilter={setFilter}
           search={search}
+          onPress={async (query, filter) => {
+            await Promise.all([
+              await AsyncStorage.setItem(ASYNC_KEYS.query, query),
+              await AsyncStorage.setItem(ASYNC_KEYS.filter, filter),
+            ]).then(async () => {
+              await Promise.all([
+                // // Debug
+                // await AsyncStorage.getItem(ASYNC_KEYS.query).then((res) =>
+                //   console.log("Discover got query after saving: ", res)
+                // ),
+                // await AsyncStorage.getItem(ASYNC_KEYS.filter).then((res) =>
+                //   console.log("Discover got filter after saving: ", res)
+                // ),
+              ]).then(() => navigation.navigate(strings.screenName.home));
+            });
+          }}
         />
       </View>
       <BottomNav

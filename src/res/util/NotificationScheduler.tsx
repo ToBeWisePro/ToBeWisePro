@@ -1,8 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
-import { getQuotes, getShuffledQuotes } from "../functions/DBFunctions";
+import { getShuffledQuotes } from "../functions/DBFunctions";
 import { strings } from "../constants/Strings";
 import { Alert } from "react-native";
+import { ASYNC_KEYS } from "../constants/Enums";
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -18,7 +19,7 @@ export async function scheduleNotifications() {
   let allowNotifications = true;
 
   try {
-    const value = await AsyncStorage.getItem("allowNotifications");
+    const value = await AsyncStorage.getItem(ASYNC_KEYS.allowNotifications);
     if (value !== null) {
       allowNotifications = JSON.parse(value);
     }
@@ -26,9 +27,9 @@ export async function scheduleNotifications() {
     console.error("Error loading allowNotifications setting:", error);
   }
 
-  const queryValue = await AsyncStorage.getItem("query");
-  const filterValue = await AsyncStorage.getItem("filter");
-  const spacingValue = await AsyncStorage.getItem("spacing");
+  const queryValue = await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery);
+  const filterValue = await AsyncStorage.getItem(ASYNC_KEYS.notificationFilter);
+  const spacingValue = await AsyncStorage.getItem(ASYNC_KEYS.spacing);
 
   // const query = queryValue
   //   ? JSON.parse(queryValue)
@@ -64,8 +65,7 @@ export async function scheduleNotifications() {
   }
 
   if (allowNotifications && spacing > 0) {
-
-    const queue = await getShuffledQuotes(query, filter)
+    const queue = await getShuffledQuotes(true)
       .then(async (quotes) => {
         
         const notificationRequests = [];

@@ -4,9 +4,10 @@ import {StyleSheet, TouchableOpacity} from 'react-native'
 import { LIGHT, PRIMARY_BLUE } from '../../../styles/Colors'
 import { AppText } from '../atoms/AppText'
 import { NavigationInterface } from '../../res/constants/Interfaces';
-import { getShuffledQuotes } from '../../res/functions/DBFunctions';
 import { strings } from '../../res/constants/Strings';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ASYNC_KEYS } from '../../res/constants/Enums';
+import { getShuffledQuotes } from '../../res/functions/DBFunctions';
 
 interface Props{
     subject: string
@@ -16,11 +17,10 @@ interface Props{
 export const SubjectBubble: React.FC<Props> = ({subject, navigation}:Props) => {
     return(
         <TouchableOpacity style={styles.container} onPress={async ()=>{
-            AsyncStorage.setItem("query", subject)
-            AsyncStorage.setItem("filter", strings.filters.subject)
-
-            await getShuffledQuotes(subject, strings.filters.subject).then((res)=>navigation.push(strings.screenName.home, {currentQuotes: res, quoteSearch: {filter: strings.filters.subject, query: subject}}))
+            await AsyncStorage.setItem(ASYNC_KEYS.query, subject)
+            await AsyncStorage.setItem(ASYNC_KEYS.filter, strings.filters.subject)
             
+            navigation.navigate(strings.screenName.home)            
         }}>
             <AppText style={styles.textStyle}>{subject}</AppText>
         </TouchableOpacity>

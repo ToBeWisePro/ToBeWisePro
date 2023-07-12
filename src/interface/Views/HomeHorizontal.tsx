@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
 import { GRADIENT_START, GRADIENT_END } from "../../../styles/Colors";
 import {
+  NavigationInterface,
   QuotationInterface,
   RouteInterface,
 } from "../../res/constants/Interfaces";
@@ -16,12 +17,10 @@ import { LargeQuoteContainer } from "../organisms/LargeQuoteContainer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native-gesture-handler";
 import * as Notifications from "expo-notifications";
-
+import { ASYNC_KEYS } from "../../res/constants/Enums";
+import { useFocusEffect } from "@react-navigation/native";
 interface Props {
-  navigation: {
-    push: (ev: string, {}) => void;
-    goBack: () => void;
-  };
+  navigation: NavigationInterface;
   route: RouteInterface;
 }
 
@@ -30,55 +29,53 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
   const [firstQuote, setFirstQuote] = useState<QuotationInterface | undefined>(
     route.params.currentQuotes ? route.params.currentQuotes[0] : undefined
   );
+  const [backButton, showBackButton] = useState(true);
 
-  // function to update title
-  const updateTitle = (filter: string, query: string) => {
-    setTitle(filter + ": " + query);
-  };
-
-  // Set title from AsyncStorage if it's not set yet
-  useEffect(() => {
-    if (title === "") {
-      AsyncStorage.getItem("filter").then((filter) => {
-        AsyncStorage.getItem("query").then((query) => {
-          if (filter && query) updateTitle(filter, query);
+  // set the title and firstQuote (which was passed to us via route). Also determine whether or not there should be a back button
+  useFocusEffect(
+    useCallback(() => {
+      const getData = async () => {
+        await Promise.all([
+          await AsyncStorage.getItem(ASYNC_KEYS.query),
+          await AsyncStorage.getItem(ASYNC_KEYS.filter),
+          await AsyncStorage.getItem(ASYNC_KEYS.notifTitle),
+          await AsyncStorage.getItem(ASYNC_KEYS.notifQuote),
+        ]).then(async ([savedQuery, savedFilter, notifTitle, notifQuote]) => {
+          if (notifTitle !== null && notifQuote !== null) {
+            setTitle(notifTitle);
+            showBackButton(false);
+            setFirstQuote(JSON.parse(notifQuote));
+          } else {
+            const retrievedQuery = savedQuery
+              ? savedQuery
+              : strings.database.defaultQuery;
+            const retrievedFilter = savedFilter
+              ? savedFilter
+              : strings.database.defaultFilter;
+            setTitle(retrievedFilter + ": " + retrievedQuery);
+            setFirstQuote(route.params.currentQuotes[0]);
+          }
         });
-      });
-    }
-  }, [title]);
+      };
 
-  // Set title based on notification
-  useEffect(() => {
-    const subscription = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        const quote = response.notification.request.content.data.quote;
-        if (quote) {
-          // Set the quote from the notification as the first item
-          setFirstQuote(quote);
-          setTitle(strings.copy.notificationFrom + quote.author);
-        }
-      }
-    );
+      getData();
+      return () => {
+        AsyncStorage.removeItem(ASYNC_KEYS.notifTitle);
+        AsyncStorage.removeItem(ASYNC_KEYS.notifQuote);
+      };
+    }, [navigation, route])
+  );
 
-    // Don't forget to unsubscribe when the component is unmounted
-    return () => subscription.remove();
-  }, []);
-
-  // Set default title if it's not set yet
-  useEffect(() => {
-    if (title === "") {
-      setTitle(
-        route.params.quoteSearch.filter + ": " + route.params.quoteSearch.query
-      );
-    }
-  }, [title, route.params.quoteSearch.filter, route.params.quoteSearch.query]);
+  // Set title from AsyncStorage or from route params
+  // Set title from AsyncStorage or from route params
+  useEffect(() => {}, []);
 
   return (
     <View style={styles.container}>
       <TopNav
         title={title}
         stickyHeader={true}
-        backButton={true}
+        backButton={backButton}
         backFunction={() => {
           navigation.goBack();
         }}
@@ -107,11 +104,9 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
         navigation={navigation}
         screen={strings.screenName.home}
         whatToInclude={IncludeInBottomNav.PlayButton}
-        setPlayPressed={() =>
-          navigation.push(strings.screenName.home, {
-            currentQuotes: [firstQuote],
-          })
-        }
+        setPlayPressed={() => {
+          navigation.navigate(strings.screenName.home);
+        }}
       />
     </View>
   );
