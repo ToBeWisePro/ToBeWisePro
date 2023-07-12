@@ -185,7 +185,8 @@ export async function getShuffledQuotes(
   } else if (userQuery === strings.customDiscoverHeaders.all) {
     dbQuery += ` AND deleted = 1`;
   } else if (userQuery === strings.customDiscoverHeaders.addedByMe) {
-    dbQuery += ` WHERE contributeBy === '%${defaultUsername}%' AND deleted = 0 ORDER BY RANDOM()`;
+    dbQuery += ` WHERE contributedBy = ? AND deleted = 0 ORDER BY RANDOM()`;
+    params = [defaultUsername]; // ensure the correct username is used here
   } else if (filter === strings.filters.author) {
     dbQuery += ` WHERE deleted = 0 AND author LIKE '%${userQuery}%' ORDER BY RANDOM()`;
   } else if (filter === strings.filters.subject) {
@@ -330,11 +331,7 @@ export async function getQuoteCount(
       break;
     case strings.filters.subject:
       query += `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0 AND (subjects LIKE ? OR subjects LIKE ? OR subjects LIKE ?) ORDER BY RANDOM()`;
-      params = [
-        `%${key.trim()}%`,
-        `%${key.trim()},%`,
-        `%,${key.trim()}%`,
-      ];
+      params = [`%${key.trim()}%`, `%${key.trim()},%`, `%,${key.trim()}%`];
       break;
     case strings.customDiscoverHeaders.all:
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0`;

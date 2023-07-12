@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet } from "react-native";
 import { GRAY_3, LIGHT } from "../../../styles/Colors";
 import { AppText } from "../atoms/AppText";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import {
-  getQuoteCount,
-} from "../../res/functions/DBFunctions";
+import { getQuoteCount } from "../../res/functions/DBFunctions";
 import {
   QuotationInterface,
   NavigationInterface,
@@ -26,7 +24,7 @@ export const DiscoverTile: React.FC<Props> = ({
   filter,
   onPress,
 }: Props) => {
-  const [count, setCount] = useState<string>("loading...");
+  const [count, setCount] = useState<number | string>("loading...");
   const [loading, setLoading] = useState(false); // Add this line
 
   useEffect(() => {
@@ -66,9 +64,12 @@ export const DiscoverTile: React.FC<Props> = ({
       onPress={async () => {
         setLoading(true); // Add this line
         if (onPress) {
-          onPress(query, filter);
+          if (count != 0) {
+            onPress(query, filter);
+          } else {
+            Alert.alert(strings.copy.countZeroErrorText)
+          }
         } else {
-
           await AsyncStorage.setItem(ASYNC_KEYS.query, query);
           await AsyncStorage.setItem(ASYNC_KEYS.filter, filter);
           await AsyncStorage.setItem(ASYNC_KEYS.notifTitle, ""); //required for title in HomeHorizontal to work properly

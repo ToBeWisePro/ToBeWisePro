@@ -38,6 +38,7 @@ export const strings = new LocalizedStrings({
       },
       copy: {
         saveNotificationsButton: "Start Notifications Now",
+        countZeroErrorText: "Please select an author or filter with more than 0 quotes",
         newNotificationsSet: "Updated notifications have started 🥳. Head back to the home screen to keep scrolling.",
         saveButton: "Save Changes",
         saveButtonBlank: "Add New Quote",
