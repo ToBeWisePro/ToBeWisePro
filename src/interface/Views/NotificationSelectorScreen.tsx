@@ -109,34 +109,34 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <TopNav
-        title={"Select Notification Database"}
-        stickyHeader={true}
-        backButton={false}
-      />
-      <View style={styles.background}>
-        <SearchBar state={search} setState={setSearch} />
-        <AlphabetListSection
-          navigation={navigation}
-          data={filter == strings.filters.author ? tempAuthors : tempSubjects}
-          filter={filter}
-          setFilter={setFilter}
-          search={search}
-          onPress={async (query: string, filter: string) => {
-            await saveSettings(ASYNC_KEYS.notificationQuery, query).then(
-              async () => {
-                await saveSettings(ASYNC_KEYS.notificationFilter, filter);
-              }
-            );
-            navigation.goBack();
-          }}
+        <TopNav
+          title={"Select Notification Database"}
+          stickyHeader={true}
+          backButton={false}
         />
-      </View>
-      <BottomNav
-        navigation={navigation}
-        screen={strings.screenName.discover}
-        whatToInclude={IncludeInBottomNav.Nothing}
-      />
+        <View style={styles.background}>
+          <SearchBar state={search} setState={setSearch} />
+          <AlphabetListSection
+            navigation={navigation}
+            data={filter == strings.filters.author ? tempAuthors : tempSubjects}
+            filter={filter}
+            setFilter={setFilter}
+            search={search}
+            onPress={async (query: string, filter: string) => {
+              await saveSettings(ASYNC_KEYS.notificationQuery, query).then(
+                async () => {
+                  await saveSettings(ASYNC_KEYS.notificationFilter, filter);
+                }
+              );
+              navigation.goBack();
+            }}
+          />
+        </View>
+        <BottomNav
+          navigation={navigation}
+          screen={strings.screenName.discover}
+          whatToInclude={IncludeInBottomNav.Nothing}
+        />
     </View>
   );
 };

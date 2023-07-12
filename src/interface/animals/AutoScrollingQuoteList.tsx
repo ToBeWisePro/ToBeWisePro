@@ -27,6 +27,7 @@ import { strings } from "../../res/constants/Strings";
 import { AppText } from "../atoms/AppText";
 import { BottomNav } from "../organisms/BottomNav";
 import { ASYNC_KEYS, IncludeInBottomNav } from "../../res/constants/Enums";
+import { useFocusEffect } from "@react-navigation/native";
 
 const QUOTE_ITEM_HEIGHT = globalStyles.smallQuoteContainer.height;
 
@@ -120,6 +121,18 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       scrollPosition.value = currentPosition.current;
     }
   }, [playPressed]);
+  useFocusEffect(
+    useCallback(() => {
+      restartScroll();
+      return () => {
+        cancelAnimation(scrollPosition);
+        scrollPosition.value = withTiming(totalScrollDistance, {
+          duration: totalScrollDistance / scrollSpeed,
+          easing: Easing.linear,
+        });
+      };
+    }, [data])
+  );
 
   useEffect(() => {
     if (playPressed) {
@@ -147,7 +160,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       }, 50);
     }, 50);
   }, [setPlayPressed]);
-  
 
   useDerivedValue(() => {
     runOnJS(scrollTo)(scrollPosition.value);
@@ -205,7 +217,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
           currentPosition.current = scrollPosition.value;
         }}
         onScroll={handleScroll}
-        contentContainerStyle={{ paddingBottom: 75, paddingTop: 75 }}
+        contentContainerStyle={{ paddingBottom: 300, paddingTop:300 }}
         ListFooterComponent={ListFooterComponent}
         onEndReached={() => {
           setPlayPressed(false);
