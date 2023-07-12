@@ -141,8 +141,13 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     currentPosition.current = 0;
     setTimeout(() => {
       scrollRef.current?.scrollToOffset({ offset: 0, animated: false });
-    }, 500);
+      // delay to allow the scroll to finish
+      setTimeout(() => {
+        setPlayPressed(true); // start automatic scrolling
+      }, 50);
+    }, 50);
   }, [setPlayPressed]);
+  
 
   useDerivedValue(() => {
     runOnJS(scrollTo)(scrollPosition.value);
