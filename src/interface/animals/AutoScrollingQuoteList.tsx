@@ -276,5 +276,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: DARK,
     fontWeight: "bold",
+    width: 370,
+    alignSelf: "center",
   },
 });
