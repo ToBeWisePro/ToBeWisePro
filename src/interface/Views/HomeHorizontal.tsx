@@ -35,7 +35,6 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
   useFocusEffect(
     useCallback(() => {
       const getData = async () => {
-        console.log("HomeHorizontal: firing");
         await Promise.all([
           await AsyncStorage.getItem(ASYNC_KEYS.query),
           await AsyncStorage.getItem(ASYNC_KEYS.filter),
@@ -54,7 +53,6 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
               ? savedFilter
               : strings.database.defaultFilter;
             setTitle(retrievedFilter + ": " + retrievedQuery);
-            console.log("Using route.params to set quote");
             setFirstQuote(route.params.currentQuotes[0]);
           }
         });
@@ -64,7 +62,6 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
       return () => {
         AsyncStorage.removeItem(ASYNC_KEYS.notifTitle);
         AsyncStorage.removeItem(ASYNC_KEYS.notifQuote);
-        console.log("HomeHorizontal: clearing");
       };
     }, [navigation, route])
   );

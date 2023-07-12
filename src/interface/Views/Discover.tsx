@@ -125,12 +125,13 @@ export const Discover = ({ navigation }: Props) => {
               await AsyncStorage.setItem(ASYNC_KEYS.filter, filter),
             ]).then(async () => {
               await Promise.all([
-                await AsyncStorage.getItem(ASYNC_KEYS.query).then((res) =>
-                  console.log("Discover got query after saving: ", res)
-                ),
-                await AsyncStorage.getItem(ASYNC_KEYS.filter).then((res) =>
-                  console.log("Discover got filter after saving: ", res)
-                ),
+                // // Debug
+                // await AsyncStorage.getItem(ASYNC_KEYS.query).then((res) =>
+                //   console.log("Discover got query after saving: ", res)
+                // ),
+                // await AsyncStorage.getItem(ASYNC_KEYS.filter).then((res) =>
+                //   console.log("Discover got filter after saving: ", res)
+                // ),
               ]).then(() => navigation.navigate(strings.screenName.home));
             });
           }}

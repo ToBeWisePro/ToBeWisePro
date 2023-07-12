@@ -82,7 +82,6 @@ export default function App() {
           const quoteFromStorage = await AsyncStorage.getItem(
             ASYNC_KEYS.notifQuote
           );
-          console.log("notifQuote:", quoteFromStorage);
 
           navigationRef.current?.dispatch(
             CommonActions.navigate(strings.screenName.homeHorizontal, {
@@ -129,12 +128,7 @@ export default function App() {
   useEffect(() => {
     const i = async () => {
       // log the default query and filter
-      console.log(
-        "Default query: " +
-          strings.database.defaultQuery +
-          "\nDefault filter: " +
-          strings.database.defaultFilter
-      );
+  
       await dataImporter().then(async () => {
         await getShuffledQuotes(false).then((res) => {
           setShuffledQuotes(res);

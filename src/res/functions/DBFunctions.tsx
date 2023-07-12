@@ -98,8 +98,8 @@ export async function saveQuoteToDatabase(quote: QuotationInterface) {
 
   const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  console.log("Attempting to save quote:", quote);
-  console.log("Using insert query:", insertQuery);
+  // console.log("Attempting to save quote:", quote);
+  // console.log("Using insert query:", insertQuery);
 
   return await new Promise((resolve, reject) => {
     db.transaction((tx) => {
@@ -169,6 +169,8 @@ export async function getShuffledQuotes(
   const db = SQLite.openDatabase(dbName);
   let dbQuery = `SELECT * FROM ${dbName}`;
   let params: any[] = [];
+  console.log("userQuery in getShuffledQuotes: ", userQuery);
+  console.log("filter in getShuffledQuotes: ", filter);
 
   if (userQuery === strings.customDiscoverHeaders.deleted) {
     dbQuery += ` WHERE deleted = 1 ORDER BY RANDOM()`;
@@ -188,7 +190,11 @@ export async function getShuffledQuotes(
     dbQuery += ` WHERE deleted = 0 AND author LIKE '%${userQuery}%' ORDER BY RANDOM()`;
   } else if (filter === strings.filters.subject) {
     dbQuery += ` WHERE deleted = 0 AND (subjects LIKE ? OR subjects LIKE ? OR subjects LIKE ?) ORDER BY RANDOM()`;
-    params = [`${userQuery},%`, `%, ${userQuery},%`, `%,${userQuery}`];
+    params = [
+      `%${userQuery.trim()}%`,
+      `%${userQuery.trim()},%`,
+      `%,${userQuery.trim()}%`,
+    ];
   } else {
     const string = `Invalid filter provided: ${filter}`;
     throw new Error(string);
@@ -204,6 +210,7 @@ export async function getShuffledQuotes(
           for (let i = 0; i < result.rows.length; i++) {
             quotes.push(result.rows.item(i));
           }
+          console.log("Length of quotes that we're resolving: ", quotes.length);
           resolve(quotes);
         },
         (_, error) => {
@@ -322,8 +329,12 @@ export async function getQuoteCount(
       params = [key];
       break;
     case strings.filters.subject:
-      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE (subjects LIKE ? OR subjects LIKE ? OR subjects LIKE ?) AND deleted = 0`;
-      params = [`${key},%`, `%, ${key},%`, `%,${key}`];
+      query += `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0 AND (subjects LIKE ? OR subjects LIKE ? OR subjects LIKE ?) ORDER BY RANDOM()`;
+      params = [
+        `%${key.trim()}%`,
+        `%${key.trim()},%`,
+        `%,${key.trim()}%`,
+      ];
       break;
     case strings.customDiscoverHeaders.all:
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0`;
