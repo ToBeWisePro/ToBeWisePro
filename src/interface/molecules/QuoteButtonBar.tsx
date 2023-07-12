@@ -25,10 +25,15 @@ export const QuoteButtonBar: React.FC<Props> = ({
   navigation,
 }: Props) => {
   const [isFavorite, setIsFavorite] = useState(quote.favorite);
+  const [isDeleted, setIsDeleted] = useState(quote.deleted);
+
 
   useEffect(() => {
     quote.favorite = isFavorite;
   }, [isFavorite]);
+  useEffect(() => {
+    quote.deleted = isDeleted;
+  }, [isDeleted]);
 
   const handleFavoritePress = async () => {
     const updatedFavoriteStatus = isFavorite === 0 ? 1 : 0;
@@ -61,6 +66,7 @@ export const QuoteButtonBar: React.FC<Props> = ({
 
   const deleteFunction = async (quote: QuotationInterface) => {
     const shouldDelete = !quote.deleted; // If the quote is not currently deleted, we should delete it.
+    setIsDeleted(shouldDelete);
     await markQuoteAsDeleted(quote, shouldDelete);
     Alert.alert(
       shouldDelete
@@ -99,9 +105,11 @@ export const QuoteButtonBar: React.FC<Props> = ({
     },
     {
       id: QuoteContainerButtons.Delete,
-      name: QuoteContainerButtons.Delete,
-      onPress: () => deleteFunction(quote),
-      iconName: "delete",
+      name: isDeleted? "Restore" : QuoteContainerButtons.Delete,
+      onPress: () =>{
+        deleteFunction(quote)
+      } ,
+      iconName: isDeleted == true ? "restore" : "delete",
       color: PRIMARY_GREEN,
     },
 
