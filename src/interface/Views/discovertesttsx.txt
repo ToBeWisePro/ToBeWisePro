@@ -1,0 +1,77 @@
+// // Jest setup for mocking Async Storage
+// jest.mock("@react-native-async-storage/async-storage", () =>
+//   require("@react-native-async-storage/async-storage/jest/async-storage-mock")
+// );
+
+// import React from "react";
+// import { render, act } from "@testing-library/react-native";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
+// import { Discover } from "./Discover";
+// import { TEST_IDS } from "../../res/constants/TestIDs";
+// import { ASYNC_KEYS } from "../../res/constants/Enums";
+// import { getFromDB } from "../../res/functions/DBFunctions";
+
+// jest.mock("../../res/functions/DBFunctions", () => ({
+//   getFromDB: jest.fn(),
+// }));
+
+// const mockNavigation = {
+//   navigate: jest.fn(),
+//   goBack: jest.fn(),
+//   push: jest.fn(),
+// };
+
+// describe("Discover Screen", () => {
+//   beforeEach(() => {
+//     jest.clearAllMocks();
+//     AsyncStorage.getItem.mockResolvedValue(null);
+//     getFromDB.mockResolvedValue(["Author1", "Author2"]);
+//   });
+
+//   it("should render TopNav component", async () => {
+//     await act(async () => {
+//       const { getByTestId } = render(<Discover navigation={mockNavigation} />);
+//       expect(getByTestId(TEST_IDS.topNav)).toBeTruthy();
+//     });
+//   });
+
+//   it("should render SearchBar component", async () => {
+//     await act(async () => {
+//       const { getByTestId } = render(<Discover navigation={mockNavigation} />);
+//       expect(getByTestId(TEST_IDS.searchBar)).toBeTruthy();
+//     });
+//   });
+
+//   it("should render AlphabetListSection component", async () => {
+//     await act(async () => {
+//       const { getByTestId } = render(<Discover navigation={mockNavigation} />);
+//       expect(getByTestId(TEST_IDS.alphabetListSection)).toBeTruthy();
+//     });
+//   });
+
+//   it("should render BottomNav component", async () => {
+//     await act(async () => {
+//       const { getByTestId } = render(<Discover navigation={mockNavigation} />);
+//       expect(getByTestId(TEST_IDS.bottomNav)).toBeTruthy();
+//     });
+//   });
+
+//   it("checks if AsyncStorage.getItem is used in useEffect", async () => {
+//     await act(async () => {
+//       render(<Discover navigation={mockNavigation} />);
+//     });
+//     expect(AsyncStorage.getItem).toBeCalledWith(ASYNC_KEYS.filter);
+//   });
+
+//   it("checks if AsyncStorage.setItem is used in onPress", async () => {
+//     const { getByTestId } = render(<Discover navigation={mockNavigation} />);
+//     const alphabetListSection = getByTestId(TEST_IDS.alphabetListSection);
+
+//     await act(async () => {
+//       alphabetListSection.props.onPress("someQuery", "someFilter");
+//     });
+
+//     expect(AsyncStorage.setItem).toBeCalledWith(ASYNC_KEYS.query, "someQuery");
+//     expect(AsyncStorage.setItem).toBeCalledWith(ASYNC_KEYS.filter, "someFilter");
+//   });
+// });

@@ -12,6 +12,7 @@ import { ASYNC_KEYS, IncludeInBottomNav } from "../../res/constants/Enums";
 import { getFromDB } from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { TEST_IDS } from "../../res/constants/TestIDS";
 
 interface Props {
   navigation: NavigationInterface;
@@ -110,10 +111,12 @@ export const Discover = ({ navigation }: Props) => {
         title={strings.navbarDiscoverDefaultText}
         stickyHeader={true}
         backButton={false}
+        testID={TEST_IDS.topNav}
       />
       <View style={styles.background}>
         <SearchBar state={search} setState={setSearch} />
         <AlphabetListSection
+          testID={TEST_IDS.alphabetListSection}
           navigation={navigation}
           data={filter == strings.filters.author ? tempAuthors : tempSubjects}
           filter={filter}
@@ -141,6 +144,7 @@ export const Discover = ({ navigation }: Props) => {
         navigation={navigation}
         screen={strings.screenName.discover}
         whatToInclude={IncludeInBottomNav.Nothing}
+        testID={TEST_IDS.bottomNav}
       />
     </View>
   );

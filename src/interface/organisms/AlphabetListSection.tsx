@@ -19,10 +19,12 @@ interface Props {
   navigation: NavigationInterface;
   search: string;
   onPress?: (query: string, filter: string) => Promise<void>;
+  testID: string
 }
 
 export const AlphabetListSection = ({
   filter,
+  testID,
   setFilter,
   navigation,
   search,
