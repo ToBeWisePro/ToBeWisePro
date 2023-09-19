@@ -1,21 +1,13 @@
 import React from 'react';
 import {View, StyleSheet} from "react-native";
-import {DARK, GRAY_3, GRAY_4, GRAY_5, GRAY_6, LIGHT} from "../../../styles/Colors";
+import {DARK, GRAY_3, GRAY_5} from "../../../styles/Colors";
 import {AppText} from "./AppText";
 
 interface Props {
     label: string
 }
 
-export const DiscoverSectionHeader = ({label}: Props) => {
-    return (
-        <View style={styles.container}>
-            <AppText style={styles.text}>{label}</AppText>
-        </View>
-    )
-}
-
-const styles = StyleSheet.create({
+export const getStyles = (label: string) => ({
     container: {
         height: 30,
         width: '100%',
@@ -30,4 +22,13 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         color: DARK
     }
-})
+});
+
+export const DiscoverSectionHeader = ({label}: Props) => {
+    const styles = getStyles(label);
+    return (
+        <View style={styles.container}>
+            <AppText style={styles.text}>{label}</AppText>
+        </View>
+    )
+}

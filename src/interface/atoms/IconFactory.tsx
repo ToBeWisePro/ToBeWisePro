@@ -6,20 +6,22 @@ import { DARK, LIGHT } from "../../../styles/Colors";
 interface Props {
   icon: string;
   selected: boolean;
-  color?: string
+  color?: string;
 }
 
 export const IconFactory: React.FC<Props> = ({ icon, selected, color }: Props) => {
   const size = 25;
   const tvParallaxProperties = { undefined };
+  const testID = selected ? `icon-${icon}-selected` : `icon-${icon}-unselected`;
+  
   return (
     <View>
       {selected ? (
         <Icon
           name={icon}
-
           color={LIGHT}
           size={size}
+          testID={testID}
           //@ts-ignore
           tvParallaxProperties={tvParallaxProperties}
         />
@@ -28,10 +30,12 @@ export const IconFactory: React.FC<Props> = ({ icon, selected, color }: Props) =
           name={icon}
           size={size}
           color={color ? color : DARK}
-            //@ts-ignore
+          testID={testID}
+          //@ts-ignore
           tvParallaxProperties={tvParallaxProperties}
         />
       )}
     </View>
   );
 };
+

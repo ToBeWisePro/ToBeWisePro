@@ -5,6 +5,8 @@ export const TEST_IDS = {
     alphabetListSection: 'alphabet-list-section',
     bottomNav: 'bottom-nav',
     dateTimePicker: 'date-time-picker',
-    
+    iconHome: 'icon-home',
+    dropDownPicker: 'dropdown-picker',
+    selectorButton: 'selector-button',
+    PlayButtonBar: 'play-pause-button',
   };
-  
