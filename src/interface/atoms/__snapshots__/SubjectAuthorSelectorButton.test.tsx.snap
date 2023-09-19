@@ -1,0 +1,145 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SubjectAuthorSelectorButton component changes button background color based on selected prop 1`] = `
+<RNGestureHandlerButton
+  collapsable={false}
+  delayLongPress={600}
+  enabled={true}
+  exclusive={true}
+  handlerTag={3}
+  handlerType="NativeViewGestureHandler"
+  onGestureEvent={[Function]}
+  onGestureHandlerEvent={[Function]}
+  onGestureHandlerStateChange={[Function]}
+  onHandlerStateChange={[Function]}
+  rippleColor={0}
+  testID="selector-button"
+  touchSoundDisabled={false}
+>
+  <View
+    accessible={true}
+    collapsable={false}
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#459075",
+        "borderRadius": 5,
+        "height": 32,
+        "justifyContent": "center",
+        "width": 108,
+      }
+    }
+  >
+    <View>
+      <Text
+        ellipsizeMode="tail"
+        maxFontSizeMultiplier={1}
+        numberOfLines={9999}
+        style={
+          {
+            "color": "#FFFFFF",
+          }
+        }
+      >
+        Test Button
+      </Text>
+    </View>
+  </View>
+</RNGestureHandlerButton>
+`;
+
+exports[`SubjectAuthorSelectorButton component changes button background color based on selected prop 2`] = `
+<RNGestureHandlerButton
+  collapsable={false}
+  delayLongPress={600}
+  enabled={true}
+  exclusive={true}
+  handlerTag={4}
+  handlerType="NativeViewGestureHandler"
+  onGestureEvent={[Function]}
+  onGestureHandlerEvent={[Function]}
+  onGestureHandlerStateChange={[Function]}
+  onHandlerStateChange={[Function]}
+  rippleColor={0}
+  testID="selector-button"
+  touchSoundDisabled={false}
+>
+  <View
+    accessible={true}
+    collapsable={false}
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#828282",
+        "borderRadius": 5,
+        "height": 32,
+        "justifyContent": "center",
+        "width": 108,
+      }
+    }
+  >
+    <View>
+      <Text
+        ellipsizeMode="tail"
+        maxFontSizeMultiplier={1}
+        numberOfLines={9999}
+        style={
+          {
+            "color": "#FFFFFF",
+          }
+        }
+      >
+        Test Button
+      </Text>
+    </View>
+  </View>
+</RNGestureHandlerButton>
+`;
+
+exports[`SubjectAuthorSelectorButton component renders correctly 1`] = `
+<RNGestureHandlerButton
+  collapsable={false}
+  delayLongPress={600}
+  enabled={true}
+  exclusive={true}
+  handlerTag={1}
+  handlerType="NativeViewGestureHandler"
+  onGestureEvent={[Function]}
+  onGestureHandlerEvent={[Function]}
+  onGestureHandlerStateChange={[Function]}
+  onHandlerStateChange={[Function]}
+  rippleColor={0}
+  testID="selector-button"
+  touchSoundDisabled={false}
+>
+  <View
+    accessible={true}
+    collapsable={false}
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#459075",
+        "borderRadius": 5,
+        "height": 32,
+        "justifyContent": "center",
+        "width": 108,
+      }
+    }
+  >
+    <View>
+      <Text
+        ellipsizeMode="tail"
+        maxFontSizeMultiplier={1}
+        numberOfLines={9999}
+        style={
+          {
+            "color": "#FFFFFF",
+          }
+        }
+      >
+        Test Button
+      </Text>
+    </View>
+  </View>
+</RNGestureHandlerButton>
+`;

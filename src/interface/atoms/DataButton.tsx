@@ -2,19 +2,20 @@ import React from "react";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { StyleSheet, View } from "react-native";
 import { AppText } from "./AppText";
-import { GRAY_3, LIGHT, PRIMARY_GREEN} from "../../../styles/Colors";
+import { GRAY_3, LIGHT, PRIMARY_GREEN } from "../../../styles/Colors";
 
 interface Props {
   buttonText: string;
   selected: boolean;
-  onPress: ()=>void
+  onPress: () => void;
 }
 
 export const DataButton: React.FC<Props> = ({
   buttonText,
   selected,
-  onPress
+  onPress,
 }: Props) => {
+
   return (
     <TouchableWithoutFeedback
       style={[
@@ -38,17 +39,16 @@ export const DataButton: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   container: {
-    // flex:1,
     justifyContent: "center",
     alignItems: "center",
     height: 32,
     width: 108,
-    borderRadius: 5
+    borderRadius: 5,
   },
   selected: {
     color: LIGHT,
   },
   deselected: {
-    color: LIGHT
-  }
+    color: LIGHT,
+  },
 });

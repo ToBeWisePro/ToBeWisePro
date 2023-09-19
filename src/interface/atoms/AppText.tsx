@@ -9,7 +9,6 @@ interface Props {
   style?: Record<string, unknown> | Array<Record<string, unknown>>;
   numberOfLines?: number,
 }
-
 export const AppText: React.FC<Props> = ({
   children,
   maxFontSizeMultiplier = 1,

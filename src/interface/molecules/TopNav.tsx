@@ -9,12 +9,14 @@ import { globalStyles } from "../../../styles/GlobalStyles";
 interface Props {
   title: string;
   stickyHeader: boolean;
+  testID: string;
   backButton: boolean;
   backFunction?: () => void;
 }
 
 export const TopNav: React.FC<Props> = ({
   title,
+  testID,
   stickyHeader,
   backButton,
   backFunction,

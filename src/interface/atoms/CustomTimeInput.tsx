@@ -2,6 +2,7 @@ import * as React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { LIGHT } from '../../../styles/Colors';
+import { TEST_IDS } from '../../res/constants/TestIDS';
 
 interface Props {
     time: Date,
@@ -21,6 +22,7 @@ export const CustomTimeInput: React.FC<Props> = ({ time, setTime }: Props) => {
                 mode={"time"}
                 value={time}
                 onChange={onChange}
+                testID={TEST_IDS.dateTimePicker}
             />
         </TouchableOpacity>
     );

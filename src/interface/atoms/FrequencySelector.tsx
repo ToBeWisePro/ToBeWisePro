@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import React, { useState, ChangeEvent } from "react";
+import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import DateTimePicker, { Event } from "@react-native-community/datetimepicker";
+import { TEST_IDS } from "../../res/constants/TestIDS";
 
-const FrequencySelector = ({ selectedTime, onTimeChange }) => {
-  const [showPicker, setShowPicker] = useState(false);
+interface FrequencySelectorProps {
+  selectedTime: Date | null;
+  onTimeChange: (date: Date | null) => void;
+}
+
+const FrequencySelector: React.FC<FrequencySelectorProps> = ({
+  selectedTime,
+  onTimeChange,
+}) => {
+  const [showPicker, setShowPicker] = useState<boolean>(false);
 
   const onClear = () => {
     onTimeChange(null);
   };
 
-  const onChange = (event, selectedDate) => {
+  const onChange = (event: Event, selectedDate?: Date) => {
     setShowPicker(false);
     if (selectedDate) {
       onTimeChange(selectedDate);
@@ -26,7 +35,7 @@ const FrequencySelector = ({ selectedTime, onTimeChange }) => {
         <Text>
           {selectedTime
             ? `${selectedTime.getHours()}:${selectedTime.getMinutes()}`
-            : 'Select Time'}
+            : "Select Time"}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={onClear} style={styles.clearButton}>
@@ -38,6 +47,7 @@ const FrequencySelector = ({ selectedTime, onTimeChange }) => {
           mode="time"
           display="default"
           onChange={onChange}
+          testID={TEST_IDS.dateTimePicker}
         />
       )}
     </View>
@@ -46,11 +56,11 @@ const FrequencySelector = ({ selectedTime, onTimeChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   timeDisplay: {
     borderWidth: 1,
-    borderColor: 'gray',
+    borderColor: "gray",
     borderRadius: 5,
     paddingHorizontal: 10,
     paddingVertical: 5,

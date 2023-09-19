@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1695058572012" clover="3.2.0">
+  <project timestamp="1695058572012" name="All files">
+    <metrics statements="64" coveredstatements="59" conditionals="34" coveredconditionals="24" methods="14" coveredmethods="14" elements="112" coveredelements="97" complexity="0" loc="64" ncloc="64" packages="3" files="10" classes="10"/>
+    <package name="src.interface.atoms">
+      <metrics statements="49" coveredstatements="44" conditionals="34" coveredconditionals="24" methods="14" coveredmethods="14"/>
+      <file name="AppText.tsx" path="/Users/griffinclark/Documents/GitHub/ToBeWisePro/src/interface/atoms/AppText.tsx">
+        <metrics statements="2" coveredstatements="2" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+        <line num="13" count="4" type="stmt"/>
+        <line num="20" count="14" type="stmt"/>
+      </file>
+      <file name="CustomTimeInput.tsx" path="/Users/griffinclark/Documents/GitHub/ToBeWisePro/src/interface/atoms/CustomTimeInput.tsx">
+        <metrics statements="6" coveredstatements="6" conditionals="2" coveredconditionals="1" methods="2" coveredmethods="2"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="13" count="3" type="stmt"/>
+        <line num="14" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="19" count="3" type="stmt"/>
+        <line num="31" count="1" type="stmt"/>
+      </file>
+      <file name="DataButton.tsx" path="/Users/griffinclark/Documents/GitHub/ToBeWisePro/src/interface/atoms/DataButton.tsx">
+        <metrics statements="4" coveredstatements="4" conditionals="4" coveredconditionals="2" methods="1" coveredmethods="1"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="18" count="3" type="stmt"/>
+        <line num="20" count="3" type="stmt"/>
+        <line num="41" count="1" type="stmt"/>
+      </file>
+      <file name="DiscoverSectionHeader.tsx" path="/Users/griffinclark/Documents/GitHub/ToBeWisePro/src/interface/atoms/DiscoverSectionHeader.tsx">
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
+        <line num="10" count="3" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="29" count="2" type="stmt"/>
+      </file>
+      <file name="FrequencySelector.tsx" path="/Users/griffinclark/Documents/GitHub/ToBeWisePro/src/interface/atoms/FrequencySelector.tsx">
+        <metrics statements="12" coveredstatements="12" conditionals="8" coveredconditionals="7" methods="4" coveredmethods="4"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="15" count="7" type="stmt"/>
+        <line num="17" count="7" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="21" count="7" type="stmt"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="23" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="28" count="7" type="stmt"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="32" count="7" type="stmt"/>
+        <line num="57" count="1" type="stmt"/>
+      </file>
+      <file name="IconFactory.tsx" path="/Users/griffinclark/Documents/GitHub/ToBeWisePro/src/interface/atoms/IconFactory.tsx">
+        <metrics statements="6" coveredstatements="6" conditionals="6" coveredconditionals="5" methods="1" coveredmethods="1"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="13" count="4" type="stmt"/>
+        <line num="14" count="4" type="stmt"/>
+        <line num="15" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="16" count="4" type="stmt"/>
+        <line num="19" count="4" type="stmt"/>
+      </file>
+      <file name="NavButton.tsx" path="/Users/griffinclark/Documents/GitHub/ToBeWisePro/src/interface/atoms/NavButton.tsx">
+        <metrics statements="15" coveredstatements="10" conditionals="12" coveredconditionals="7" methods="3" coveredmethods="3"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="22" count="4" type="cond" truecount="1" falsecount="3"/>
+        <line num="24" count="0" type="stmt"/>
+        <line num="26" count="4" type="stmt"/>
+        <line num="28" count="0" type="stmt"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="42" count="4" type="stmt"/>
+        <line num="49" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="50" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="53" count="1" type="stmt"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="74" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.res.constants">
+      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="Strings.tsx" path="/Users/griffinclark/Documents/GitHub/ToBeWisePro/src/res/constants/Strings.tsx">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="1" type="stmt"/>
+      </file>
+      <file name="TestIDS.tsx" path="/Users/griffinclark/Documents/GitHub/ToBeWisePro/src/res/constants/TestIDS.tsx">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="styles">
+      <metrics statements="13" coveredstatements="13" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="Colors.tsx" path="/Users/griffinclark/Documents/GitHub/ToBeWisePro/styles/Colors.tsx">
+        <metrics statements="13" coveredstatements="13" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="5" type="stmt"/>
+        <line num="2" count="5" type="stmt"/>
+        <line num="4" count="5" type="stmt"/>
+        <line num="5" count="5" type="stmt"/>
+        <line num="6" count="5" type="stmt"/>
+        <line num="8" count="5" type="stmt"/>
+        <line num="9" count="5" type="stmt"/>
+        <line num="10" count="5" type="stmt"/>
+        <line num="11" count="5" type="stmt"/>
+        <line num="12" count="5" type="stmt"/>
+        <line num="13" count="5" type="stmt"/>
+        <line num="15" count="5" type="stmt"/>
+        <line num="16" count="5" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

@@ -20,12 +20,14 @@ interface Props {
   scrollSpeed?: number;
   setScrollSpeed?: (x: number) => void;
   resetScrollPosition?: () => void;
+  testID: string;
 
 }
 
 export const BottomNav: React.FC<Props> = ({
   navigation,
   screen,
+  testID,
   whatToInclude,
   setPlayPressed,
   playPressed,

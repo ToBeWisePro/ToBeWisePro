@@ -3,7 +3,8 @@ import React from "react";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { StyleSheet, View } from "react-native";
 import { AppText } from "./AppText";
-import { GRAY_3, LIGHT, PRIMARY_GREEN } from "../../../styles/colors";
+import { GRAY_3, LIGHT, PRIMARY_GREEN} from '../../../styles/Colors';
+import { TEST_IDS } from "../../res/constants/TestIDS";
 
 interface Props {
   buttonText: string;
@@ -18,6 +19,7 @@ export const SubjectAuthorSelectorButton: React.FC<Props> = ({
 }: Props) => {
   return (
     <TouchableWithoutFeedback
+    testID={TEST_IDS.selectorButton}
       style={[
         styles.container,
         { backgroundColor: selected ? PRIMARY_GREEN : GRAY_3 },
