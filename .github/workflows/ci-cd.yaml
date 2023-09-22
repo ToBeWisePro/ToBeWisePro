@@ -1,0 +1,57 @@
+name: CI/CD Pipeline
+
+on: [push, pull_request]
+
+jobs:
+  install_dependencies:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+        
+    - name: Install dependencies
+      run: yarn install
+      
+    - name: Cache node_modules
+      uses: actions/cache@v2
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+        
+  lint_and_test:
+    needs: install_dependencies
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Run ESLint
+      run: yarn lint
+      
+    - name: Run Jest Tests
+      run: yarn test
+      
+  type_check:
+    needs: lint_and_test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Run TypeScript Compiler
+      run: yarn tsc --noEmit
+      
+  build:
+    needs: type_check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Build Project
+      run: yarn build
