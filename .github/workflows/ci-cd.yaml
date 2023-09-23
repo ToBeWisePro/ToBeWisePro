@@ -42,8 +42,14 @@ jobs:
       - name: List Contents of src/res/constants
         run: ls -l ./src/res/constants/
 
+      - name: Print Content of TestIDS.tsx
+        run: cat ./src/res/constants/TestIDS.tsx
+
       - name: Run ESLint
         run: yarn lint
+
+      - name: Clear Jest Cache
+        run: yarn jest --clearCache
 
       - name: Run Jest Tests
         run: yarn test
