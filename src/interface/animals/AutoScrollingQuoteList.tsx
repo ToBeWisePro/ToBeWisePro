@@ -6,20 +6,15 @@ import {
   useDerivedValue,
   runOnJS,
   cancelAnimation,
+  Easing,
 } from "react-native-reanimated";
 import SmallQuoteContainer from "../organisms/SmallQuoteContainer";
 import Slider from "@react-native-community/slider";
+import { DARK, PRIMARY_BLUE } from "../../../styles/Colors";
 import {
-  DARK,
-  LIGHT,
-  PRIMARY_BLUE,
-  PRIMARY_GREEN,
-} from "../../../styles/Colors";
-import {
-  NavigationInterface,
-  QuotationInterface,
+  type NavigationInterface,
+  type QuotationInterface,
 } from "../../res/constants/Interfaces";
-import { Easing } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { globalStyles } from "../../../styles/GlobalStyles";
@@ -28,6 +23,7 @@ import { AppText } from "../atoms/AppText";
 import { BottomNav } from "../organisms/BottomNav";
 import { ASYNC_KEYS, IncludeInBottomNav } from "../../res/constants/Enums";
 import { useFocusEffect } from "@react-navigation/native";
+import { TEST_IDS } from "../../res/constants/TestIDS";
 
 const QUOTE_ITEM_HEIGHT = globalStyles.smallQuoteContainer.height;
 
@@ -58,7 +54,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
 
   const handlePress = useCallback(
     (quote: QuotationInterface) => {
-      let newQuotes: QuotationInterface[] = [quote];
+      const newQuotes: QuotationInterface[] = [quote];
       data.forEach((quote2) => {
         if (quote._id !== quote2._id) {
           newQuotes.push(quote2);
@@ -67,30 +63,29 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       navigation.push(strings.screenName.homeHorizontal, {
         currentQuotes: newQuotes,
         quoteSearch: {
-          filter: filter,
-          query: query,
+          filter,
+          query,
         },
       });
     },
-    [filter, query, data, navigation] // Add your props here
+    [filter, query, data, navigation], // Add your props here
   );
 
   // Function to set and store scroll speed
-  const setAndStoreScrollSpeed = async (
-    value: React.SetStateAction<number>
-  ) => {
+  const setAndStoreScrollSpeed = (
+    value: React.SetStateAction<number>,
+  ): void => {
     setScrollSpeed(value);
     console.log(value);
-    try {
-      setScrollSpeed(value);
-      await AsyncStorage.setItem(ASYNC_KEYS.scrollSpeed, JSON.stringify(value));
-    } catch (e) {
-      console.log(e);
-    }
+    AsyncStorage.setItem(ASYNC_KEYS.scrollSpeed, JSON.stringify(value)).catch(
+      (e) => {
+        console.log(e);
+      },
+    );
   };
 
   useEffect(() => {
-    const fetchScrollSpeed = async () => {
+    const fetchScrollSpeed = async (): Promise<void> => {
       try {
         const value = await AsyncStorage.getItem(ASYNC_KEYS.scrollSpeed);
         if (value !== null) {
@@ -101,7 +96,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       }
     };
 
-    fetchScrollSpeed();
+    void fetchScrollSpeed();
   }, []);
 
   useEffect(() => {
@@ -131,7 +126,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
           easing: Easing.linear,
         });
       };
-    }, [data])
+    }, [data]),
   );
 
   useEffect(() => {
@@ -144,7 +139,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     }
   }, [scrollSpeed]);
 
-  const scrollTo = (y: number) => {
+  const scrollTo = (y: number): void => {
     scrollRef.current?.scrollToOffset({ offset: y, animated: false });
   };
 
@@ -165,7 +160,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     runOnJS(scrollTo)(scrollPosition.value);
   }, [scrollPosition]);
 
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: any): void => {
     // save event.nativeEvent.contentOffset.y as an integer
     currentPosition.current = event.nativeEvent.contentOffset.y;
   };
@@ -175,7 +170,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   }, [restartScroll]);
 
   const renderItem = useCallback(
-    ({ item: quote }) => {
+    ({ item: quote }: { item: QuotationInterface }) => {
       // console.log("Rendering item", quote._id); // Add this line
       // console.log('Data length:', data.length); // New line
 
@@ -183,11 +178,14 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         <SmallQuoteContainer
           key={quote._id}
           passedInQuote={quote}
-          pressFunction={() => handlePress(quote)}
+          pressFunction={() => {
+            handlePress(quote);
+          }}
         />
       );
     },
-    [handlePress, data.length]
+
+    [handlePress, data.length],
   );
 
   const ListFooterComponent = useCallback(() => {
@@ -213,11 +211,11 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         scrollEnabled={!playPressed}
         onTouchStart={() => {
           setPlayPressed(false);
-          //set the current position
+          // set the current position
           currentPosition.current = scrollPosition.value;
         }}
         onScroll={handleScroll}
-        contentContainerStyle={{ paddingBottom: 300, paddingTop:300 }}
+        contentContainerStyle={{ paddingBottom: 300, paddingTop: 300 }}
         ListFooterComponent={ListFooterComponent}
         onEndReached={() => {
           setPlayPressed(false);
@@ -261,6 +259,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         scrollSpeed={scrollSpeed}
         setScrollSpeed={setScrollSpeed}
         resetScrollPosition={resetScrollPosition}
+        testID={TEST_IDS.bottomNav}
       />
     </View>
   );

@@ -2,14 +2,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { getShuffledQuotes } from "../functions/DBFunctions";
 import { strings } from "../constants/Strings";
-import { Alert } from "react-native";
 import { ASYNC_KEYS } from "../constants/Enums";
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export async function scheduleNotifications() {
+export async function scheduleNotifications(): Promise<void> {
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
   } catch (error) {
@@ -28,7 +23,6 @@ export async function scheduleNotifications() {
   }
 
   const queryValue = await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery);
-  const filterValue = await AsyncStorage.getItem(ASYNC_KEYS.notificationFilter);
   const spacingValue = await AsyncStorage.getItem(ASYNC_KEYS.spacing);
 
   // const query = queryValue
@@ -36,16 +30,16 @@ export async function scheduleNotifications() {
   //   : strings.database.defaultQuery;
   let query: string;
   try {
-    query = queryValue ? JSON.parse(queryValue) : strings.database.defaultQuery;
+    query =
+      queryValue != null
+        ? JSON.parse(queryValue)
+        : strings.database.defaultQuery;
   } catch (error) {
     console.log("Error parsing queryValue:", error);
     query = strings.database.defaultQuery;
   }
 
-  const filter = filterValue
-    ? JSON.parse(filterValue)
-    : strings.database.defaultFilter;
-  const spacing = spacingValue ? JSON.parse(spacingValue) : 30;
+  const spacing = spacingValue != null ? JSON.parse(spacingValue) : 30;
 
   const ONE_DAY = 24 * 60 * 60 * 1000; // One day in milliseconds
   const ONE_MINUTE = 60 * 1000; // One minute in milliseconds
@@ -53,11 +47,11 @@ export async function scheduleNotifications() {
   const spacingInMilliseconds = spacing * ONE_MINUTE;
 
   const startTime = new Date(Date.now() + 2500); // Fire the first notification 2.5s after queuing it
-  let finalNotificationMessage = ""
+  let finalNotificationMessage = "";
   const durationAfterOneInterval = ONE_DAY - spacingInMilliseconds;
 
   let totalIntervals = Math.floor(
-    durationAfterOneInterval / spacingInMilliseconds
+    durationAfterOneInterval / spacingInMilliseconds,
   );
 
   if (totalIntervals > MAX_INTERVALS) {
@@ -65,9 +59,8 @@ export async function scheduleNotifications() {
   }
 
   if (allowNotifications && spacing > 0) {
-    const queue = await getShuffledQuotes(true)
+    await getShuffledQuotes(true)
       .then(async (quotes) => {
-        
         const notificationRequests = [];
         const fireTimes = []; // Array to store the fire times
         let prevFireTime = 0;
@@ -80,13 +73,13 @@ export async function scheduleNotifications() {
         }
         for (let i = 0; i < numTimes; i++) {
           const fireDate = new Date(
-            startTime.getTime() + i * spacingInMilliseconds
+            startTime.getTime() + i * spacingInMilliseconds,
           );
           const quote = quotes[i];
           if (quote.quoteText.length > 0) {
             if (fireDate.getTime() <= prevFireTime + 5000) {
               console.log(
-                "Two quotes found that are scheduled too close together. Skipping one."
+                "Two quotes found that are scheduled too close together. Skipping one.",
               );
               continue;
             }
@@ -97,7 +90,7 @@ export async function scheduleNotifications() {
                 title: "ToBeWise",
                 body: quote.quoteText + "\n-" + quote.author,
                 data: {
-                  quote: quote,
+                  quote,
                 },
               },
               trigger: {
@@ -110,13 +103,13 @@ export async function scheduleNotifications() {
         }
 
         const finalFireDate = new Date(
-          startTime.getTime() + (totalIntervals + 1) * spacingInMilliseconds
+          startTime.getTime() + (totalIntervals + 1) * spacingInMilliseconds,
         );
 
         // build the final notification by setting the finalNotificationMessage to follow this format: The chosen set of NN quotations for author/subject XXXXXXX has been fully played out. For more please go to Settings – Notifications and choose a different author/subject
 
         if (query === "author") {
-          finalNotificationMessage = 
+          finalNotificationMessage =
             "The chosen set of " +
             quotes.length +
             " quotations for author " +
@@ -139,7 +132,7 @@ export async function scheduleNotifications() {
         notificationRequests.push({
           content: {
             title: "ToBeWise",
-            body: finalNotificationMessage
+            body: finalNotificationMessage,
           },
           trigger: {
             date: finalFireDate.getTime(),
@@ -159,6 +152,8 @@ export async function scheduleNotifications() {
           trigger: {
             date: new Date(Date.now() + 5000).getTime(),
           },
+        }).catch((error) => {
+          console.error("Error scheduling test notification:", error);
         });
 
         for (const request of notificationRequests) {
@@ -171,13 +166,13 @@ export async function scheduleNotifications() {
         }
 
         // Calculate and log the difference in fire times
-        for (let i = 1; i < fireTimes.length; i++) {
-          const difference = (fireTimes[i] - fireTimes[i - 1]) / 1000; // Difference in seconds
-          // console.log(`Difference in seconds between notification ${i} and ${i+1}: ${difference}`);
-        }
+        // for (let i = 1; i < fireTimes.length; i++) {
+        //   const difference = (fireTimes[i] - fireTimes[i - 1]) / 1000; // Difference in seconds
+        //   // console.log(`Difference in seconds between notification ${i} and ${i+1}: ${difference}`);
+        // }
       })
       .catch((error) => {
-        console.log("tossing an error")
+        console.log("tossing an error");
         throw error;
       });
   }

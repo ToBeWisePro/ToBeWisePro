@@ -1,28 +1,32 @@
 // App.js
 import React, { useEffect, useState } from "react";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, ActivityIndicator, Alert } from "react-native";
+import { StyleSheet, View, ActivityIndicator, Alert } from "react-native";
 import {
   dataImporter,
   getShuffledQuotes,
 } from "./src/res/functions/DBFunctions";
 import { strings } from "./src/res/constants/Strings";
-import { RootNavigation, navigationRef } from "./src/res/util/RootNavigation";
-import { QuotationInterface } from "./src/res/constants/Interfaces";
+import { RootNavigation } from "./src/res/util/RootNavigation";
+import {
+  type NavigationInterface,
+  type QuotationInterface,
+} from "./src/res/constants/Interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { scheduleNotifications } from "./src/res/util/NotificationScheduler";
-import { Image } from "react-native-elements";
-import { CommonActions } from "@react-navigation/native";
+import {
+  CommonActions,
+  type NavigationContainerRef,
+} from "@react-navigation/native";
 import { ASYNC_KEYS } from "./src/res/constants/Enums";
+export const navigationRef =
+  React.createRef<NavigationContainerRef<NavigationInterface>>();
 
-export default function App() {
+export default function App(): JSX.Element {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
-    []
+    [],
   );
-  const [query, setQuery] = useState(strings.database.defaultQuery);
-
-  const saveDefaultValue = async (key: string, value: any) => {
+  const saveDefaultValue = async (key: string, value: any): Promise<void> => {
     try {
       const storedValue = await AsyncStorage.getItem(key);
       if (storedValue === null) {
@@ -34,53 +38,48 @@ export default function App() {
   };
 
   useEffect(() => {
-    scheduleNotifications();
-    (async () => {
+    void scheduleNotifications();
+    void (async (): Promise<void> => {
       const defaultStartTime = new Date();
       defaultStartTime.setHours(9, 0, 0, 0);
       const defaultEndTime = new Date();
       defaultEndTime.setHours(17, 0, 0, 0);
-
-      await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
-      await saveDefaultValue(ASYNC_KEYS.startTime, defaultStartTime);
-      await saveDefaultValue(ASYNC_KEYS.endTime, defaultEndTime);
-      await saveDefaultValue(
+      void saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
+      void saveDefaultValue(ASYNC_KEYS.startTime, defaultStartTime);
+      void saveDefaultValue(ASYNC_KEYS.endTime, defaultEndTime);
+      void saveDefaultValue(
         ASYNC_KEYS.notificationQuery,
-        strings.database.defaultQuery
+        strings.database.defaultQuery,
       );
-      await saveDefaultValue(
+      void saveDefaultValue(
         ASYNC_KEYS.notificationFilter,
-        strings.database.defaultFilter
+        strings.database.defaultFilter,
       );
-      await saveDefaultValue(ASYNC_KEYS.spacing, 30);
-
-      const savedQuery = await AsyncStorage.getItem(ASYNC_KEYS.query);
-      if (savedQuery !== null) {
-        setQuery(savedQuery);
-      }
+      void saveDefaultValue(ASYNC_KEYS.spacing, 30);
     })();
 
-    (async () => {
+    void (async () => {
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {
         console.log("Notification permissions not granted.");
       }
     })();
-    Notifications.addNotificationResponseReceivedListener(async (response) => {
+    Notifications.addNotificationResponseReceivedListener((response) => {
       const quote = response.notification.request.content.data.quote;
-      if (quote) {
+      if (quote == null) {
+        console.error("Data from notification is not defined");
+        return;
+      }
+
+      (async () => {
         try {
           await AsyncStorage.setItem(
             ASYNC_KEYS.notifQuote,
-            JSON.stringify(quote)
+            JSON.stringify(quote),
           );
           await AsyncStorage.setItem(
             ASYNC_KEYS.notifTitle,
-            strings.copy.notificationFrom
-          );
-
-          const quoteFromStorage = await AsyncStorage.getItem(
-            ASYNC_KEYS.notifQuote
+            strings.copy.notificationFrom,
           );
 
           navigationRef.current?.dispatch(
@@ -91,23 +90,23 @@ export default function App() {
               },
               currentQuotes: [quote],
               showBackButton: false,
-            })
+            }),
           );
         } catch (error) {
-          console.log("Error saving quote:", error);
+          console.error("Error saving quote:", error);
         }
-      } else {
-        console.log("Data from notification is not defined");
-      }
+      })().catch((error) => {
+        console.error("Unexpected error:", error);
+      });
     });
 
     // Set a default filter if none is set
-    const i = async () => {
+    const i = async (): Promise<void> => {
       await AsyncStorage.getItem(ASYNC_KEYS.filter).then(async (res) => {
         if (res === null) {
           await AsyncStorage.setItem(
             ASYNC_KEYS.filter,
-            strings.database.defaultFilter
+            strings.database.defaultFilter,
           );
         }
       });
@@ -117,29 +116,30 @@ export default function App() {
         if (res === null) {
           await AsyncStorage.setItem(
             ASYNC_KEYS.query,
-            strings.database.defaultQuery
+            strings.database.defaultQuery,
           );
         }
       });
     };
-    i();
+    void i();
   }, []);
 
   useEffect(() => {
-    const i = async () => {
+    const i = async (): Promise<void> => {
       // log the default query and filter
-  
+
       await dataImporter().then(async () => {
         await getShuffledQuotes(false).then((res) => {
           setShuffledQuotes(res);
         });
       });
     };
-    i().catch((error) => Alert.alert("Error", error.message));
+    i().catch((error) => {
+      Alert.alert("Error", error.message);
+    });
   }, []);
 
   if (shuffledQuotes.length === 0) {
-    console.log("Loading...");
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" />
@@ -147,13 +147,7 @@ export default function App() {
     );
   }
 
-  return (
-    <RootNavigation
-      initialRoute={"Home"}
-      shuffledQuotes={shuffledQuotes}
-      ref={navigationRef}
-    />
-  );
+  return <RootNavigation initialRoute={"Home"} />;
 }
 
 const styles = StyleSheet.create({

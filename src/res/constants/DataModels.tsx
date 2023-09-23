@@ -1,5 +1,3 @@
-
-
 export const QuotationSchema = {
   name: "Quotation",
   properties: {
@@ -30,4 +28,3 @@ export const AuthorSchema = {
     subject: "string",
   },
 };
-

@@ -1,4 +1,4 @@
-import {Dimensions, StyleSheet} from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 
 export const globalStyles = StyleSheet.create({
   quoteText: {
@@ -10,15 +10,15 @@ export const globalStyles = StyleSheet.create({
     fontSize: 17,
     // paddingBottom: 3
   },
-  smallQuoteContainer:{
+  smallQuoteContainer: {
     height: 245,
     marginBottom: 22,
-    paddingTop: 20
+    paddingTop: 20,
   },
-  largeQuoteContainer:{
+  largeQuoteContainer: {
     width: 375,
     height: 580,
-    marginLeft: 12
+    marginLeft: 12,
   },
   navbar: {
     height: 70,
@@ -26,7 +26,6 @@ export const globalStyles = StyleSheet.create({
     topHeight: 55,
   },
   scrollButtonBar: {
-    height: 50
-  }
+    height: 50,
+  },
 });
-

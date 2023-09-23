@@ -9,33 +9,21 @@ interface Props {
   color?: string;
 }
 
-export const IconFactory: React.FC<Props> = ({ icon, selected, color }: Props) => {
+export const IconFactory: React.FC<Props> = ({
+  icon,
+  selected,
+  color,
+}: Props) => {
   const size = 25;
-  const tvParallaxProperties = { undefined };
   const testID = selected ? `icon-${icon}-selected` : `icon-${icon}-unselected`;
-  
+
   return (
     <View>
       {selected ? (
-        <Icon
-          name={icon}
-          color={LIGHT}
-          size={size}
-          testID={testID}
-          //@ts-ignore
-          tvParallaxProperties={tvParallaxProperties}
-        />
+        <Icon name={icon} color={LIGHT} size={size} testID={testID} />
       ) : (
-        <Icon
-          name={icon}
-          size={size}
-          color={color ? color : DARK}
-          testID={testID}
-          //@ts-ignore
-          tvParallaxProperties={tvParallaxProperties}
-        />
+        <Icon name={icon} size={size} color={color ?? DARK} testID={testID} />
       )}
     </View>
   );
 };
-

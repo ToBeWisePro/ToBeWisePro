@@ -1,40 +1,39 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
 import { GRADIENT_START, GRADIENT_END } from "../../../styles/Colors";
 import {
-  NavigationInterface,
-  QuotationInterface,
-  RouteInterface,
+  type NavigationInterface,
+  type QuotationInterface,
+  type RouteInterface,
 } from "../../res/constants/Interfaces";
 import { SubjectBubble } from "../molecules/SubjectBubble";
 import { BottomNav } from "../organisms/BottomNav";
-import { IncludeInBottomNav } from "../../res/constants/Enums";
+import { IncludeInBottomNav, ASYNC_KEYS } from "../../res/constants/Enums";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
 import { LargeQuoteContainer } from "../organisms/LargeQuoteContainer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native-gesture-handler";
-import * as Notifications from "expo-notifications";
-import { ASYNC_KEYS } from "../../res/constants/Enums";
 import { useFocusEffect } from "@react-navigation/native";
+import { TEST_IDS } from "../../res/constants/TestIDS";
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;
 }
 
-export const HomeHorizontal = ({ navigation, route }: Props) => {
+export const HomeHorizontal = ({ navigation, route }: Props): JSX.Element => {
   const [title, setTitle] = useState("");
   const [firstQuote, setFirstQuote] = useState<QuotationInterface | undefined>(
-    route.params.currentQuotes ? route.params.currentQuotes[0] : undefined
+    route.params.currentQuotes[0],
   );
   const [backButton, showBackButton] = useState(true);
 
   // set the title and firstQuote (which was passed to us via route). Also determine whether or not there should be a back button
   useFocusEffect(
     useCallback(() => {
-      const getData = async () => {
+      const getData = async (): Promise<void> => {
         await Promise.all([
           await AsyncStorage.getItem(ASYNC_KEYS.query),
           await AsyncStorage.getItem(ASYNC_KEYS.filter),
@@ -46,24 +45,21 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
             showBackButton(false);
             setFirstQuote(JSON.parse(notifQuote));
           } else {
-            const retrievedQuery = savedQuery
-              ? savedQuery
-              : strings.database.defaultQuery;
-            const retrievedFilter = savedFilter
-              ? savedFilter
-              : strings.database.defaultFilter;
+            const retrievedQuery = savedQuery ?? strings.database.defaultQuery;
+            const retrievedFilter =
+              savedFilter ?? strings.database.defaultFilter;
             setTitle(retrievedFilter + ": " + retrievedQuery);
             setFirstQuote(route.params.currentQuotes[0]);
           }
         });
       };
 
-      getData();
+      void getData();
       return () => {
-        AsyncStorage.removeItem(ASYNC_KEYS.notifTitle);
-        AsyncStorage.removeItem(ASYNC_KEYS.notifQuote);
+        void AsyncStorage.removeItem(ASYNC_KEYS.notifTitle);
+        void AsyncStorage.removeItem(ASYNC_KEYS.notifQuote);
       };
-    }, [navigation, route])
+    }, [navigation, route]),
   );
 
   // Set title from AsyncStorage or from route params
@@ -73,6 +69,7 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
   return (
     <View style={styles.container}>
       <TopNav
+        testID={TEST_IDS.topNav}
         title={title}
         stickyHeader={true}
         backButton={backButton}
@@ -93,11 +90,12 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
           )}
         />
         <View style={styles.quoteContainer}>
-          <LargeQuoteContainer
-            passedInQuote={firstQuote}
-            navigation={navigation}
-            route={route}
-          />
+          {firstQuote != null && (
+            <LargeQuoteContainer
+              passedInQuote={firstQuote}
+              navigation={navigation}
+            />
+          )}
         </View>
       </LinearGradient>
       <BottomNav
@@ -107,6 +105,9 @@ export const HomeHorizontal = ({ navigation, route }: Props) => {
         setPlayPressed={() => {
           navigation.navigate(strings.screenName.home);
         }}
+        playPressed={false}
+        scrollSpeed={0}
+        testID={""}
       />
     </View>
   );

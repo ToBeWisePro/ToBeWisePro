@@ -1,75 +1,67 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, StyleSheet, Dimensions } from "react-native";
+import React, { useState, useCallback } from "react";
+import { View, StyleSheet } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
 import { GRADIENT_START, GRADIENT_END } from "../../../styles/Colors";
 import {
-  NavigationInterface,
-  QuotationInterface,
-  RouteInterface,
+  type NavigationInterface,
+  type QuotationInterface,
+  type RouteInterface,
 } from "../../res/constants/Interfaces";
 import { getShuffledQuotes } from "../../res/functions/DBFunctions";
-import { autoScrollIntervalTime } from "../../res/constants/Values";
 import { strings } from "../../res/constants/Strings";
 import { AutoScrollingQuoteList } from "../animals/AutoScrollingQuoteList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useSharedValue } from "react-native-reanimated";
 import { ASYNC_KEYS } from "../../res/constants/Enums";
 import { useFocusEffect } from "@react-navigation/native";
+import { TEST_IDS } from "../../res/constants/TestIDS";
 
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;
 }
 
-export const HomeVertical = ({ navigation, route }: Props) => {
+export const HomeVertical = ({ navigation, route }: Props): JSX.Element => {
   const [title, setTitle] = useState("");
   const [backButton, setBackButton] = useState(false);
   const [quotes, setQuotes] = useState<QuotationInterface[]>([]);
-  const [filter, setFilter] = useState("");
-  const [query, setQuery] = useState("");
   const [playPressed, setPlayPressed] = useState<boolean>(false);
-  const scrollPosition = useSharedValue(0);
 
   useFocusEffect(
     useCallback(() => {
-      const getData = async () => {
+      const getData = async (): Promise<void> => {
         await Promise.all([
-          await AsyncStorage.getItem(ASYNC_KEYS.query),
-          await AsyncStorage.getItem(ASYNC_KEYS.filter),
+          AsyncStorage.getItem(ASYNC_KEYS.query),
+          AsyncStorage.getItem(ASYNC_KEYS.filter),
         ]).then(async ([savedQuery, savedFilter]) => {
-          const retrievedQuery = savedQuery
-            ? savedQuery
-            : strings.database.defaultQuery;
-          const retrievedFilter = savedFilter
-            ? savedFilter
-            : strings.database.defaultFilter;
-
-          console.log(
-            "HomeVertical retrieved query and filter of: ",
-            retrievedQuery,
-            retrievedFilter
-          );
+          const retrievedQuery =
+            savedQuery != null && savedQuery.length > 0
+              ? savedQuery
+              : strings.database.defaultQuery;
+          const retrievedFilter =
+            savedFilter != null && savedFilter.length > 0
+              ? savedFilter
+              : strings.database.defaultFilter;
           await getShuffledQuotes(false).then((res) => {
             setQuotes(res);
             setTitle(retrievedFilter + ": " + retrievedQuery);
           });
         });
       };
-      getData();
+      void getData();
       try {
         setBackButton(route.params.showBackButton);
       } catch {
         setBackButton(false);
       }
-    }, [])
+    }, []),
   );
 
-  // console.log("Home screen re-rendered")
   return (
     <View style={styles.container}>
       <TopNav
         title={title}
+        testID={TEST_IDS.topNav}
         stickyHeader={true}
         backButton={backButton}
         backFunction={() => {
@@ -85,9 +77,9 @@ export const HomeVertical = ({ navigation, route }: Props) => {
           playPressed={playPressed}
           setPlayPressed={setPlayPressed}
           navigation={navigation}
-          query={query}
-          filter={filter}
-          scrollPosition={scrollPosition}
+          // TODO remove unused imports in ASQL
+          query={""}
+          filter={""}
         />
       </LinearGradient>
     </View>

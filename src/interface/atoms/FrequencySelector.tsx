@@ -1,6 +1,8 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState } from "react";
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
-import DateTimePicker, { Event } from "@react-native-community/datetimepicker";
+import DateTimePicker, {
+  type Event,
+} from "@react-native-community/datetimepicker";
 import { TEST_IDS } from "../../res/constants/TestIDS";
 
 interface FrequencySelectorProps {
@@ -14,39 +16,49 @@ const FrequencySelector: React.FC<FrequencySelectorProps> = ({
 }) => {
   const [showPicker, setShowPicker] = useState<boolean>(false);
 
-  const onClear = () => {
+  const onClear = (): void => {
     onTimeChange(null);
   };
 
-  const onChange = (event: Event, selectedDate?: Date) => {
+  const onChange = (event: Event, selectedDate?: Date): void => {
     setShowPicker(false);
-    if (selectedDate) {
+    if (selectedDate != null) {
       onTimeChange(selectedDate);
     }
   };
 
-  const openPicker = () => {
+  const openPicker = (): void => {
     setShowPicker(true);
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={openPicker} style={styles.timeDisplay}>
+      <TouchableOpacity
+        onPress={openPicker}
+        style={styles.timeDisplay}
+        testID={TEST_IDS.selectTimeButton}
+      >
         <Text>
-          {selectedTime
+          {selectedTime != null
             ? `${selectedTime.getHours()}:${selectedTime.getMinutes()}`
             : "Select Time"}
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={onClear} style={styles.clearButton}>
+      <TouchableOpacity
+        onPress={onClear}
+        style={styles.clearButton}
+        testID={TEST_IDS.clearButton}
+      >
         <Text>Clear</Text>
       </TouchableOpacity>
       {showPicker && (
         <DateTimePicker
-          value={selectedTime || new Date()}
+          value={selectedTime ?? new Date()}
           mode="time"
           display="default"
-          onChange={onChange}
+          onChange={(event: any, selectedDate?: Date) => {
+            onChange(event as Event, selectedDate);
+          }}
           testID={TEST_IDS.dateTimePicker}
         />
       )}

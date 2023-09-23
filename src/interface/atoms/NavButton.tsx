@@ -3,10 +3,7 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { StyleSheet, View } from "react-native";
 import { AppText } from "./AppText";
 import { strings } from "../../res/constants/Strings";
-import {
-  NavigationInterface,
-  QuotationInterface,
-} from "../../res/constants/Interfaces";
+import { type NavigationInterface } from "../../res/constants/Interfaces";
 import { IconFactory } from "./IconFactory";
 import { LIGHT, PRIMARY_BLUE, PRIMARY_GREEN } from "../../../styles/Colors";
 
@@ -15,10 +12,10 @@ interface Props {
   selected: boolean;
   navigationTarget: string;
   navigation: NavigationInterface;
-  resetScrollPosition: () => void;
+  resetScrollPosition?: (() => void) | undefined;
 }
 
-const renderIcon = (screen: string, selected: boolean) => {
+const renderIcon = (screen: string, selected: boolean): JSX.Element => {
   switch (screen) {
     case strings.screenName.discover:
       return <IconFactory icon="search" selected={selected} />;
@@ -37,7 +34,7 @@ export const NavButton: React.FC<Props> = ({
   selected,
   navigationTarget,
   navigation,
-  resetScrollPosition
+  resetScrollPosition,
 }: Props) => {
   return (
     <TouchableWithoutFeedback
@@ -46,8 +43,8 @@ export const NavButton: React.FC<Props> = ({
         { backgroundColor: selected ? PRIMARY_GREEN : PRIMARY_BLUE },
       ]}
       onPress={() => {
-        if (navigationTarget == strings.screenName.home) {
-          if(resetScrollPosition){
+        if (navigationTarget === strings.screenName.home) {
+          if (resetScrollPosition != null) {
             resetScrollPosition();
           }
           navigation.navigate(strings.screenName.home);

@@ -3,33 +3,34 @@ import { View, StyleSheet } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import { strings } from "../../res/constants/Strings";
 import { maxWindowSize } from "../../res/constants/Values";
-import { IData } from "react-native-section-alphabet-list";
-import { GRAY_1, GRAY_6, LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
+import { type IData } from "react-native-section-alphabet-list";
+import { GRAY_6, LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
 import { BottomNav } from "../organisms/BottomNav";
-import { NavigationInterface } from "../../res/constants/Interfaces";
+import { type NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
-import { IncludeInBottomNav } from "../../res/constants/Enums";
+import { IncludeInBottomNav, ASYNC_KEYS } from "../../res/constants/Enums";
 import { getFromDB } from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
-import { loadSettings, saveSettings } from "./NotificationsScreen";
-import { ASYNC_KEYS } from "../../res/constants/Enums";
+import { saveSettings } from "./NotificationsScreen";
+import { TEST_IDS } from "../../res/constants/TestIDS";
 
 interface Props {
   navigation: NavigationInterface;
 }
 
-export const NotificationSelectorScreen = ({ navigation }: Props) => {
+export const NotificationSelectorScreen = ({
+  navigation,
+}: Props): JSX.Element => {
   const [subjects, setSubjects] = useState<IData[]>([]);
   const [authors, setAuthors] = useState<IData[]>([]);
   const [filter, setFilter] = useState<string>(strings.filters.subject);
   const [search, setSearch] = useState<string>("");
   const [tempSubjects, setTempSubjects] = useState<IData[]>([]);
   const [tempAuthors, setTempAuthors] = useState<IData[]>([]);
-  const [reinitialize, setReinitialize] = useState<number>(0);
 
   useEffect(() => {
     // set authors and subjects
-    const load = async () => {
+    const load = async (): Promise<void> => {
       await getFromDB(strings.filters.subject).then((res) => {
         formatDataForAlphabetList(res, setSubjects);
       });
@@ -40,17 +41,15 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
     };
     setFilter(strings.filters.subject);
 
-    load();
+    void load();
   }, []);
 
   const formatDataForAlphabetList = (
-    data: String[],
-    setFunction: (arg: IData[]) => void
-  ) => {
-    // AlphabetList requires {key, value} so we have to take our strings and convert them to key value pairs
+    data: string[],
+    setFunction: (arg: IData[]) => void,
+  ): void => {
     const dataObjects: IData[] = [];
     data.forEach((string) => {
-      // @ts-ignore
       dataObjects.push({ key: Math.random().toString(), value: string });
     });
     dataObjects.push({ key: "a", value: strings.customDiscoverHeaders.all });
@@ -71,16 +70,9 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
     setFunction(dataObjects);
   };
 
-  /**
- * This function updates the temporary list of authors and subjects based on the search text entered by the user.
- * If the search text is empty, the temporary lists are reset to the original authors and subjects.
- * If the filter is "author", the function filters the temporary authors list and updates it.
- * If the filter is "subject", the function filters the temporary subjects list and updates it.
-
- */
   useEffect(() => {
-    const filterList = (list: IData[], filter: string) => {
-      let newList: IData[] = [];
+    const filterList = (list: IData[], filter: string): void => {
+      const newList: IData[] = [];
       list.forEach((listItem) => {
         if (listItem.value.toLowerCase().includes(search.toLowerCase())) {
           newList.push(listItem);
@@ -109,34 +101,38 @@ export const NotificationSelectorScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-        <TopNav
-          title={"Select Notification Database"}
-          stickyHeader={true}
-          backButton={false}
-        />
-        <View style={styles.background}>
-          <SearchBar state={search} setState={setSearch} />
-          <AlphabetListSection
-            navigation={navigation}
-            data={filter == strings.filters.author ? tempAuthors : tempSubjects}
-            filter={filter}
-            setFilter={setFilter}
-            search={search}
-            onPress={async (query: string, filter: string) => {
-              await saveSettings(ASYNC_KEYS.notificationQuery, query).then(
-                async () => {
-                  await saveSettings(ASYNC_KEYS.notificationFilter, filter);
-                }
-              );
-              navigation.goBack();
-            }}
-          />
-        </View>
-        <BottomNav
+      <TopNav
+        title={"Select Notification Database"}
+        stickyHeader={true}
+        backButton={false}
+        testID={TEST_IDS.topNav}
+      />
+      <View style={styles.background}>
+        <SearchBar state={search} setState={setSearch} />
+        <AlphabetListSection
           navigation={navigation}
-          screen={strings.screenName.discover}
-          whatToInclude={IncludeInBottomNav.Nothing}
+          filter={filter}
+          setFilter={setFilter}
+          search={search}
+          onPress={async (query: string, filter: string) => {
+            await saveSettings(ASYNC_KEYS.notificationQuery, query).then(
+              async () => {
+                await saveSettings(ASYNC_KEYS.notificationFilter, filter);
+              },
+            );
+            navigation.goBack();
+          }}
+          testID={TEST_IDS.alphabetListSection}
         />
+      </View>
+      <BottomNav
+        navigation={navigation}
+        screen={strings.screenName.discover}
+        whatToInclude={IncludeInBottomNav.Nothing}
+        playPressed={false}
+        scrollSpeed={0}
+        testID={""}
+      />
     </View>
   );
 };

@@ -15,7 +15,6 @@ export const DataButton: React.FC<Props> = ({
   selected,
   onPress,
 }: Props) => {
-
   return (
     <TouchableWithoutFeedback
       style={[

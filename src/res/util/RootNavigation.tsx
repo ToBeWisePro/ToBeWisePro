@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { StatusBar } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
@@ -8,77 +10,46 @@ import { EditQuotes } from "../../interface/Views/EditQuote";
 import { HomeVertical } from "../../interface/Views/HomeVertical";
 import { Settings } from "../../interface/Views/Settings";
 import { NotificationScreen } from "../../interface/Views/NotificationsScreen";
-import { QuotationInterface } from "../constants/Interfaces";
 import { NotificationSelectorScreen } from "../../interface/Views/NotificationSelectorScreen";
-import { NotificationDebugScreen } from "../../interface/Views/NotificationDebugScreen";
 import React from "react";
 
 interface RootProps {
   initialRoute: string;
-  shuffledQuotes: QuotationInterface[];
 }
+
 export const navigationRef = React.createRef();
 
-export function navigate(name: string, params: { [key: string]: any}) {
-  navigationRef.current?.navigate(name, params);
-}
 const Stack = createStackNavigator();
+
 export const RootNavigation: React.FC<RootProps> = ({
   initialRoute,
-  shuffledQuotes,
 }: RootProps) => {
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer>
       <StatusBar barStyle={"dark-content"} />
       <Stack.Navigator
         initialRouteName={initialRoute}
-        screenOptions={{
-          animationEnabled: false,
-          //   gestureResponseDistance: { horizontal: 20 },
-        }}
+        screenOptions={{ animationEnabled: false, headerShown: false }}
       >
-        <Stack.Screen
-          name={strings.screenName.discover}
-          component={Discover}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name={strings.screenName.home}
-          options={{ headerShown: false }}
-        >
-          {(props) => (
-            <HomeVertical {...props} initialQuotes={shuffledQuotes} />
-          )}
-        </Stack.Screen>
+        <Stack.Screen name={strings.screenName.discover} component={Discover} />
+        {/* @ts-expect-error typeerror */}
+        <Stack.Screen name={strings.screenName.home} component={HomeVertical} />
         <Stack.Screen
           name={strings.screenName.editQuote}
           component={EditQuotes}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name={strings.screenName.notificationDebugScreen}
-          component={NotificationDebugScreen}
-          options={{ headerShown: false }}
         />
         <Stack.Screen
           name={strings.screenName.homeHorizontal}
           component={HomeHorizontal}
-          options={{ headerShown: false }}
         />
         <Stack.Screen
           name={strings.screenName.notificationSelectorScreen}
           component={NotificationSelectorScreen}
-          options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name={strings.screenName.settings}
-          component={Settings}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name={strings.screenName.settings} component={Settings} />
         <Stack.Screen
           name={strings.screenName.notificationsScreen}
           component={NotificationScreen}
-          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

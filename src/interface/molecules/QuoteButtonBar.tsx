@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Share, TouchableOpacity, View, StyleSheet, Alert } from "react-native";
 import {
-  NavigationInterface,
-  QuotationInterface,
+  type NavigationInterface,
+  type QuotationInterface,
 } from "../../res/constants/Interfaces";
 import { IconFactory } from "../atoms/IconFactory";
 import { PRIMARY_GREEN, PRIMARY_RED } from "../../../styles/Colors";
@@ -27,7 +27,6 @@ export const QuoteButtonBar: React.FC<Props> = ({
   const [isFavorite, setIsFavorite] = useState(quote.favorite);
   const [isDeleted, setIsDeleted] = useState(quote.deleted);
 
-
   useEffect(() => {
     quote.favorite = isFavorite;
   }, [isFavorite]);
@@ -35,8 +34,8 @@ export const QuoteButtonBar: React.FC<Props> = ({
     quote.deleted = isDeleted;
   }, [isDeleted]);
 
-  const handleFavoritePress = async () => {
-    const updatedFavoriteStatus = isFavorite === 0 ? 1 : 0;
+  const handleFavoritePress = async (): Promise<void> => {
+    const updatedFavoriteStatus = !isFavorite;
     setIsFavorite(updatedFavoriteStatus);
 
     // Update the quote's favorite status in the database
@@ -44,14 +43,14 @@ export const QuoteButtonBar: React.FC<Props> = ({
     await updateQuote(updatedQuote);
   };
 
-  const onShare = async () => {
+  const onShare = async (): Promise<void> => {
     try {
       const message = `"${quote.quoteText}"\n-${quote.author}\n\nRead more on ToBeWise™ at https://www.ToBeWise.co`;
 
       const result = await Share.share({ message });
 
       if (result.action === Share.sharedAction) {
-        if (result.activityType) {
+        if (result.activityType != null) {
           // shared with activity type of result.activityType
         } else {
           // shared
@@ -59,12 +58,12 @@ export const QuoteButtonBar: React.FC<Props> = ({
       } else if (result.action === Share.dismissedAction) {
         // dismissed
       }
-    } catch (error) {
-      alert(error.message);
+    } catch (error: unknown) {
+      alert((error as Error).message);
     }
   };
 
-  const deleteFunction = async (quote: QuotationInterface) => {
+  const deleteFunction = async (quote: QuotationInterface): Promise<void> => {
     const shouldDelete = !quote.deleted; // If the quote is not currently deleted, we should delete it.
     setIsDeleted(shouldDelete);
     await markQuoteAsDeleted(quote, shouldDelete);
@@ -78,7 +77,7 @@ export const QuoteButtonBar: React.FC<Props> = ({
           text: "OK",
         },
       ],
-      { cancelable: false }
+      { cancelable: false },
     );
   };
 
@@ -105,29 +104,32 @@ export const QuoteButtonBar: React.FC<Props> = ({
     },
     {
       id: QuoteContainerButtons.Delete,
-      name: isDeleted? "Restore" : QuoteContainerButtons.Delete,
-      onPress: () =>{
-        deleteFunction(quote)
-      } ,
-      iconName: isDeleted == true ? "restore" : "delete",
+      name: isDeleted ? "Restore" : QuoteContainerButtons.Delete,
+      onPress: () => {
+        void deleteFunction(quote);
+      },
+      iconName: isDeleted ? "restore" : "delete",
       color: PRIMARY_GREEN,
     },
 
     {
       id: QuoteContainerButtons.Edit,
       name: QuoteContainerButtons.Edit,
-      onPress: () =>
+      onPress: () => {
         navigation.push(strings.screenName.editQuote, {
           editingQuote: quote,
           editingExistingQuote: true,
-        }),
+        });
+      },
       iconName: "edit",
       color: PRIMARY_GREEN,
     },
     {
       id: QuoteContainerButtons.Video,
       name: QuoteContainerButtons.Video,
-      onPress: () => openLink(quote.videoLink),
+      onPress: async () => {
+        await openLink(quote.videoLink);
+      },
       iconName: "movie",
       color: PRIMARY_GREEN,
     },
@@ -135,7 +137,7 @@ export const QuoteButtonBar: React.FC<Props> = ({
       id: QuoteContainerButtons.Favorite,
       name: QuoteContainerButtons.Favorite,
       onPress: handleFavoritePress,
-      iconName: isFavorite === 1 ? "favorite" : "favorite-outline",
+      iconName: isFavorite ? "favorite" : "favorite-outline",
       color: PRIMARY_RED,
     },
     {

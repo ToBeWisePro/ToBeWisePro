@@ -1,26 +1,22 @@
-import React from 'react';
-import { render } from '@testing-library/react-native';
-import { DiscoverSectionHeader, getStyles } from './DiscoverSectionHeader';
-import { DARK, GRAY_3, GRAY_5 } from '../../../styles/Colors';
+import React from "react";
+import { render } from "@testing-library/react-native";
+import { DiscoverSectionHeader, getStyles } from "./DiscoverSectionHeader";
+import { DARK, GRAY_3, GRAY_5 } from "../../../styles/Colors";
 
-describe('<DiscoverSectionHeader />', () => {
-  const label = 'Test Label';
+describe("<DiscoverSectionHeader />", () => {
+  const label = "Test Label";
 
-  it('renders correctly', () => {
-    const { getByText } = render(
-      <DiscoverSectionHeader label={label} />
-    );
+  it("renders correctly", () => {
+    const { getByText } = render(<DiscoverSectionHeader label={label} />);
     expect(getByText(label)).toBeTruthy();
   });
 
-  it('displays the correct label text', () => {
-    const { getByText } = render(
-      <DiscoverSectionHeader label={label} />
-    );
+  it("displays the correct label text", () => {
+    const { getByText } = render(<DiscoverSectionHeader label={label} />);
     expect(getByText(label)).toBeTruthy();
   });
 
-  it('applies styles correctly', () => {
+  it("applies styles correctly", () => {
     const styles = getStyles(label);
 
     // Check text color

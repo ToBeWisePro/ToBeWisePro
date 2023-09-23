@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
 import {
-  NavigationInterface,
-  QuotationInterface,
+  type NavigationInterface,
+  type QuotationInterface,
 } from "../../res/constants/Interfaces";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { AppText } from "../atoms/AppText";
 import { QuoteButtonBar } from "../molecules/QuoteButtonBar";
-import { updateQuoteContainer } from "../../res/functions/DBFunctions";
-import { largeQuoteContainerRefreshRate } from "../../res/constants/Values";
 import { strings } from "../../res/constants/Strings";
 import { openLink } from "../../res/functions/UtilFunctions";
 import { TouchableOpacity } from "react-native-gesture-handler";
@@ -28,7 +26,7 @@ export const LargeQuoteContainer: React.FC<Props> = ({
   useEffect(() => {
     setQuote(passedInQuote);
     try {
-      if (quote.contributedBy != undefined) {
+      if (quote.contributedBy !== undefined) {
         setContributedBy(quote.contributedBy);
       } else setContributedBy("");
     } catch {
@@ -36,11 +34,7 @@ export const LargeQuoteContainer: React.FC<Props> = ({
     }
   }, [passedInQuote]);
 
-  // useEffect(() => {
-  //   updateQuoteContainer(quote, largeQuoteContainerRefreshRate, setQuote);
-  // }, []);
   try {
-    // try/catch block is here in case the user is in a author/subject quote view and they delete the last quote
     return (
       <View style={styles.container}>
         <ScrollView style={{ height: "100%" }}>
@@ -58,9 +52,9 @@ export const LargeQuoteContainer: React.FC<Props> = ({
           <TouchableOpacity
             onPress={() => {
               const safeLink = quote.author.replaceAll(" ", "_");
-              openLink(quote.authorLink).catch(() =>
-                openLink("https://www.wikipedia.com/wiki/" + safeLink)
-              );
+              openLink(quote.authorLink).catch(async () => {
+                await openLink("https://www.wikipedia.com/wiki/" + safeLink);
+              });
             }}
           >
             <AppText style={[globalStyles.authorText, { color: PRIMARY_BLUE }]}>

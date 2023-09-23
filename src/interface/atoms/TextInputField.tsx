@@ -1,10 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  StyleSheet,
-  TextInput,
-  KeyboardAvoidingView,
-} from "react-native";
+import React, { forwardRef } from "react";
+import { View, StyleSheet, TextInput } from "react-native";
 import { AppText } from "./AppText";
 import { LIGHT } from "../../../styles/Colors";
 
@@ -23,47 +18,46 @@ export enum TextInputSize {
   Large,
 }
 
-export const TextInputField: React.FC<TextInputProps> = ({
-  placeholderText,
-  size,
-  label,
-  state,
-  setState,
-  rightAlign,
-}: TextInputProps) => {
-  const getInputContainerStyle = () => {
-    if (size == TextInputSize.Large) {
-      return styles.largeContainer;
-    } else return styles.smallContainer;
-  };
-  const [initialText, setInitialText] = useState(state);
+const TextInputField = forwardRef<TextInput, TextInputProps>(
+  (
+    {
+      placeholderText,
+      size,
+      label,
+      state,
+      setState,
+      rightAlign,
+    }: TextInputProps,
+    ref,
+  ) => {
+    const getInputContainerStyle = (): any => {
+      if (size === TextInputSize.Large) {
+        return styles.largeContainer;
+      } else {
+        return styles.smallContainer;
+      }
+    };
 
-  useEffect(() => {
-    setInitialText(state);
-  }, []);
-
-  // useEffect(() => {
-  //     if (onChangeText && state != initialText) {
-  //         onChangeText()
-  //     }
-  // }, [state])
-  return (
-    <View style={styles.container}>
-      {label && <AppText style={styles.title}>{label}</AppText>}
-      <View style={[styles.inputContainer, getInputContainerStyle()]}>
-        {/*TODO make the parent view a KeyboardAvoidingView*/}
-        <TextInput
-          onChangeText={(text) => setState(text)}
-          placeholder={placeholderText}
-          keyboardType={"default"}
-          multiline={size == TextInputSize.Large}
-          defaultValue={state}
-          style={rightAlign ? styles.rightAlignedText : null}
-        />
+    return (
+      <View style={styles.container}>
+        {label != null && <AppText style={styles.title}>{label}</AppText>}
+        <View style={[styles.inputContainer, getInputContainerStyle()]}>
+          <TextInput
+            ref={ref}
+            onChangeText={setState}
+            placeholder={placeholderText}
+            keyboardType={"default"}
+            multiline={size === TextInputSize.Large}
+            defaultValue={state}
+            style={rightAlign ?? false ? styles.rightAlignedText : null}
+          />
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  },
+);
+
+TextInputField.displayName = "TextInputField"; // Added displayName
 
 const styles = StyleSheet.create({
   container: {
@@ -80,8 +74,8 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   rightAlignedText: {
-    textAlign: 'right',
-},
+    textAlign: "right",
+  },
   largeContainer: {
     height: 235,
   },
@@ -90,3 +84,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
 });
+
+export { TextInputField };

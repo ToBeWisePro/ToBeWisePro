@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 import { strings } from "../../res/constants/Strings";
 import {
-  NavigationInterface,
-  RouteInterface,
+  type NavigationInterface,
+  type RouteInterface,
 } from "../../res/constants/Interfaces";
 import { GRAY_2, LIGHT, PRIMARY_GREEN } from "../../../styles/Colors";
 import { AppText } from "./AppText";
@@ -24,12 +24,14 @@ export const SaveButton: React.FC<Props> = ({
   newQuote,
 }: Props) => {
   const [isNewQuote, setIsNewQuote] = useState(newQuote);
-  useEffect(() => setIsNewQuote(newQuote), [newQuote]);
-  const onPressFunction = async () => {
+  useEffect(() => {
+    setIsNewQuote(newQuote);
+  }, [newQuote]);
+  const onPressFunction = (): void => {
     if (active) {
       try {
-        await pressFunction();
-        navigation.push(strings.screenName.discover, {});
+        pressFunction();
+        navigation.navigate(strings.screenName.discover);
       } catch (error) {
         Alert.alert("Error", "An error occurred while saving.");
         console.error(error);
@@ -37,7 +39,7 @@ export const SaveButton: React.FC<Props> = ({
     }
   };
 
-  const getTitle = () => {
+  const getTitle = (): string => {
     if (isNewQuote) {
       return strings.copy.saveButton;
     } else return strings.copy.saveButtonBlank;
