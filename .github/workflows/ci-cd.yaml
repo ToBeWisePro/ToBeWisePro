@@ -14,14 +14,14 @@ jobs:
         with:
           node-version: "16"
 
-      - name: Install dependencies
-        run: yarn install
-
       - name: Cache node_modules
         uses: actions/cache@v2
         with:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
   lint_and_test:
     needs: install_dependencies
@@ -29,6 +29,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Restore Cache
+        uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Run ESLint
         run: yarn lint
