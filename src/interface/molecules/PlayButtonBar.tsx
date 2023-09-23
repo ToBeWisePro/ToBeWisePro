@@ -6,7 +6,6 @@ import { strings } from "../../res/constants/Strings";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { AppText } from "../atoms/AppText";
 import { TEST_IDS } from "../../res/constants/TestIDS";
-
 interface Props {
   setPlayPressed: ((bool: boolean) => void) | undefined;
   playPressed: boolean | undefined;
