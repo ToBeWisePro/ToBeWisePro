@@ -36,8 +36,8 @@ jobs:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
-      - name: Print File Structure
-        run: find . -print
+      - name: Print Directory Structure
+        run: find . -type f -name "TestIDS*"
 
       - name: Run ESLint
         run: yarn lint
