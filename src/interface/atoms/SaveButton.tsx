@@ -34,7 +34,6 @@ export const SaveButton: React.FC<Props> = ({
         navigation.navigate(strings.screenName.discover);
       } catch (error) {
         Alert.alert("Error", "An error occurred while saving.");
-        console.error(error);
       }
     }
   };

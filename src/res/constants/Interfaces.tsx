@@ -21,10 +21,10 @@ export interface RouteInterface {
 
 export interface NavigationInterface {
   addListener: any;
-  navigate: any;
   // eslint-disable-next-line no-empty-pattern
   push: (ev: string, {}) => void;
   goBack: () => void;
+  navigate: (e: string) => void;
 }
 
 export interface Subject {
