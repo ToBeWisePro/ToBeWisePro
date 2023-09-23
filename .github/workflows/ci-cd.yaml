@@ -39,9 +39,8 @@ jobs:
       - name: Print Directory Structure
         run: find . -type f -name "TestIDS*"
 
-        - name: List Contents of src/res/constants
-          run: ls -l ./src/res/constants/
-
+      - name: List Contents of src/res/constants
+        run: ls -l ./src/res/constants/
 
       - name: Run ESLint
         run: yarn lint
