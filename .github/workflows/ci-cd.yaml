@@ -32,11 +32,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          fetch-depth: 1 # Only fetch the latest commit
-
-      # Removed the additional install dependencies step
-      # as the dependencies are already installed in the install_dependencies job
-      # If the jobs are run in parallel, make sure to install dependencies here if cache miss occurs
+          fetch-depth: 1
 
       - name: Run ESLint
         run: npx eslint src --ext .js,.jsx,.ts,.tsx --fix
