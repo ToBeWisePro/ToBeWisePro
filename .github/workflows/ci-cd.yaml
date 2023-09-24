@@ -62,6 +62,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Check TypeScript Compiler
+        run: |
+          if ! [ -x "$(command -v npx tsc)" ]; then
+            echo "TypeScript Compiler (tsc) is not installed. Installing..."
+            yarn install --frozen-lockfile
+          fi
+
       - name: Run TypeScript Compiler
         run: yarn tsc --noEmit
 
