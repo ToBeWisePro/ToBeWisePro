@@ -24,7 +24,6 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-
   lint_and_test:
     needs: install_dependencies
     runs-on: ubuntu-latest
