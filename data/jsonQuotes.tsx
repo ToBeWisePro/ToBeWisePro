@@ -1,6 +1,6 @@
-import React from "react";
-import { Quotation } from "../res/DataModels";
-export const jsonQuotes: Quotation[] = [
+import { type QuotationInterface } from "../src/res/constants/Interfaces";
+
+export const jsonQuotes: QuotationInterface[] = [
   {
     contributedBy: "",
     author: "A. A. Malee",
