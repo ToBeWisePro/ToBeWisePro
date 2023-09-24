@@ -131,7 +131,6 @@ export const NotificationSelectorScreen = ({
         whatToInclude={IncludeInBottomNav.Nothing}
         playPressed={false}
         scrollSpeed={0}
-        testID={""}
       />
     </View>
   );

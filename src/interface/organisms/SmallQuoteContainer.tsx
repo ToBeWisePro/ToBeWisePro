@@ -9,14 +9,20 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 interface Props {
   passedInQuote: QuotationInterface;
   pressFunction: () => void;
+  testID?: string;
 }
 
 const SmallQuoteContainer: React.FC<Props> = ({
   passedInQuote,
   pressFunction,
+  testID,
 }: Props) => {
   return (
-    <TouchableWithoutFeedback style={styles.container} onPress={pressFunction}>
+    <TouchableWithoutFeedback
+      style={styles.container}
+      onPress={pressFunction}
+      testID={testID}
+    >
       <View style={styles.quoteContainer}>
         <AppText style={globalStyles.quoteText} numberOfLines={6}>
           {passedInQuote.quoteText}

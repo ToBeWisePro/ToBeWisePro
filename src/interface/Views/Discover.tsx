@@ -131,7 +131,6 @@ export const Discover = ({ navigation }: Props): JSX.Element => {
         navigation={navigation}
         screen={strings.screenName.discover}
         whatToInclude={IncludeInBottomNav.Nothing}
-        testID={TEST_IDS.bottomNav}
         playPressed={false}
         scrollSpeed={0}
       />

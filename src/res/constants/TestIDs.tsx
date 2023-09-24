@@ -8,8 +8,12 @@ export const TEST_IDS = {
   iconHome: "icon-home",
   dropDownPicker: "dropdown-picker",
   selectorButton: "selector-button",
-  PlayButtonBar: "play-pause-button",
+  PlayButtonBar: "play-button-bar",
   frequencySelector: "frequency-selector",
   clearButton: "clear-button",
   selectTimeButton: "select-time-button",
+  flatlist: "flatlist",
+  autoScrollingQuotesList: "auto-scrolling-quotes-list",
+  quoteContainer: "quote-container",
+  playButton: "play-button",
 };
