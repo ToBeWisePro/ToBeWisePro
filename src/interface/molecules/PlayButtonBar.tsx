@@ -33,21 +33,19 @@ export const PlayButtonBar: React.FC<Props> = ({
   }, [playPressed]);
 
   const startScrolling = (): void => {
-    console.log("startScrolling called");
     setPlayPressed?.(true);
   };
 
   const stopScrolling = (): void => {
-    console.log("stopScrolling called");
     setPlayPressed?.(false);
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID={TEST_IDS.PlayButtonBar}>
       <AppText style={styles.playPauseText}>{"Slower"}</AppText>
       <View style={styles.playPauseContainer}>
         <TouchableOpacity
-          testID={TEST_IDS.PlayButtonBar}
+          testID={TEST_IDS.playButton}
           onPress={() => {
             buttonToDisplay === ScrollControllerButtons.Pause
               ? stopScrolling()

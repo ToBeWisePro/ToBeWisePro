@@ -130,7 +130,6 @@ export const Settings = ({ navigation }: Props): JSX.Element => {
         whatToInclude={IncludeInBottomNav.Nothing}
         playPressed={false}
         scrollSpeed={0}
-        testID={TEST_IDS.bottomNav}
       />
     </View>
   );

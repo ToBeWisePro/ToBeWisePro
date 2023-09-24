@@ -16,7 +16,6 @@ import {
   type QuotationInterface,
 } from "../../res/constants/Interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
 import { AppText } from "../atoms/AppText";
@@ -45,12 +44,48 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   filter,
 }) => {
   const scrollRef = useRef<FlatList>(null);
+  const initialDataOrder = useRef(data);
+  const initialDataOrderRef = useRef<QuotationInterface[]>([]);
+  const prevDataRef = useRef<QuotationInterface[]>(data); // to store the previous data
+
   const scrollPosition = useSharedValue(0);
   const [scrollSpeed, setScrollSpeed] = useState(0.0275);
   const currentPosition = useRef(0);
   const [hitBottom, setHitBottom] = useState(false);
+  const totalScrollDistance =
+    data.length * QUOTE_ITEM_HEIGHT +
+    (data.length * globalStyles.navbar.height + 38);
 
-  const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
+  const areArraysEquivalent = (
+    arr1: QuotationInterface[],
+    arr2: QuotationInterface[],
+  ): boolean => {
+    if (arr1.length !== arr2.length) return false;
+
+    const sortedArr1 = [...arr1].sort((a, b) =>
+      (a._id ?? "") > (b._id ?? "") ? 1 : -1,
+    );
+    const sortedArr2 = [...arr2].sort((a, b) =>
+      (a._id ?? "") > (b._id ?? "") ? 1 : -1,
+    );
+
+    return sortedArr1.every((val, index) => val._id === sortedArr2[index]._id);
+  };
+
+  if (initialDataOrderRef.current.length === 0) {
+    initialDataOrderRef.current = data;
+  }
+  useEffect(() => {
+    // If data prop has changed
+    if (!areArraysEquivalent(prevDataRef.current, data)) {
+      // Update the initialDataOrderRef with the new data
+      initialDataOrderRef.current = data;
+      // Update the prevDataRef with the new data for the next comparison
+      prevDataRef.current = data;
+      // If needed, perform additional actions like resetting the scroll position
+      scrollRef.current?.scrollToOffset({ offset: 0, animated: false });
+    }
+  }, [data]);
 
   const handlePress = useCallback(
     (quote: QuotationInterface) => {
@@ -68,15 +103,18 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         },
       });
     },
-    [filter, query, data, navigation], // Add your props here
+    [filter, query, data, navigation],
   );
 
-  // Function to set and store scroll speed
+  useEffect(() => {
+    // Update the ref value if the data prop changes
+    initialDataOrder.current = data;
+  }, [data]);
+
   const setAndStoreScrollSpeed = (
     value: React.SetStateAction<number>,
   ): void => {
     setScrollSpeed(value);
-    console.log(value);
     AsyncStorage.setItem(ASYNC_KEYS.scrollSpeed, JSON.stringify(value)).catch(
       (e) => {
         console.log(e);
@@ -95,38 +133,51 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         console.log(e);
       }
     };
-
     void fetchScrollSpeed();
   }, []);
 
   useEffect(() => {
     if (playPressed) {
       if (hitBottom) {
-        console.log("firing");
-        // put the user back up top
         restartScroll();
         setPlayPressed(true);
         setHitBottom(false);
-      }
-      scrollPosition.value = withTiming(totalScrollDistance, {
-        duration: totalScrollDistance / scrollSpeed,
-        easing: Easing.linear,
-      });
-    } else {
-      scrollPosition.value = currentPosition.current;
-    }
-  }, [playPressed]);
-  useFocusEffect(
-    useCallback(() => {
-      restartScroll();
-      return () => {
-        cancelAnimation(scrollPosition);
+      } else {
+        // Calculate the remaining distance from the current position
+        const remainingDistance = totalScrollDistance - currentPosition.current;
+
+        // Set the scrollPosition value to the current position before starting the animation
+        scrollPosition.value = currentPosition.current;
+
+        // Start the animation from the current position
         scrollPosition.value = withTiming(totalScrollDistance, {
-          duration: totalScrollDistance / scrollSpeed,
+          duration: remainingDistance / scrollSpeed,
           easing: Easing.linear,
         });
+      }
+    } else {
+      cancelAnimation(scrollPosition);
+      // When play is paused, set scrollPosition.value to the current position.
+      scrollPosition.value = currentPosition.current;
+    }
+  }, [playPressed, hitBottom]);
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollRef.current?.scrollToOffset({
+        offset: currentPosition.current,
+        animated: false,
+      });
+      return () => {
+        if (playPressed) {
+          cancelAnimation(scrollPosition);
+          scrollPosition.value = withTiming(totalScrollDistance, {
+            duration: totalScrollDistance / scrollSpeed,
+            easing: Easing.linear,
+          });
+        }
       };
-    }, [data]),
+    }, [data, playPressed]),
   );
 
   useEffect(() => {
@@ -149,9 +200,8 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     currentPosition.current = 0;
     setTimeout(() => {
       scrollRef.current?.scrollToOffset({ offset: 0, animated: false });
-      // delay to allow the scroll to finish
       setTimeout(() => {
-        setPlayPressed(true); // start automatic scrolling
+        setPlayPressed(true);
       }, 50);
     }, 50);
   }, [setPlayPressed]);
@@ -161,7 +211,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   }, [scrollPosition]);
 
   const handleScroll = (event: any): void => {
-    // save event.nativeEvent.contentOffset.y as an integer
     currentPosition.current = event.nativeEvent.contentOffset.y;
   };
 
@@ -171,11 +220,9 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
 
   const renderItem = useCallback(
     ({ item: quote }: { item: QuotationInterface }) => {
-      // console.log("Rendering item", quote._id); // Add this line
-      // console.log('Data length:', data.length); // New line
-
       return (
         <SmallQuoteContainer
+          testID={TEST_IDS.quoteContainer}
           key={quote._id}
           passedInQuote={quote}
           pressFunction={() => {
@@ -184,13 +231,11 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         />
       );
     },
-
     [handlePress, data.length],
   );
 
   const ListFooterComponent = useCallback(() => {
     return data.length >= 3 ? (
-      // create an AppText component with styles.buttonText that follows this format: The chosen set of NN quotations for author/subject XXXXXXX has been fully played out. For more please select *Discover* below and choose a different author/subject.
       <AppText style={styles.buttonText}>
         {"The chosen set of " +
           data.length +
@@ -202,16 +247,16 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   }, [data.length]);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID={TEST_IDS.autoScrollingQuotesList}>
       <FlatList
-        data={data}
+        testID={TEST_IDS.flatlist}
+        data={initialDataOrderRef.current}
         renderItem={renderItem}
         scrollEventThrottle={16}
         ref={scrollRef}
         scrollEnabled={!playPressed}
         onTouchStart={() => {
           setPlayPressed(false);
-          // set the current position
           currentPosition.current = scrollPosition.value;
         }}
         onScroll={handleScroll}
@@ -221,18 +266,16 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
           setPlayPressed(false);
           setHitBottom(true);
         }}
-        // onEndReachedThreshold={100}
         getItemLayout={(data, index) => ({
           length: QUOTE_ITEM_HEIGHT,
           offset: QUOTE_ITEM_HEIGHT * index,
           index,
         })}
         keyExtractor={(item) => item._id?.toString() + item.quoteText}
-        // Optimization props
-        initialNumToRender={10} // Arbitrary, you might want to adjust this number
-        maxToRenderPerBatch={10} // Arbitrary, you might want to adjust this number
-        windowSize={10} // Arbitrary, you might want to adjust this number
-        updateCellsBatchingPeriod={5} // Arbitrary, you might want to adjust this number
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        updateCellsBatchingPeriod={5}
         removeClippedSubviews
       />
       {data.length >= 1 ? (
@@ -249,7 +292,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
           There are currently no quotes that match your selection
         </AppText>
       )}
-
       <BottomNav
         navigation={navigation}
         screen={strings.screenName.home}
@@ -259,7 +301,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         scrollSpeed={scrollSpeed}
         setScrollSpeed={setScrollSpeed}
         resetScrollPosition={resetScrollPosition}
-        testID={TEST_IDS.bottomNav}
       />
     </View>
   );

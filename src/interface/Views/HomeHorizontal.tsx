@@ -107,7 +107,6 @@ export const HomeHorizontal = ({ navigation, route }: Props): JSX.Element => {
         }}
         playPressed={false}
         scrollSpeed={0}
-        testID={""}
       />
     </View>
   );

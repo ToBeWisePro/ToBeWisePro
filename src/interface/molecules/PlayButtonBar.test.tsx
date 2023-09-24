@@ -33,7 +33,7 @@ describe("<PlayButtonBar />", () => {
       />,
     );
 
-    const button = getByTestId(TEST_IDS.PlayButtonBar);
+    const button = getByTestId(TEST_IDS.playButton);
     fireEvent.press(button);
 
     expect(setPlayPressedMock).toHaveBeenCalledWith(true);
@@ -48,7 +48,7 @@ describe("<PlayButtonBar />", () => {
       />,
     );
 
-    const button = getByTestId(TEST_IDS.PlayButtonBar);
+    const button = getByTestId(TEST_IDS.playButton);
     fireEvent.press(button);
 
     expect(setPlayPressedMock).toHaveBeenCalledWith(false);

@@ -10,6 +10,7 @@ import {
 } from "../../res/constants/Interfaces";
 import { PlayButtonBar } from "../molecules/PlayButtonBar";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 interface Props {
   navigation: NavigationInterface;
@@ -20,13 +21,11 @@ interface Props {
   scrollSpeed?: number;
   setScrollSpeed?: (x: number) => void;
   resetScrollPosition?: () => void;
-  testID: string;
 }
 
 export const BottomNav: React.FC<Props> = ({
   navigation,
   screen,
-  testID,
   whatToInclude,
   setPlayPressed,
   playPressed,
@@ -54,7 +53,7 @@ export const BottomNav: React.FC<Props> = ({
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID={TEST_IDS.bottomNav}>
       {whatToInclude === IncludeInBottomNav.PlayButton && (
         <View style={styles.scrollButtonViewNoSlidebar}>
           <PlayButtonBar

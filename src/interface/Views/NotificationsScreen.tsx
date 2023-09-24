@@ -318,7 +318,6 @@ export const NotificationScreen: React.FC<Props> = ({
         whatToInclude={IncludeInBottomNav.Nothing}
         playPressed={false}
         scrollSpeed={0}
-        testID={TEST_IDS.bottomNav}
       />
     </View>
   );
