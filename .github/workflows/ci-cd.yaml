@@ -14,12 +14,6 @@ jobs:
         with:
           node-version: "16"
 
-      - name: Cache node_modules
-        uses: actions/cache@v2
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
@@ -29,12 +23,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Restore Cache
-        uses: actions/cache@v2
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Print Directory Structure
         run: find . -type f -name "TestIDS*"
