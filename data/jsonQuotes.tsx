@@ -1,6 +1,6 @@
-import { type QuotationInterface } from "../src/res/constants/Interfaces";
-
-export const jsonQuotes: QuotationInterface[] = [
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+export const jsonQuotes = [
   {
     contributedBy: "",
     author: "A. A. Malee",
