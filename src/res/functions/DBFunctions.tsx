@@ -402,44 +402,33 @@ export async function getQuoteCount(
   });
 }
 
-export const updateQuoteContainer = (
-  quote: QuotationInterface,
-  refreshRate: number,
-  setQuote: (x: QuotationInterface) => void,
-): NodeJS.Timeout => {
-  // Return type changed to NodeJS.Timeout
-  return setInterval(() => {
-    // Removed async
-    getQuoteById(quote._id)
-      .then((mostUpToDateQuote) => {
-        if (mostUpToDateQuote != null) {
-          setQuote(mostUpToDateQuote);
-        }
-      })
-      .catch(() => {
-        console.error("Error: couldn't update quote"); // Changed to console.error for error logging
-      });
-  }, refreshRate);
-};
 export const updateQuote = async (
   updatedQuote: QuotationInterface,
 ): Promise<boolean> => {
   const db = SQLite.openDatabase(dbName);
+
+  if (updatedQuote._id === undefined) {
+    console.error("Error: updatedQuote._id is undefined");
+    return await Promise.resolve(false); // Resolve the promise with false
+  }
+
   return await new Promise<boolean>((resolve, reject) => {
-    // Specify the Promise type as boolean
     db.transaction((tx) => {
       tx.executeSql(
         `UPDATE ${dbName} SET favorite = ? WHERE _id = ?`,
-        [updatedQuote.favorite ? 1 : 0, updatedQuote._id], // Convert boolean to number
+        // @ts-expect-error undefined is not a number
+        [updatedQuote.favorite ? 1 : 0, updatedQuote._id], // Now updatedQuote._id is guaranteed to be a number
         (_, { rowsAffected }) => {
           if (rowsAffected > 0) {
             resolve(true);
           } else {
-            reject(new Error("Error updating quote"));
+            console.error("Error updating quote");
+            resolve(false); // Resolve with false if no rows were affected
           }
         },
         (_, error) => {
-          reject(error);
+          console.error(error);
+          resolve(false); // Resolve with false in case of an error
           return true;
         },
       );
@@ -453,8 +442,13 @@ export async function markQuoteAsDeleted(
 ): Promise<void> {
   const db = SQLite.openDatabase(dbName);
 
+  if (quote._id === undefined) {
+    await Promise.reject(new Error("Error: quote._id is undefined"));
+    return; // Reject the promise with an error message
+  }
+
   const query = `UPDATE ${dbName} SET deleted = ? WHERE _id = ?`;
-  const params = [shouldDelete ? 1 : 0, quote._id];
+  const params = [shouldDelete ? 1 : 0, quote._id]; // Now quote._id is guaranteed to be a number
 
   await new Promise<void>((resolve, reject) => {
     db.transaction((tx) => {

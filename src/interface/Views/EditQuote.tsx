@@ -154,6 +154,10 @@ export const EditQuotes = ({ navigation, route }: Props): JSX.Element => {
               route={route}
               newQuote={isExistingQuote}
               pressFunction={() => {
+                if (quoteInEditing._id === undefined) {
+                  console.error("Error: quoteInEditing._id is undefined");
+                  return; // Exit the function early
+                }
                 const updatedQuote = {
                   ...quoteInEditing,
                   quoteText,
@@ -171,6 +175,7 @@ export const EditQuotes = ({ navigation, route }: Props): JSX.Element => {
                   void editQuote(updatedQuote._id, updatedQuote).then(() => {
                     void getQuoteById(updatedQuote._id).then((quote) => {
                       if (quote != null) {
+                        // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
                         setQuoteInEditing(quote);
                       } else {
                         console.log("quote is null");
@@ -187,6 +192,7 @@ export const EditQuotes = ({ navigation, route }: Props): JSX.Element => {
                     .then(() => {
                       void getQuoteById(updatedQuote._id).then((quote) => {
                         if (quote != null) {
+                          // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
                           setQuoteInEditing(quote);
                         } else {
                           console.log("quote is null");

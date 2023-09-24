@@ -33,7 +33,7 @@ export interface Subject {
 }
 
 export interface QuotationInterface {
-  _id: number;
+  _id?: number;
   quoteText: string;
   author: string;
   subjects: string;

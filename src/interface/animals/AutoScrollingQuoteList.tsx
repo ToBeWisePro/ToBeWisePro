@@ -227,7 +227,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
           offset: QUOTE_ITEM_HEIGHT * index,
           index,
         })}
-        keyExtractor={(item) => item._id.toString()}
+        keyExtractor={(item) => item._id?.toString() + item.quoteText}
         // Optimization props
         initialNumToRender={10} // Arbitrary, you might want to adjust this number
         maxToRenderPerBatch={10} // Arbitrary, you might want to adjust this number
