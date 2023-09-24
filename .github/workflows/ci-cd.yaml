@@ -14,6 +14,14 @@ jobs:
         with:
           node-version: "16"
 
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
@@ -28,6 +36,9 @@ jobs:
 
       - name: Clean Git Cache
         run: git gc --prune=now && git remote prune origin
+
+      - name: Install dependencies (if needed)
+        run: yarn install --frozen-lockfile
 
       - name: List Contents of src/res/constants
         run: ls -l ./src/res/constants/
