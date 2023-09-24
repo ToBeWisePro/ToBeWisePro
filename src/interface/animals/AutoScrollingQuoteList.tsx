@@ -125,13 +125,16 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         animated: false,
       });
       return () => {
-        cancelAnimation(scrollPosition);
-        scrollPosition.value = withTiming(totalScrollDistance, {
-          duration: totalScrollDistance / scrollSpeed,
-          easing: Easing.linear,
-        });
+        if (playPressed) {
+          // Only start the animation if playPressed is true
+          cancelAnimation(scrollPosition);
+          scrollPosition.value = withTiming(totalScrollDistance, {
+            duration: totalScrollDistance / scrollSpeed,
+            easing: Easing.linear,
+          });
+        }
       };
-    }, [data]),
+    }, [data, playPressed]), // Added playPressed as a dependency
   );
 
   useEffect(() => {
