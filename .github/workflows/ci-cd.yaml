@@ -24,7 +24,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0 # Fetch all history for all branches and tags.
+          fetch-depth: 0
 
       - name: Clean Git Cache
         run: git gc --prune=now && git remote prune origin
@@ -32,8 +32,11 @@ jobs:
       - name: List Contents of src/res/constants
         run: ls -l ./src/res/constants/
 
+      - name: List installed binaries
+        run: ls node_modules/.bin
+
       - name: Run ESLint
-        run: yarn lint
+        run: npx eslint src --ext .js,.jsx,.ts,.tsx --fix
 
       - name: Clear Jest Cache
         run: yarn jest --clearCache
