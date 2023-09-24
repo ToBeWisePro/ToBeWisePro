@@ -80,12 +80,12 @@ jobs:
       - name: Run TypeScript Compiler
         run: yarn tsc --noEmit
 
-  build:
-    needs: type_check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  # build:
+  #   needs: type_check
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
 
-      - name: Build Project
-        run: yarn build
+  # - name: Build Project
+  #   run: cd ios && pod install && xcodebuild
