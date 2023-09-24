@@ -33,12 +33,10 @@ export const PlayButtonBar: React.FC<Props> = ({
   }, [playPressed]);
 
   const startScrolling = (): void => {
-    console.log("startScrolling called");
     setPlayPressed?.(true);
   };
 
   const stopScrolling = (): void => {
-    console.log("stopScrolling called");
     setPlayPressed?.(false);
   };
 

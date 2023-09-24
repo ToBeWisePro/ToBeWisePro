@@ -1,4 +1,10 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import {
   useSharedValue,
@@ -44,19 +50,48 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   filter,
 }) => {
   const scrollRef = useRef<FlatList>(null);
-  const initialDataOrder = useRef(data); // Reverted back to useRef
+  const initialDataOrder = useRef(data);
+  const initialDataOrderRef = useRef<QuotationInterface[]>([]);
+  const prevDataRef = useRef<QuotationInterface[]>(data); // to store the previous data
+
   const scrollPosition = useSharedValue(0);
   const [scrollSpeed, setScrollSpeed] = useState(0.0275);
   const currentPosition = useRef(0);
   const [hitBottom, setHitBottom] = useState(false);
+  const totalScrollDistance =
+    data.length * QUOTE_ITEM_HEIGHT +
+    (data.length * globalStyles.navbar.height + 38);
 
-  const totalScrollDistance = data.length * QUOTE_ITEM_HEIGHT;
+  const areArraysEquivalent = (
+    arr1: QuotationInterface[],
+    arr2: QuotationInterface[],
+  ): boolean => {
+    if (arr1.length !== arr2.length) return false;
 
+    const sortedArr1 = [...arr1].sort((a, b) =>
+      (a._id || "") > (b._id || "") ? 1 : -1,
+    );
+    const sortedArr2 = [...arr2].sort((a, b) =>
+      (a._id || "") > (b._id || "") ? 1 : -1,
+    );
+
+    return sortedArr1.every((val, index) => val._id === sortedArr2[index]._id);
+  };
+
+  if (initialDataOrderRef.current.length === 0) {
+    initialDataOrderRef.current = data;
+  }
   useEffect(() => {
-    if (initialDataOrder.current.length === 0) {
-      initialDataOrder.current = data; // Set only once when the component is mounted
+    // If data prop has changed
+    if (!areArraysEquivalent(prevDataRef.current, data)) {
+      // Update the initialDataOrderRef with the new data
+      initialDataOrderRef.current = data;
+      // Update the prevDataRef with the new data for the next comparison
+      prevDataRef.current = data;
+      // If needed, perform additional actions like resetting the scroll position
+      scrollRef.current?.scrollToOffset({ offset: 0, animated: false });
     }
-  }, []);
+  }, [data]);
 
   const handlePress = useCallback(
     (quote: QuotationInterface) => {
@@ -76,6 +111,11 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     },
     [filter, query, data, navigation],
   );
+
+  useEffect(() => {
+    // Update the ref value if the data prop changes
+    initialDataOrder.current = data;
+  }, [data]);
 
   const setAndStoreScrollSpeed = (
     value: React.SetStateAction<number>,
@@ -109,11 +149,13 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         setPlayPressed(true);
         setHitBottom(false);
       }
+      const remainingDistance = totalScrollDistance - currentPosition.current;
       scrollPosition.value = withTiming(totalScrollDistance, {
-        duration: totalScrollDistance / scrollSpeed,
+        duration: remainingDistance / scrollSpeed,
         easing: Easing.linear,
       });
     } else {
+      cancelAnimation(scrollPosition);
       scrollPosition.value = currentPosition.current;
     }
   }, [playPressed]);
@@ -126,7 +168,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       });
       return () => {
         if (playPressed) {
-          // Only start the animation if playPressed is true
           cancelAnimation(scrollPosition);
           scrollPosition.value = withTiming(totalScrollDistance, {
             duration: totalScrollDistance / scrollSpeed,
@@ -134,7 +175,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
           });
         }
       };
-    }, [data, playPressed]), // Added playPressed as a dependency
+    }, [data, playPressed]),
   );
 
   useEffect(() => {
@@ -207,7 +248,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     <View style={styles.container} testID={TEST_IDS.autoScrollingQuotesList}>
       <FlatList
         testID={TEST_IDS.flatlist}
-        data={initialDataOrder.current} // Use the stored list order
+        data={initialDataOrderRef.current}
         renderItem={renderItem}
         scrollEventThrottle={16}
         ref={scrollRef}
