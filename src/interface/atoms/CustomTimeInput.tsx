@@ -4,7 +4,7 @@ import DateTimePicker, {
   type DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { LIGHT } from "../../../styles/Colors";
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 interface Props {
   time: Date;

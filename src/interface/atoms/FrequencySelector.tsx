@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import DateTimePicker, {
   type Event,
 } from "@react-native-community/datetimepicker";
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 interface FrequencySelectorProps {
   selectedTime: Date | null;

@@ -1,7 +1,7 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import { CustomTimeInput } from "./CustomTimeInput";
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 jest.mock("@react-native-community/datetimepicker", () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires

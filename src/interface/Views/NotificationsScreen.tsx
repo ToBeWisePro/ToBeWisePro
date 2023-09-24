@@ -30,7 +30,7 @@ import { CustomTimeInput } from "../atoms/CustomTimeInput";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
 import * as Notifications from "expo-notifications";
 import { getShuffledQuotes } from "../../res/functions/DBFunctions";
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 interface Props {
   navigation: NavigationInterface;

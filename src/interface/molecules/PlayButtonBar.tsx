@@ -5,7 +5,8 @@ import { LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
 import { strings } from "../../res/constants/Strings";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { AppText } from "../atoms/AppText";
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
+
 interface Props {
   setPlayPressed: ((bool: boolean) => void) | undefined;
   playPressed: boolean | undefined;

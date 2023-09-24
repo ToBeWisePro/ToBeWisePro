@@ -26,7 +26,7 @@ import {
 } from "../../res/functions/DBFunctions";
 import { AppText } from "../atoms/AppText";
 import { defaultUsername } from "../../res/constants/Values";
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;

@@ -12,7 +12,7 @@ import { IncludeInBottomNav, ASYNC_KEYS } from "../../res/constants/Enums";
 import { getFromDB } from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import { saveSettings } from "./NotificationsScreen";
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 interface Props {
   navigation: NavigationInterface;

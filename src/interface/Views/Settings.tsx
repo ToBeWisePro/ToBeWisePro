@@ -7,7 +7,7 @@ import { TopNav } from "../molecules/TopNav";
 import { GRAY_6 } from "../../../styles/Colors";
 import { openLink } from "../../res/functions/UtilFunctions";
 import { SettingsButton } from "../molecules/SettingsButton";
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 import { type NavigationInterface } from "../../res/constants/Interfaces";
 
 interface Props {

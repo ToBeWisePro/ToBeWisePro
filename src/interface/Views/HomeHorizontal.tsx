@@ -17,7 +17,7 @@ import { LargeQuoteContainer } from "../organisms/LargeQuoteContainer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native-gesture-handler";
 import { useFocusEffect } from "@react-navigation/native";
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;

@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
 import { PlayButtonBar } from "./PlayButtonBar"; // Update the import path
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 describe("<PlayButtonBar />", () => {
   let setPlayPressedMock: jest.Mock<any, any, any>;

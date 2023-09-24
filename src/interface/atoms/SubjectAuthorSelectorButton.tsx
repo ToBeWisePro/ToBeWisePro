@@ -4,7 +4,7 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { StyleSheet, View } from "react-native";
 import { AppText } from "./AppText";
 import { GRAY_3, LIGHT, PRIMARY_GREEN } from "../../../styles/Colors";
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 interface Props {
   buttonText: string;

@@ -23,7 +23,7 @@ import { AppText } from "../atoms/AppText";
 import { BottomNav } from "../organisms/BottomNav";
 import { ASYNC_KEYS, IncludeInBottomNav } from "../../res/constants/Enums";
 import { useFocusEffect } from "@react-navigation/native";
-import { TEST_IDS } from "../../res/constants/TestIDS";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 const QUOTE_ITEM_HEIGHT = globalStyles.smallQuoteContainer.height;
 
