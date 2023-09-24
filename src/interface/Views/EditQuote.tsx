@@ -8,42 +8,45 @@ import {
 } from "react-native";
 import { strings } from "../../res/constants/Strings";
 import {
-  NavigationInterface,
-  QuotationInterface,
-  RouteInterface,
+  type NavigationInterface,
+  type RouteInterface,
 } from "../../res/constants/Interfaces";
 import { GRAY_5, LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
 import { SaveButton } from "../atoms/SaveButton";
 import {
   TextInputField,
-  TextInputProps,
+  type TextInputProps,
   TextInputSize,
 } from "../atoms/TextInputField";
 import { TopNav } from "../molecules/TopNav";
 import {
   editQuote,
   getQuoteById,
-  removeQuote,
   saveQuoteToDatabase,
 } from "../../res/functions/DBFunctions";
 import { AppText } from "../atoms/AppText";
 import { defaultUsername } from "../../res/constants/Values";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;
 }
 
-export const EditQuotes = ({ navigation, route }: Props) => {
-  const editingQuote = route.params.editingQuote || {};
+export const EditQuotes = ({ navigation, route }: Props): JSX.Element => {
+  const editingQuote = route.params.editingQuote;
   const isExistingQuote = Boolean(route.params.editingExistingQuote);
   const initialQuote = {
     ...editingQuote,
-    quoteText: editingQuote.quoteText || "",
-    author: editingQuote.author || "",
-    subjects: editingQuote.subjects || "",
-    authorLink: editingQuote.authorLink || "",
-    videoLink: editingQuote.videoLink || "",
-    _id: editingQuote._id || parseInt(String(Math.random() * 100000)),
+    quoteText: editingQuote.quoteText.length > 0 ? editingQuote.quoteText : "",
+    author: editingQuote.author.length > 0 ? editingQuote.author : "",
+    subjects: editingQuote.subjects.length > 0 ? editingQuote.subjects : "",
+    authorLink:
+      editingQuote.authorLink.length > 0 ? editingQuote.authorLink : "",
+    videoLink: editingQuote.videoLink.length > 0 ? editingQuote.videoLink : "",
+    _id:
+      editingQuote._id !== 0
+        ? editingQuote._id
+        : parseInt(String(Math.random() * 100000)),
   };
 
   const [quoteInEditing, setQuoteInEditing] = useState(initialQuote);
@@ -53,7 +56,6 @@ export const EditQuotes = ({ navigation, route }: Props) => {
   const [subjects, setSubjects] = useState(initialQuote.subjects);
   const [authorLink, setAuthorLink] = useState(initialQuote.authorLink);
   const [videoLink, setVideoLink] = useState(initialQuote.videoLink);
-
 
   const textInputFields: TextInputProps[] = [
     {
@@ -104,7 +106,7 @@ export const EditQuotes = ({ navigation, route }: Props) => {
     setCanSave(shouldEnableSave);
   }, [quoteText, author, subjects]);
 
-  const getTitle = () =>
+  const getTitle = (): string =>
     isExistingQuote
       ? strings.copy.editQuoteTitle
       : strings.copy.editQuoteTitleBlank;
@@ -113,9 +115,12 @@ export const EditQuotes = ({ navigation, route }: Props) => {
     <View style={styles.container}>
       <TopNav
         backButton
+        testID={TEST_IDS.topNav}
         title={getTitle()}
         stickyHeader
-        backFunction={() => navigation.goBack()}
+        backFunction={() => {
+          navigation.goBack();
+        }}
       />
       <TouchableWithoutFeedback style={styles.form} onPress={Keyboard.dismiss}>
         <ScrollView
@@ -148,7 +153,11 @@ export const EditQuotes = ({ navigation, route }: Props) => {
             <SaveButton
               route={route}
               newQuote={isExistingQuote}
-              pressFunction={async () => {
+              pressFunction={() => {
+                if (quoteInEditing._id === undefined) {
+                  console.error("Error: quoteInEditing._id is undefined");
+                  return; // Exit the function early
+                }
                 const updatedQuote = {
                   ...quoteInEditing,
                   quoteText,
@@ -160,38 +169,36 @@ export const EditQuotes = ({ navigation, route }: Props) => {
                   favorite: false,
                   deleted: false,
                   contributedBy: defaultUsername,
-                 
                 };
                 console.log("updatedQuote before save", updatedQuote);
                 if (isExistingQuote) {
-                  editQuote(updatedQuote._id, updatedQuote).then(async () => {
-                    const quote: QuotationInterface | null = await getQuoteById(
-                      updatedQuote._id
-                    );
-                    if (quote) {
-                      setQuoteInEditing(quote);
-                    } else {
-                      console.log("quote is null");
-                    }
-                  });
-                } else {
-                  await saveQuoteToDatabase(updatedQuote).then(
-                    async (insertId) => {
-                      console.log("insertId", insertId);
-                      updatedQuote._id = insertId; // Add the _id attribute to updatedQuote
-                  
-                      console.log("updatedQuote after save", updatedQuote);
-                    })
-                    .then(async () => {
-                      const quote: QuotationInterface | null =
-                        await getQuoteById(updatedQuote._id);
-                      if (quote) {
+                  void editQuote(updatedQuote._id, updatedQuote).then(() => {
+                    void getQuoteById(updatedQuote._id).then((quote) => {
+                      if (quote != null) {
+                        // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
                         setQuoteInEditing(quote);
                       } else {
                         console.log("quote is null");
                       }
                     });
-                  
+                  });
+                } else {
+                  void saveQuoteToDatabase(updatedQuote)
+                    .then((insertId) => {
+                      console.log("insertId", insertId);
+                      updatedQuote._id = Number(insertId);
+                      console.log("updatedQuote after save", updatedQuote);
+                    })
+                    .then(() => {
+                      void getQuoteById(updatedQuote._id).then((quote) => {
+                        if (quote != null) {
+                          // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
+                          setQuoteInEditing(quote);
+                        } else {
+                          console.log("quote is null");
+                        }
+                      });
+                    });
                 }
               }}
               active={canSave}

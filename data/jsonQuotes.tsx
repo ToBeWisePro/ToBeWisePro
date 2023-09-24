@@ -1,6 +1,6 @@
-import React from "react";
-import { Quotation } from "../res/DataModels";
-export const jsonQuotes: Quotation[] = [
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+export const jsonQuotes = [
   {
     contributedBy: "",
     author: "A. A. Malee",

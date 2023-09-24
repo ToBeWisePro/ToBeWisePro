@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { AlphabetList } from "react-native-section-alphabet-list";
-import { globalStyles } from "../../../styles/GlobalStyles";
 import { strings } from "../../res/constants/Strings";
 import { getFromDB } from "../../res/functions/DBFunctions";
 import { DiscoverSectionHeader } from "../atoms/DiscoverSectionHeader";
 import { DiscoverTile } from "../molecules/DiscoverTile";
 import { maxWindowSize } from "../../res/constants/Values";
-import { NavigationInterface } from "../../res/constants/Interfaces";
+import { type NavigationInterface } from "../../res/constants/Interfaces";
 import { GRAY_1 } from "../../../styles/Colors";
 import { DataButton } from "../atoms/DataButton";
 import { AppText } from "../atoms/AppText";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Props {
   filter: string;
@@ -19,22 +17,26 @@ interface Props {
   navigation: NavigationInterface;
   search: string;
   onPress?: (query: string, filter: string) => Promise<void>;
-  testID: string
+  testID: string;
+}
+
+interface DataItem {
+  key: string;
+  value: string;
 }
 
 export const AlphabetListSection = ({
   filter,
-  testID,
   setFilter,
   navigation,
   search,
   onPress,
-}: Props) => {
-  const [subjects, setSubjects] = useState([]);
-  const [authors, setAuthors] = useState([]);
+}: Props): JSX.Element => {
+  const [subjects, setSubjects] = useState<DataItem[]>([]);
+  const [authors, setAuthors] = useState<DataItem[]>([]);
 
-  const formatDataForAlphabetList = (data: String[]) => {
-    if (!data) return [];
+  const formatDataForAlphabetList = (data: string[]): DataItem[] => {
+    if (data.length === 0) return []; // Updated line
 
     const subjectsSet = new Set<string>();
     data.forEach((string) => {
@@ -63,61 +65,73 @@ export const AlphabetListSection = ({
   };
 
   useEffect(() => {
-    // set authors and subjects
-    const load = async () => {
-      await getFromDB(strings.filters.subject).then((res) => {
-        const finalData = formatDataForAlphabetList(res);
-        setSubjects(finalData);
-      });
-      await getFromDB(strings.filters.author).then((res) => {
-        const finalData = formatDataForAlphabetList(res);
-        setAuthors(finalData);
-      });
+    const load = async (): Promise<void> => {
+      try {
+        await getFromDB(strings.filters.subject).then((res) => {
+          const finalData = formatDataForAlphabetList(res);
+          setSubjects(finalData);
+        });
+        await getFromDB(strings.filters.author).then((res) => {
+          const finalData = formatDataForAlphabetList(res);
+          setAuthors(finalData);
+        });
+      } catch (error) {
+        console.error("Error loading data:", error);
+      }
     };
     setFilter(strings.filters.author);
-    load();
+    load().catch((error) => {
+      console.error("Error loading data:", error);
+    });
   }, []);
 
-  const filteredSubjects = subjects.filter((item) =>
-    item.value.toLowerCase().includes(search.toLowerCase())
+  const filteredSubjects = subjects.filter((item: DataItem) =>
+    item.value.toLowerCase().includes(search.toLowerCase()),
   );
-  const filteredAuthors = authors.filter((item) =>
-    item.value.toLowerCase().includes(search.toLowerCase())
+  const filteredAuthors = authors.filter((item: DataItem) =>
+    item.value.toLowerCase().includes(search.toLowerCase()),
   );
 
   const data =
-    filter == strings.filters.author ? filteredAuthors : filteredSubjects;
-  const getData = () => {
-    // console.log(data.length + " items")
-    // console.log(data.slice(0, 10))
-    return data
-  }
+    filter === strings.filters.author ? filteredAuthors : filteredSubjects;
+  const getData = (): DataItem[] => {
+    return data;
+  };
   return (
     <View style={styles.container}>
       <View style={styles.dataSelector}>
         <DataButton
           buttonText={"Author"}
-          selected={filter == strings.filters.author}
-          onPress={async () => {
-            // save query and filter to AsyncStorage
-         
-
-            const finalData = await getFromDB(strings.filters.author).then(
-              (res) => formatDataForAlphabetList(res)
-            );
-            setAuthors(finalData);
-            setFilter(strings.filters.author);
+          selected={filter === strings.filters.author}
+          onPress={() => {
+            void (async () => {
+              try {
+                const finalData = await getFromDB(strings.filters.author).then(
+                  (res) => formatDataForAlphabetList(res),
+                );
+                setAuthors(finalData);
+                setFilter(strings.filters.author);
+              } catch (error) {
+                console.error("Error fetching authors:", error);
+              }
+            })();
           }}
         />
         <DataButton
           buttonText={"Subject"}
-          selected={filter == strings.filters.subject}
-          onPress={async () => {
-            const finalData = await getFromDB(strings.filters.subject).then(
-              (res) => formatDataForAlphabetList(res)
-            );
-            setSubjects(finalData);
-            setFilter(strings.filters.subject);
+          selected={filter === strings.filters.subject}
+          onPress={() => {
+            void (async () => {
+              try {
+                const finalData = await getFromDB(strings.filters.subject).then(
+                  (res) => formatDataForAlphabetList(res),
+                );
+                setSubjects(finalData);
+                setFilter(strings.filters.subject);
+              } catch (error) {
+                console.error("Error fetching subjects:", error);
+              }
+            })();
           }}
         />
       </View>
@@ -129,13 +143,14 @@ export const AlphabetListSection = ({
         data={getData()}
         uncategorizedAtTop={true}
         indexLetterStyle={
-          search ? styles.indexLetterTextClear : styles.indexLetterText
+          search.length > 0
+            ? styles.indexLetterTextClear
+            : styles.indexLetterText
         }
         renderCustomItem={(item) => {
           return (
             <DiscoverTile
               key={item.key}
-              text={item.value}
               navigation={navigation}
               filter={filter}
               query={item.value}

@@ -1,7 +1,7 @@
 import React from "react";
-import { StyleSheet, TouchableOpacity, View, PanResponder } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { DARK, LIGHT } from "../../../styles/Colors";
-import { QuotationInterface } from "../../res/constants/Interfaces";
+import { type QuotationInterface } from "../../res/constants/Interfaces";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { AppText } from "../atoms/AppText";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
@@ -15,13 +15,7 @@ const SmallQuoteContainer: React.FC<Props> = ({
   passedInQuote,
   pressFunction,
 }: Props) => {
-  // const panResponder = PanResponder.create({
-  //   onStartShouldSetPanResponder: () => true,
-  //   onPanResponderGrant: pressFunction,
-  // });
-
   return (
-    // <View {...panResponder.panHandlers} style={styles.container}>
     <TouchableWithoutFeedback style={styles.container} onPress={pressFunction}>
       <View style={styles.quoteContainer}>
         <AppText style={globalStyles.quoteText} numberOfLines={6}>

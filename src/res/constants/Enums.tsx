@@ -52,5 +52,5 @@ export const ASYNC_KEYS = {
   frequency: "frequency",
   notificationQuery: "notificationQuery",
   notificationFilter: "notificationFilter",
-  scrollSpeed: "@scrollspeed"
+  scrollSpeed: "@scrollspeed",
 };

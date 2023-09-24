@@ -3,21 +3,22 @@ import { View, StyleSheet } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import { strings } from "../../res/constants/Strings";
 import { maxWindowSize } from "../../res/constants/Values";
-import { IData } from "react-native-section-alphabet-list";
-import { GRAY_1, GRAY_6, LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
+import { type IData } from "react-native-section-alphabet-list";
+import { GRAY_6, LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
 import { BottomNav } from "../organisms/BottomNav";
-import { NavigationInterface } from "../../res/constants/Interfaces";
+import { type NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { ASYNC_KEYS, IncludeInBottomNav } from "../../res/constants/Enums";
 import { getFromDB } from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 interface Props {
   navigation: NavigationInterface;
 }
 
-export const Discover = ({ navigation }: Props) => {
+export const Discover = ({ navigation }: Props): JSX.Element => {
   const [subjects, setSubjects] = useState<IData[]>([]);
   const [authors, setAuthors] = useState<IData[]>([]);
   const [filter, setFilter] = useState<string>(strings.database.defaultFilter);
@@ -27,9 +28,9 @@ export const Discover = ({ navigation }: Props) => {
 
   useEffect(() => {
     // set authors and subjects
-    const load = async () => {
+    const load = async (): Promise<void> => {
       const storedFilter = await AsyncStorage.getItem(ASYNC_KEYS.filter);
-      if (storedFilter) {
+      if (storedFilter != null) {
         setFilter(storedFilter);
       } else {
         setFilter(strings.filters.author);
@@ -44,17 +45,16 @@ export const Discover = ({ navigation }: Props) => {
     };
     setFilter(strings.filters.author);
 
-    load();
+    void load();
   }, []);
 
   const formatDataForAlphabetList = (
-    data: String[],
-    setFunction: (arg: IData[]) => void
-  ) => {
+    data: string[],
+    setFunction: (arg: IData[]) => void,
+  ): void => {
     // AlphabetList requires {key, value} so we have to take our strings and convert them to key value pairs
     const dataObjects: IData[] = [];
     data.forEach((string) => {
-      // @ts-ignore
       dataObjects.push({ key: Math.random().toString(), value: string });
     });
     dataObjects.push({ key: "a", value: strings.customDiscoverHeaders.all });
@@ -76,8 +76,8 @@ export const Discover = ({ navigation }: Props) => {
   };
 
   useEffect(() => {
-    const filterList = (list: IData[], filter: string) => {
-      let newList: IData[] = [];
+    const filterList = (list: IData[], filter: string): void => {
+      const newList: IData[] = [];
       list.forEach((listItem) => {
         if (listItem.value.toLowerCase().includes(search.toLowerCase())) {
           newList.push(listItem);
@@ -117,25 +117,13 @@ export const Discover = ({ navigation }: Props) => {
         <AlphabetListSection
           testID={TEST_IDS.alphabetListSection}
           navigation={navigation}
-          data={filter == strings.filters.author ? tempAuthors : tempSubjects}
           filter={filter}
           setFilter={setFilter}
           search={search}
           onPress={async (query, filter) => {
-            await Promise.all([
-              await AsyncStorage.setItem(ASYNC_KEYS.query, query),
-              await AsyncStorage.setItem(ASYNC_KEYS.filter, filter),
-            ]).then(async () => {
-              await Promise.all([
-                // // Debug
-                // await AsyncStorage.getItem(ASYNC_KEYS.query).then((res) =>
-                //   console.log("Discover got query after saving: ", res)
-                // ),
-                // await AsyncStorage.getItem(ASYNC_KEYS.filter).then((res) =>
-                //   console.log("Discover got filter after saving: ", res)
-                // ),
-              ]).then(() => navigation.navigate(strings.screenName.home));
-            });
+            await AsyncStorage.setItem(ASYNC_KEYS.query, query);
+            await AsyncStorage.setItem(ASYNC_KEYS.filter, filter);
+            navigation.navigate(strings.screenName.home);
           }}
         />
       </View>
@@ -144,6 +132,8 @@ export const Discover = ({ navigation }: Props) => {
         screen={strings.screenName.discover}
         whatToInclude={IncludeInBottomNav.Nothing}
         testID={TEST_IDS.bottomNav}
+        playPressed={false}
+        scrollSpeed={0}
       />
     </View>
   );

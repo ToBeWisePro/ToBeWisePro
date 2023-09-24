@@ -1,27 +1,26 @@
 import React from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
-import { LIGHT, PRIMARY_BLUE, PRIMARY_GREEN } from "../../../styles/Colors";
+import { LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
 import { NavButton } from "../atoms/NavButton";
 import { strings } from "../../res/constants/Strings";
-import { maxScrollIntervalTime } from "../../res/constants/Values";
 import { globalStyles } from "../../../styles/GlobalStyles";
-import { NavButtonInterface, NavigationInterface } from "../../res/constants/Interfaces";
+import {
+  type NavButtonInterface,
+  type NavigationInterface,
+} from "../../res/constants/Interfaces";
 import { PlayButtonBar } from "../molecules/PlayButtonBar";
-//@ts-ignore
-import { SliderPicker } from "react-native-slider-picker";
 import { IncludeInBottomNav } from "../../res/constants/Enums";
 
 interface Props {
   navigation: NavigationInterface;
   screen: string;
   whatToInclude: IncludeInBottomNav;
-  setPlayPressed?: (bool: boolean) => void;
-  playPressed?: boolean;
+  setPlayPressed?: ((bool: boolean) => void) | undefined;
+  playPressed?: boolean | undefined;
   scrollSpeed?: number;
   setScrollSpeed?: (x: number) => void;
   resetScrollPosition?: () => void;
   testID: string;
-
 }
 
 export const BottomNav: React.FC<Props> = ({
@@ -36,27 +35,27 @@ export const BottomNav: React.FC<Props> = ({
   const navButtons: NavButtonInterface[] = [
     {
       buttonText: strings.screenName.home,
-      selected: screen == strings.screenName.home,
+      selected: screen === strings.screenName.home,
       navigationTarget: strings.screenName.home,
-      navigation: navigation,
+      navigation,
     },
     {
       buttonText: strings.screenName.discover,
-      selected: screen == strings.screenName.discover,
+      selected: screen === strings.screenName.discover,
       navigationTarget: strings.screenName.discover,
-      navigation: navigation,
+      navigation,
     },
     {
       buttonText: strings.screenName.settings,
-      selected: screen == strings.screenName.settings,
+      selected: screen === strings.screenName.settings,
       navigationTarget: strings.screenName.settings,
-      navigation: navigation,
+      navigation,
     },
   ];
 
   return (
     <View style={styles.container}>
-      {whatToInclude == IncludeInBottomNav.PlayButton && (
+      {whatToInclude === IncludeInBottomNav.PlayButton && (
         <View style={styles.scrollButtonViewNoSlidebar}>
           <PlayButtonBar
             setPlayPressed={setPlayPressed}

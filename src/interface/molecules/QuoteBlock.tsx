@@ -1,6 +1,12 @@
 import React from "react";
-import { View, StyleSheet, TouchableWithoutFeedback } from "react-native";
-import { QuotationInterface } from "../../res/constants/Interfaces";
+import {
+  View,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  type TextStyle,
+  type ViewStyle,
+} from "react-native";
+import { type QuotationInterface } from "../../res/constants/Interfaces";
 import { DARK, PRIMARY_BLUE } from "../../../styles/Colors";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { AppText } from "../atoms/AppText";
@@ -12,23 +18,21 @@ interface Props {
 }
 
 export const QuoteBlock: React.FC<Props> = ({ size, quote }: Props) => {
-  const getAuthorStyle = () => {
-    // return a custom styling based on whether the quote container is large or small
+  const getAuthorStyle = (): TextStyle[] => {
     if (size === ContainerSize.Large) {
       return [globalStyles.authorText, { color: PRIMARY_BLUE }];
-    } 
-    return globalStyles.authorText;
+    }
+    return [globalStyles.authorText]; // Wrapped in an array
   };
 
-  const getContainerStyle = ()=>{
-    // Return a different styling based on whether the container is large or small
+  const getContainerStyle = (): Array<ViewStyle | TextStyle> => {
     if (size === ContainerSize.Large) {
       return [styles.quoteContainer];
-    } 
+    }
     return [styles.quoteContainer, styles.quoteContainerSmall];
   };
-  
-  const onPressAuthor = () => {
+
+  const onPressAuthor = (): void => {
     if (size === ContainerSize.Large) {
       // TODO Google author
     }
@@ -45,7 +49,7 @@ export const QuoteBlock: React.FC<Props> = ({ size, quote }: Props) => {
         </AppText>
       </View>
       <View style={styles.authorContainer}>
-        {quote.contributedBy && size === ContainerSize.Large && (
+        {quote.contributedBy.length > 0 && size === ContainerSize.Large && (
           <AppText style={styles.contributedByText}>
             {"Contributed by: " + quote.contributedBy}
           </AppText>
@@ -73,9 +77,8 @@ const styles = StyleSheet.create({
   authorContainer: {
     paddingTop: 20,
     justifyContent: "flex-end",
-    alignContent:"flex-end",
+    alignContent: "flex-end",
     height: 50,
-
   },
   contributedByText: {
     fontSize: 14,

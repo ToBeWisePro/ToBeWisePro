@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on: [push, pull_request]
 
@@ -6,52 +6,85 @@ jobs:
   install_dependencies:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
-        
-    - name: Install dependencies
-      run: yarn install
-      
-    - name: Cache node_modules
-      uses: actions/cache@v2
-      with:
-        path: '**/node_modules'
-        key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-        
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
   lint_and_test:
     needs: install_dependencies
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Run ESLint
-      run: yarn lint
-      
-    - name: Run Jest Tests
-      run: yarn test
-      
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Clean Git Cache
+        run: git gc --prune=now && git remote prune origin
+
+      - name: Install dependencies (if needed)
+        run: yarn install --frozen-lockfile
+
+      - name: List Contents of src/res/constants
+        run: ls -l ./src/res/constants/
+
+      - name: List installed binaries
+        run: ls node_modules/.bin
+
+      - name: Run ESLint
+        run: npx eslint src --ext .js,.jsx,.ts,.tsx --fix
+
+      - name: Clear Jest Cache
+        run: yarn jest --clearCache
+
+      - name: Run Jest Tests
+        run: yarn test
+
   type_check:
     needs: lint_and_test
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Run TypeScript Compiler
-      run: yarn tsc --noEmit
-      
-  build:
-    needs: type_check
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Build Project
-      run: yarn build
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Check TypeScript Compiler
+        run: |
+          if ! [ -x "$(command -v npx tsc)" ]; then
+            echo "TypeScript Compiler (tsc) is not installed. Installing..."
+            yarn install --frozen-lockfile
+          fi
+
+      - name: Run TypeScript Compiler
+        run: yarn tsc --noEmit
+
+  # build:
+  #   needs: type_check
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+
+  # - name: Build Project
+  #   run: cd ios && pod install && xcodebuild

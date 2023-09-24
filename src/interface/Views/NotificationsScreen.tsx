@@ -5,18 +5,16 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
-  RefreshControl,
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { strings } from "../../res/constants/Strings";
 import {
-  NavigationInterface,
-  QuotationInterface,
-  RouteInterface,
+  type NavigationInterface,
+  type QuotationInterface,
+  type RouteInterface,
 } from "../../res/constants/Interfaces";
 import {
-  GRAY_1,
   GRAY_2,
   GRAY_5,
   GRAY_6,
@@ -30,19 +28,19 @@ import { ScrollView, Switch } from "react-native-gesture-handler";
 import { AppText } from "../atoms/AppText";
 import { CustomTimeInput } from "../atoms/CustomTimeInput";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
-import { NotificationDebugScreen } from "./NotificationDebugScreen";
-// import notifications from expo
 import * as Notifications from "expo-notifications";
 import { getShuffledQuotes } from "../../res/functions/DBFunctions";
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;
 }
 
-
-
-export const saveSettings = async (key: string, value: any) => {
+export const saveSettings = async (
+  key: string,
+  value: any,
+): Promise<any | null> => {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
@@ -50,26 +48,14 @@ export const saveSettings = async (key: string, value: any) => {
   }
 };
 
-export const loadSettings = async (key: string) => {
+export const loadSettings = async (key: string): Promise<any | null> => {
   try {
     const value = await AsyncStorage.getItem(key);
     if (value !== null) {
       return JSON.parse(value);
     }
   } catch (error) {
-    console.log(error);
-    // await AsyncStorage.getAllKeys().then(async (keys) => {
-    //   keys.forEach(async (key) => {
-    //     await AsyncStorage.getItem(key).then((value) => {
-    //       console.log(key + ", " + value?.substring(0, 20));
-    //     });
-    //   });
-    //   // save the default filter
-    //   if (key === ASYNC_KEYS.filter) {
-    //     console.log("Setting default filter", ASYNC_KEYS.filter);
-    //     await saveSettings(key, strings.database.defaultFilter);
-    //   }
-    // });
+    console.error(error);
     return null;
   }
 };
@@ -83,24 +69,18 @@ export const NotificationScreen: React.FC<Props> = ({
   const [endTime, setEndTime] = useState(new Date());
   const [spacing, setSpacing] = useState(30);
   const [query, setQuery] = useState(strings.database.defaultQuery);
-  const [filter, setFilter] = useState(strings.database.defaultFilter);
-  const [refreshing, setRefreshing] = useState(false);
 
-  const loadSavedSettings = async () => {
+  const loadSavedSettings = async (): Promise<void> => {
     const savedAllowNotifications = await loadSettings(
-      ASYNC_KEYS.allowNotifications
+      ASYNC_KEYS.allowNotifications,
     );
     const savedStartTime = await loadSettings(ASYNC_KEYS.startTime);
     const savedEndTime = await loadSettings(ASYNC_KEYS.endTime);
     const savedSpacing = await loadSettings(ASYNC_KEYS.spacing);
     const savedQuery = await loadSettings(ASYNC_KEYS.notificationQuery);
-    const savedFilter = await loadSettings(ASYNC_KEYS.filter);
 
     if (savedQuery !== null) {
       setQuery(savedQuery);
-    }
-    if (savedFilter !== null) {
-      setFilter(savedFilter);
     }
     if (savedAllowNotifications !== null) {
       setAllowNotifications(savedAllowNotifications);
@@ -118,25 +98,19 @@ export const NotificationScreen: React.FC<Props> = ({
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
-      loadSavedSettings();
+      void loadSavedSettings();
     });
 
     // Clean up the event listener on component unmount
     return unsubscribe;
   }, [navigation]);
 
-  const onRefresh = React.useCallback(async () => {
-    setRefreshing(true);
-    await loadSavedSettings();
-    setRefreshing(false);
-  }, []);
-
-  const toggleSwitch = () => {
+  const toggleSwitch = (): void => {
     const updatedAllowNotifications = !allowNotifications;
     setAllowNotifications(updatedAllowNotifications);
-    saveSettings(ASYNC_KEYS.allowNotifications, updatedAllowNotifications);
+    void saveSettings(ASYNC_KEYS.allowNotifications, updatedAllowNotifications);
   };
-  const isValidTimeRange = (start: Date, end: Date) => {
+  const isValidTimeRange = (start: Date, end: Date): boolean => {
     if (start.getHours() < end.getHours()) {
       return true;
     } else if (start.getHours() === end.getHours()) {
@@ -145,18 +119,18 @@ export const NotificationScreen: React.FC<Props> = ({
     return false;
   };
 
-  const handleStartTimeChange = (time: Date) => {
+  const handleStartTimeChange = (time: Date): void => {
     if (isValidTimeRange(time, endTime)) {
       setStartTime(time);
-      saveSettings(ASYNC_KEYS.startTime, time);
+      void saveSettings(ASYNC_KEYS.startTime, time);
     } else {
       alert(
-        'Start Time "${time.toLocaleTimeString()}" must be less than or equal to End Time "${endTime.toLocaleTimeString()}".'
+        `Start Time "${time.toLocaleTimeString()}" must be less than or equal to End Time "${endTime.toLocaleTimeString()}".`,
       );
     }
   };
 
-  const handleButtonPress = async () => {
+  const handleButtonPress = async (): Promise<void> => {
     try {
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {
@@ -166,11 +140,15 @@ export const NotificationScreen: React.FC<Props> = ({
       let data = await getShuffledQuotes(true);
       if (data.length === 0) {
         alert("Invalid query. Notifications database set to defaults");
-        await AsyncStorage.setItem(ASYNC_KEYS.notificationFilter, strings.database.defaultFilter);  
-        await AsyncStorage.setItem(ASYNC_KEYS.notificationQuery, strings.database.defaultQuery);
-        data = await getShuffledQuotes(
-          false
+        await AsyncStorage.setItem(
+          ASYNC_KEYS.notificationFilter,
+          strings.database.defaultFilter,
         );
+        await AsyncStorage.setItem(
+          ASYNC_KEYS.notificationQuery,
+          strings.database.defaultQuery,
+        );
+        data = await getShuffledQuotes(false);
       }
 
       // if the current time (ignoring date) is less than the end time and if the current time is greater than the start time (also ignoring date), send a message
@@ -181,7 +159,7 @@ export const NotificationScreen: React.FC<Props> = ({
         0,
         currentTime.getHours(),
         currentTime.getMinutes(),
-        currentTime.getSeconds()
+        currentTime.getSeconds(),
       );
       const startDateTime = new Date(
         0,
@@ -190,7 +168,7 @@ export const NotificationScreen: React.FC<Props> = ({
         0,
         startTime.getHours(),
         startTime.getMinutes(),
-        startTime.getSeconds()
+        startTime.getSeconds(),
       );
       const endDateTime = new Date(
         0,
@@ -198,7 +176,7 @@ export const NotificationScreen: React.FC<Props> = ({
         0,
         endTime.getHours(),
         endTime.getMinutes(),
-        endTime.getSeconds()
+        endTime.getSeconds(),
       );
       if (currentDateTime >= startDateTime && currentDateTime <= endDateTime) {
         Alert.alert(strings.copy.newNotificationsSet);
@@ -208,7 +186,7 @@ export const NotificationScreen: React.FC<Props> = ({
           title: strings.copy.notificationTitle,
           body: quote.quoteText + "\n- " + quote.author,
           data: {
-            quote: quote,
+            quote,
           },
         });
       } else {
@@ -217,33 +195,37 @@ export const NotificationScreen: React.FC<Props> = ({
             startTime.toLocaleTimeString() +
             " and " +
             endTime.toLocaleTimeString() +
-            "."
+            ".",
         );
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       alert("An error occurred while trying to send the notification");
     }
   };
 
-  const handleEndTimeChange = (time: Date) => {
+  const handleEndTimeChange = (time: Date): void => {
     if (isValidTimeRange(startTime, time)) {
       setEndTime(time);
-      saveSettings(ASYNC_KEYS.endTime, time);
-      scheduleNotifications();
+      void saveSettings(ASYNC_KEYS.endTime, time);
+      void scheduleNotifications();
     } else {
       alert(
-        'End Time "${time.toLocaleTimeString()}" must be greater than or equal to Start Time "${startTime.toLocaleTimeString()}".'
+        `End Time "${time.toLocaleTimeString()}" must be greater than or equal to Start Time "${startTime.toLocaleTimeString()}".`,
       );
     }
   };
 
-  const handleSpacingChange = async (value: number) => {
+  const handleSpacingChange = async (value: number): Promise<void> => {
     await saveSettings(ASYNC_KEYS.spacing, value).then(async () => {
       setSpacing(value);
       await scheduleNotifications()
-        .then(() => console.log("notifs scheduled"))
-        .catch((err) => console.log(err));
+        .then(() => {
+          console.log("notifs scheduled");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     });
   };
 
@@ -251,18 +233,15 @@ export const NotificationScreen: React.FC<Props> = ({
     <View style={styles.container}>
       <TopNav
         backButton={true}
-        backFunction={() => navigation.goBack()}
+        backFunction={() => {
+          navigation.goBack();
+        }}
         title={strings.screenName.notificationsScreen}
         stickyHeader={true}
+        testID={TEST_IDS.topNav}
       />
       <View style={{ backgroundColor: LIGHT }}>
-        <ScrollView
-          contentContainerStyle={{ paddingBottom: 100 }}
-
-          // refreshControl={
-          //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          // }
-        >
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           <View style={styles.main}>
             <View style={styles.menuOptionContainerBottom}>
               <AppText>Allow Notifications: </AppText>
@@ -291,21 +270,20 @@ export const NotificationScreen: React.FC<Props> = ({
                   keyboardType="numeric"
                   style={styles.frequencyInput}
                   value={String(spacing)}
-                  onChangeText={async (text) =>
-                    await handleSpacingChange(Number(text))
-                  }
+                  onChangeText={(text) => {
+                    void handleSpacingChange(Number(text));
+                  }}
                 />
                 <AppText>minute(s)</AppText>
               </View>
             </View>
             <AppText style={styles.title}>Notification Database</AppText>
             <TouchableOpacity
-              onPress={() =>
-                navigation.push(
+              onPress={() => {
+                navigation.navigate(
                   strings.screenName.notificationSelectorScreen,
-                  {}
-                )
-              }
+                );
+              }}
             >
               <View style={styles.menuOptionContainerBottom}>
                 <AppText>{`Current Notifications From: ${query}`}</AppText>
@@ -314,14 +292,16 @@ export const NotificationScreen: React.FC<Props> = ({
             <View style={{ alignItems: "center" }}>
               <TouchableOpacity
                 style={styles.button}
-                onPress={async () =>
-                  await scheduleNotifications()
-                    .then(() => handleButtonPress())
+                onPress={() => {
+                  void scheduleNotifications()
+                    .then(async () => {
+                      await handleButtonPress();
+                    })
                     .catch((err) => {
                       console.error(err);
                       Alert.alert(err.toString());
-                    })
-                }
+                    });
+                }}
               >
                 <AppText style={styles.buttonText}>
                   {strings.copy.saveNotificationsButton}
@@ -336,6 +316,9 @@ export const NotificationScreen: React.FC<Props> = ({
         navigation={navigation}
         screen={strings.screenName.settings}
         whatToInclude={IncludeInBottomNav.Nothing}
+        playPressed={false}
+        scrollSpeed={0}
+        testID={TEST_IDS.bottomNav}
       />
     </View>
   );

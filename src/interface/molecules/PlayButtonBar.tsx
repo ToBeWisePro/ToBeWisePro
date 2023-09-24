@@ -1,41 +1,45 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { IconFactory } from '../atoms/IconFactory';
-import { LIGHT, PRIMARY_BLUE } from '../../../styles/Colors';
-import { strings } from '../../res/constants/Strings';
-import { globalStyles } from '../../../styles/GlobalStyles';
+import { IconFactory } from "../atoms/IconFactory";
+import { LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
+import { strings } from "../../res/constants/Strings";
+import { globalStyles } from "../../../styles/GlobalStyles";
 import { AppText } from "../atoms/AppText";
-import { TEST_IDS } from '../../res/constants/TestIDS';
+import { TEST_IDS } from "../../res/constants/TestIDs";
 
 interface Props {
-  setPlayPressed: (x: boolean) => void;
-  playPressed: boolean;
+  setPlayPressed: ((bool: boolean) => void) | undefined;
+  playPressed: boolean | undefined;
 }
 
 enum ScrollControllerButtons {
-  Play, Pause
+  Play,
+  Pause,
 }
 
-export const PlayButtonBar: React.FC<Props> = ({ setPlayPressed, playPressed }: Props) => {
-  const [buttonToDisplay, setButtonToDisplay] = useState<ScrollControllerButtons>(ScrollControllerButtons.Play);
+export const PlayButtonBar: React.FC<Props> = ({
+  setPlayPressed,
+  playPressed,
+}: Props) => {
+  const [buttonToDisplay, setButtonToDisplay] =
+    useState<ScrollControllerButtons>(ScrollControllerButtons.Play);
 
   useEffect(() => {
-    console.log(`useEffect called, playPressed: ${playPressed}`);
-    if (playPressed) {
+    if (playPressed ?? false) {
       setButtonToDisplay(ScrollControllerButtons.Pause);
     } else {
       setButtonToDisplay(ScrollControllerButtons.Play);
     }
   }, [playPressed]);
 
-  const startScrolling = () => {
-    console.log('startScrolling called');
-    setPlayPressed(true);
+  const startScrolling = (): void => {
+    console.log("startScrolling called");
+    setPlayPressed?.(true);
   };
 
-  const stopScrolling = () => {
-    console.log('stopScrolling called');
-    setPlayPressed(false);
+  const stopScrolling = (): void => {
+    console.log("stopScrolling called");
+    setPlayPressed?.(false);
   };
 
   return (
@@ -43,13 +47,22 @@ export const PlayButtonBar: React.FC<Props> = ({ setPlayPressed, playPressed }: 
       <AppText style={styles.playPauseText}>{"Slower"}</AppText>
       <View style={styles.playPauseContainer}>
         <TouchableOpacity
-        testID={TEST_IDS.PlayButtonBar}
+          testID={TEST_IDS.PlayButtonBar}
           onPress={() => {
-            console.log('TouchableOpacity onPress called');
-            buttonToDisplay === ScrollControllerButtons.Pause ? stopScrolling() : startScrolling();
+            buttonToDisplay === ScrollControllerButtons.Pause
+              ? stopScrolling()
+              : startScrolling();
           }}
-          key={"playPauseButton"}>
-          <IconFactory icon={buttonToDisplay === ScrollControllerButtons.Pause ? strings.playPauseButtons.pause : strings.playPauseButtons.play} selected={true} />
+          key={"playPauseButton"}
+        >
+          <IconFactory
+            icon={
+              buttonToDisplay === ScrollControllerButtons.Pause
+                ? strings.playPauseButtons.pause
+                : strings.playPauseButtons.play
+            }
+            selected={true}
+          />
         </TouchableOpacity>
         <AppText style={styles.playPauseText}>{"Play/Pause"}</AppText>
       </View>

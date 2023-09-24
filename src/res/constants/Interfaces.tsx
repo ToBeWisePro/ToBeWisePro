@@ -1,4 +1,7 @@
-import { BackButtonNavEnum, NotificationsMenuOptionEnum } from "./Enums";
+import {
+  type BackButtonNavEnum,
+  type NotificationsMenuOptionEnum,
+} from "./Enums";
 
 export interface RouteInterface {
   params: {
@@ -17,9 +20,11 @@ export interface RouteInterface {
 }
 
 export interface NavigationInterface {
-  navigate: any;
+  addListener: any;
+  // eslint-disable-next-line no-empty-pattern
   push: (ev: string, {}) => void;
   goBack: () => void;
+  navigate: (e: string) => void;
 }
 
 export interface Subject {
@@ -28,7 +33,7 @@ export interface Subject {
 }
 
 export interface QuotationInterface {
-  _id: number;
+  _id?: number;
   quoteText: string;
   author: string;
   subjects: string;

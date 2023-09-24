@@ -1,13 +1,11 @@
-// SearchBar.tsx
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import {
   StyleSheet,
   View,
   TouchableOpacity,
-  TextInput,
-  Keyboard,
-} from "react-native";
-import { LIGHT, PRIMARY_RED } from "../../../styles/Colors";
+  type TextInput,
+} from "react-native"; // Fixed the import of TextInput
+import { LIGHT } from "../../../styles/Colors";
 import { IconFactory } from "../atoms/IconFactory";
 import { TextInputField, TextInputSize } from "../atoms/TextInputField";
 import { strings } from "../../res/constants/Strings";
@@ -20,7 +18,7 @@ interface Props {
 export const SearchBar: React.FC<Props> = ({ state, setState }: Props) => {
   const searchInput = useRef<TextInput>(null);
 
-  const clearSearch = () => {
+  const clearSearch = (): void => {
     setState("");
     searchInput.current?.blur();
   };
@@ -31,7 +29,7 @@ export const SearchBar: React.FC<Props> = ({ state, setState }: Props) => {
       <View style={{ width: 300 }}>
         <TextInputField
           size={TextInputSize.Small}
-          setState={(e: string) => setState(e)}
+          setState={setState}
           placeholderText={strings.copy.searchBarPlaceholderText}
           state={state}
           ref={searchInput}
