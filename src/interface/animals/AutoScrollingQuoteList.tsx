@@ -148,17 +148,25 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         restartScroll();
         setPlayPressed(true);
         setHitBottom(false);
+      } else {
+        // Calculate the remaining distance from the current position
+        const remainingDistance = totalScrollDistance - currentPosition.current;
+
+        // Set the scrollPosition value to the current position before starting the animation
+        scrollPosition.value = currentPosition.current;
+
+        // Start the animation from the current position
+        scrollPosition.value = withTiming(totalScrollDistance, {
+          duration: remainingDistance / scrollSpeed,
+          easing: Easing.linear,
+        });
       }
-      const remainingDistance = totalScrollDistance - currentPosition.current;
-      scrollPosition.value = withTiming(totalScrollDistance, {
-        duration: remainingDistance / scrollSpeed,
-        easing: Easing.linear,
-      });
     } else {
       cancelAnimation(scrollPosition);
+      // When play is paused, set scrollPosition.value to the current position.
       scrollPosition.value = currentPosition.current;
     }
-  }, [playPressed]);
+  }, [playPressed, hitBottom]);
 
   useFocusEffect(
     useCallback(() => {
