@@ -23,15 +23,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags.
 
-      - name: Print Directory Structure
-        run: find . -type f -name "TestIDS*"
+      - name: Clean Git Cache
+        run: git gc --prune=now && git remote prune origin
 
       - name: List Contents of src/res/constants
         run: ls -l ./src/res/constants/
-
-      - name: Print Content of TestIDS.tsx
-        run: cat ./src/res/constants/TestIDS.tsx
 
       - name: Run ESLint
         run: yarn lint
