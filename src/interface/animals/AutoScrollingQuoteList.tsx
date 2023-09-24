@@ -1,10 +1,4 @@
-import React, {
-  useRef,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import {
   useSharedValue,
@@ -69,10 +63,10 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     if (arr1.length !== arr2.length) return false;
 
     const sortedArr1 = [...arr1].sort((a, b) =>
-      (a._id || "") > (b._id || "") ? 1 : -1,
+      (a._id ?? "") > (b._id ?? "") ? 1 : -1,
     );
     const sortedArr2 = [...arr2].sort((a, b) =>
-      (a._id || "") > (b._id || "") ? 1 : -1,
+      (a._id ?? "") > (b._id ?? "") ? 1 : -1,
     );
 
     return sortedArr1.every((val, index) => val._id === sortedArr2[index]._id);
