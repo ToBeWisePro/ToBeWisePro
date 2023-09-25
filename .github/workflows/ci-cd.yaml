@@ -48,7 +48,6 @@ jobs:
   type_check:
     needs: install_dependencies
     runs-on: ubuntu-latest
-    needs: install_dependencies
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
