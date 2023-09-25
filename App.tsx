@@ -38,6 +38,10 @@ export default function App(): JSX.Element {
   };
 
   useEffect(() => {
+    console.debug(
+      "strings.customDiscoverHeaders.top100 Value:",
+      strings.customDiscoverHeaders.top100,
+    );
     void (async (): Promise<void> => {
       await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
       await saveDefaultValue(ASYNC_KEYS.startTime24h, 900);

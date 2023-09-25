@@ -53,7 +53,8 @@ export const DiscoverTile: React.FC<Props> = ({
           strings.customDiscoverHeaders.favorites,
         );
         break;
-      case strings.customDiscoverHeaders.top100.length > 0 || "Top 100":
+      case strings.customDiscoverHeaders.top100:
+      case "Top 100":
         void getCountForComponent(query, strings.customDiscoverHeaders.top100);
         break;
       case strings.customDiscoverHeaders.deleted:

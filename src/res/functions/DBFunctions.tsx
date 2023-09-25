@@ -202,6 +202,9 @@ export async function getShuffledQuotes(
   } else if (userQuery === strings.customDiscoverHeaders.top100) {
     dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";
     params = [`%${"Top 100"}%`];
+  } else if (userQuery === "Top 100") {
+    dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";
+    params = [`%${"Top 100"}%`];
   } else if (userQuery === strings.customDiscoverHeaders.favorites) {
     dbQuery += " WHERE favorite = 1 AND deleted = 0 ORDER BY RANDOM()";
   } else if (userQuery === strings.customDiscoverHeaders.all) {
@@ -340,7 +343,15 @@ export const getQuotesContributedByMe = async (): Promise<
     });
   });
 };
-
+function stripEmojiAndTrim(str: string): string {
+  // Stripping emojis using regex and then trimming spaces
+  return str
+    .replace(
+      /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2300}-\u{23FF}\u{2B50}\u{1F004}\u{1F0CF}]/gu,
+      "",
+    )
+    .trim();
+}
 export async function getQuoteCount(
   key: string,
   filter: string,
@@ -349,6 +360,7 @@ export async function getQuoteCount(
 
   let query = "";
   let params: any[] = [];
+  console.debug("Filter Value:", filter);
 
   switch (filter) {
     case strings.filters.author:
@@ -360,9 +372,12 @@ export async function getQuoteCount(
       params = [`%${key.trim()}%`, `%${key.trim()},%`, `%,${key.trim()}%`];
       break;
     case strings.customDiscoverHeaders.all:
+      console.debug("Showing all count");
+
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0`;
       break;
     case strings.customDiscoverHeaders.addedByMe:
+      console.debug("Firing addedbyme query");
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE contributedBy = ? AND deleted = 0`;
       params = [defaultUsername]; // ensure the correct username is used here
       break;
@@ -370,6 +385,8 @@ export async function getQuoteCount(
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE favorite = 1 AND deleted = 0`;
       break;
     case strings.customDiscoverHeaders.top100:
+      console.debug("Firing top100 query");
+
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE subjects LIKE ? AND deleted = 0`;
       params = [`%${"Top 100"}%`];
       break;
@@ -383,6 +400,9 @@ export async function getQuoteCount(
     default:
       break;
   }
+  console.debug(key, filter);
+  console.debug("Constructed SQL Query:", query);
+  console.debug("Parameters:", params);
 
   return await new Promise((resolve, reject) => {
     db.transaction((tx) => {
@@ -390,6 +410,12 @@ export async function getQuoteCount(
         query,
         params,
         (_, result) => {
+          console.debug(
+            "Getquotecount key:",
+            key,
+            ": count:",
+            result.rows.item(0).count,
+          );
           resolve(result.rows.item(0).count);
         },
         (_, error) => {
