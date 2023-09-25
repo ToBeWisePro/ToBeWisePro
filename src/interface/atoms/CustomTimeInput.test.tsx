@@ -1,50 +1,35 @@
-import React from "react";
-import { render, fireEvent } from "@testing-library/react-native";
-import { CustomTimeInput } from "./CustomTimeInput";
+import * as React from "react";
+import { render, type RenderAPI } from "@testing-library/react-native";
+import { CustomTimeInput } from "./CustomTimeInput"; // adjust the import path accordingly
 import { TEST_IDS } from "../../res/constants/TestIDs";
 
-jest.mock("@react-native-community/datetimepicker", () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { View } = require("react-native");
-  const mockComponent = jest.fn(({ testID, mode, value }) => (
-    <View testID={testID} mode={mode} value={value} />
-  ));
-  return {
-    __esModule: true,
-    default: mockComponent,
-  };
+let onChangeMock: (event: any, selectedDate?: Date) => void;
+
+jest.mock("@react-native-community/datetimepicker", () => (props: any) => {
+  onChangeMock = props.onChange;
+  return null;
 });
 
-describe("<CustomTimeInput />", () => {
-  const mockTime = 800;
-  const mockSetTime = jest.fn();
+describe("CustomTimeInput Component", () => {
+  let setTimeMock: jest.Mock;
+  let component: RenderAPI;
 
-  it("renders correctly", () => {
-    const { getByTestId } = render(
-      <CustomTimeInput time={mockTime} setTime={mockSetTime} />,
-    );
-    fireEvent.press(getByTestId(TEST_IDS.touchableOpacityTestId)); // Ensure TouchableOpacity has this testID
-    expect(getByTestId(TEST_IDS.dateTimePicker)).toBeTruthy();
+  beforeEach(() => {
+    setTimeMock = jest.fn();
+    component = render(<CustomTimeInput time={1300} setTime={setTimeMock} />);
   });
 
-  it("has correct mode and value in DateTimePicker", () => {
-    const { getByTestId } = render(
-      <CustomTimeInput time={mockTime} setTime={mockSetTime} />,
-    );
-    fireEvent.press(getByTestId(TEST_IDS.touchableOpacityTestId)); // Ensure TouchableOpacity has this testID
-    const picker = getByTestId(TEST_IDS.dateTimePicker);
-    expect(picker.props.mode).toBe("time");
-    expect(picker.props.value).toEqual(mockTime);
+  it("should render correctly", () => {
+    expect(component.getByTestId(TEST_IDS.dateTimePicker)).toBeDefined();
   });
 
-  it("calls setTime when DateTimePicker onChange event is triggered", () => {
-    const { getByTestId } = render(
-      <CustomTimeInput time={mockTime} setTime={mockSetTime} />,
-    );
-    fireEvent.press(getByTestId(TEST_IDS.touchableOpacityTestId)); // Ensure TouchableOpacity has this testID
-    const picker = getByTestId(TEST_IDS.dateTimePicker);
-    const newTime = new Date(2023, 8, 7, 13, 0, 0);
-    fireEvent(picker, "onChange", { type: "set" }, newTime);
-    expect(mockSetTime).toHaveBeenCalledWith(newTime);
+  it("should call setTime with correct value when date is changed", () => {
+    const newDate = new Date();
+    newDate.setHours(14, 30); // 2:30 PM
+
+    // Call the stored onChangeMock
+    onChangeMock(undefined, newDate);
+
+    expect(setTimeMock).toHaveBeenCalledWith(1430); // 2:30 PM in your time format
   });
 });

@@ -26,8 +26,8 @@ export async function scheduleNotifications(): Promise<void> {
     if (startTimeString != null) startTime = parseInt(startTimeString, 10);
     if (endTimeString != null) endTime = parseInt(endTimeString, 10);
 
-    console.debug(`Notifications Start Time: ${startTime}`);
-    console.debug(`Notifications End Time: ${endTime}`);
+    // console.debug(`Notifications Start Time: ${startTime}`);
+    // console.debug(`Notifications End Time: ${endTime}`);
   } catch (error) {
     console.error("Error loading start and end times:", error);
   }
@@ -67,7 +67,7 @@ export async function scheduleNotifications(): Promise<void> {
           const quote = quotes[i];
           if (quote.quoteText.length > 0) {
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            console.debug(`Scheduled notification at ${fireDate}`);
+            // console.debug(`Scheduled notification at ${fireDate}`);
             await Notifications.scheduleNotificationAsync({
               content: {
                 title: "ToBeWise",

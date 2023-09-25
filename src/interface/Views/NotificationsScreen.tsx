@@ -5,13 +5,11 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
-  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { strings } from "../../res/constants/Strings";
 import {
   type NavigationInterface,
-  type QuotationInterface,
   type RouteInterface,
 } from "../../res/constants/Interfaces";
 import {
@@ -28,8 +26,6 @@ import { ScrollView, Switch } from "react-native-gesture-handler";
 import { AppText } from "../atoms/AppText";
 import { CustomTimeInput } from "../atoms/CustomTimeInput";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
-import * as Notifications from "expo-notifications";
-import { getShuffledQuotes } from "../../res/functions/DBFunctions";
 import { TEST_IDS } from "../../res/constants/TestIDs";
 
 interface Props {
@@ -123,56 +119,56 @@ export const NotificationScreen: React.FC<Props> = ({
     }
   };
 
-  const handleButtonPress = async (): Promise<void> => {
-    try {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== "granted") {
-        alert("You need to grant permission to receive notifications");
-        return;
-      }
-      let data = await getShuffledQuotes(true);
-      if (data.length === 0) {
-        alert("Invalid query. Notifications database set to defaults");
-        await AsyncStorage.setItem(
-          ASYNC_KEYS.notificationFilter,
-          strings.database.defaultFilter,
-        );
-        await AsyncStorage.setItem(
-          ASYNC_KEYS.notificationQuery,
-          strings.database.defaultQuery,
-        );
-        data = await getShuffledQuotes(false);
-      }
+  // const handleButtonPress = async (): Promise<void> => {
+  //   try {
+  //     const { status } = await Notifications.requestPermissionsAsync();
+  //     if (status !== "granted") {
+  //       alert("You need to grant permission to receive notifications");
+  //       return;
+  //     }
+  //     let data = await getShuffledQuotes(true);
+  //     if (data.length === 0) {
+  //       alert("Invalid query. Notifications database set to defaults");
+  //       await AsyncStorage.setItem(
+  //         ASYNC_KEYS.notificationFilter,
+  //         strings.database.defaultFilter,
+  //       );
+  //       await AsyncStorage.setItem(
+  //         ASYNC_KEYS.notificationQuery,
+  //         strings.database.defaultQuery,
+  //       );
+  //       data = await getShuffledQuotes(false);
+  //     }
 
-      // if the current time (ignoring date) is less than the end time and if the current time is greater than the start time (also ignoring date), send a message
-      const currentTime = new Date();
-      const currentIntTime =
-        currentTime.getHours() * 100 + currentTime.getMinutes();
-      if (currentIntTime >= startTime && currentIntTime <= endTime) {
-        Alert.alert(strings.copy.newNotificationsSet);
+  //     // if the current time (ignoring date) is less than the end time and if the current time is greater than the start time (also ignoring date), send a message
+  //     const currentTime = new Date();
+  //     const currentIntTime =
+  //       currentTime.getHours() * 100 + currentTime.getMinutes();
+  //     if (currentIntTime >= startTime && currentIntTime <= endTime) {
+  //       Alert.alert(strings.copy.newNotificationsSet);
 
-        const quote: QuotationInterface = data[0];
-        await Notifications.presentNotificationAsync({
-          title: strings.copy.notificationTitle,
-          body: quote.quoteText + "\n- " + quote.author,
-          data: {
-            quote,
-          },
-        });
-      } else {
-        Alert.alert(
-          "Notifications will be sent between " +
-            startTime.toLocaleString() +
-            " and " +
-            endTime.toLocaleString() +
-            ".",
-        );
-      }
-    } catch (error) {
-      console.error(error);
-      alert("An error occurred while trying to send the notification");
-    }
-  };
+  //       const quote: QuotationInterface = data[0];
+  //       await Notifications.presentNotificationAsync({
+  //         title: strings.copy.notificationTitle,
+  //         body: quote.quoteText + "\n- " + quote.author,
+  //         data: {
+  //           quote,
+  //         },
+  //       });
+  //     } else {
+  //       Alert.alert(
+  //         "Notifications will be sent between " +
+  //           startTime.toLocaleString() +
+  //           " and " +
+  //           endTime.toLocaleString() +
+  //           ".",
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //     alert("An error occurred while trying to send the notification");
+  //   }
+  // };
 
   const handleEndTimeChange = (time: number): void => {
     if (isValidTimeRange(startTime, time)) {

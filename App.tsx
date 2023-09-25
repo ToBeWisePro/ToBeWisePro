@@ -59,7 +59,7 @@ export default function App(): JSX.Element {
     void (async () => {
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {
-        console.log("Notification permissions not granted.");
+        console.error("Notification permissions not granted.");
       }
     })();
     Notifications.addNotificationResponseReceivedListener((response) => {
