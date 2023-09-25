@@ -16,4 +16,5 @@ export const TEST_IDS = {
   autoScrollingQuotesList: "auto-scrolling-quotes-list",
   quoteContainer: "quote-container",
   playButton: "play-button",
+  touchableOpacityTestId: "touchable-opacity-test-id",
 };

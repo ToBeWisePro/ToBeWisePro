@@ -16,14 +16,14 @@ jest.mock("@react-native-community/datetimepicker", () => {
 });
 
 describe("<CustomTimeInput />", () => {
-  const mockTime = new Date(2023, 8, 7, 12, 0, 0);
+  const mockTime = 800;
   const mockSetTime = jest.fn();
 
   it("renders correctly", () => {
     const { getByTestId } = render(
       <CustomTimeInput time={mockTime} setTime={mockSetTime} />,
     );
-    fireEvent.press(getByTestId("touchableOpacityTestId")); // Ensure TouchableOpacity has this testID
+    fireEvent.press(getByTestId(TEST_IDS.touchableOpacityTestId)); // Ensure TouchableOpacity has this testID
     expect(getByTestId(TEST_IDS.dateTimePicker)).toBeTruthy();
   });
 
@@ -31,7 +31,7 @@ describe("<CustomTimeInput />", () => {
     const { getByTestId } = render(
       <CustomTimeInput time={mockTime} setTime={mockSetTime} />,
     );
-    fireEvent.press(getByTestId("touchableOpacityTestId")); // Ensure TouchableOpacity has this testID
+    fireEvent.press(getByTestId(TEST_IDS.touchableOpacityTestId)); // Ensure TouchableOpacity has this testID
     const picker = getByTestId(TEST_IDS.dateTimePicker);
     expect(picker.props.mode).toBe("time");
     expect(picker.props.value).toEqual(mockTime);
@@ -41,7 +41,7 @@ describe("<CustomTimeInput />", () => {
     const { getByTestId } = render(
       <CustomTimeInput time={mockTime} setTime={mockSetTime} />,
     );
-    fireEvent.press(getByTestId("touchableOpacityTestId")); // Ensure TouchableOpacity has this testID
+    fireEvent.press(getByTestId(TEST_IDS.touchableOpacityTestId)); // Ensure TouchableOpacity has this testID
     const picker = getByTestId(TEST_IDS.dateTimePicker);
     const newTime = new Date(2023, 8, 7, 13, 0, 0);
     fireEvent(picker, "onChange", { type: "set" }, newTime);

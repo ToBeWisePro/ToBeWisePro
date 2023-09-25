@@ -65,8 +65,8 @@ export const NotificationScreen: React.FC<Props> = ({
   route,
 }: Props) => {
   const [allowNotifications, setAllowNotifications] = useState(true);
-  const [startTime, setStartTime] = useState(new Date());
-  const [endTime, setEndTime] = useState(new Date());
+  const [startTime, setStartTime] = useState(0);
+  const [endTime, setEndTime] = useState(2359);
   const [spacing, setSpacing] = useState(30);
   const [query, setQuery] = useState(strings.database.defaultQuery);
 
@@ -86,10 +86,10 @@ export const NotificationScreen: React.FC<Props> = ({
       setAllowNotifications(savedAllowNotifications);
     }
     if (savedStartTime !== null) {
-      setStartTime(new Date(savedStartTime));
+      setStartTime(savedStartTime);
     }
     if (savedEndTime !== null) {
-      setEndTime(new Date(savedEndTime));
+      setEndTime(savedEndTime);
     }
     if (savedSpacing !== null) {
       setSpacing(savedSpacing);
@@ -110,23 +110,16 @@ export const NotificationScreen: React.FC<Props> = ({
     setAllowNotifications(updatedAllowNotifications);
     void saveSettings(ASYNC_KEYS.allowNotifications, updatedAllowNotifications);
   };
-  const isValidTimeRange = (start: Date, end: Date): boolean => {
-    if (start.getHours() < end.getHours()) {
-      return true;
-    } else if (start.getHours() === end.getHours()) {
-      return start.getMinutes() <= end.getMinutes();
-    }
-    return false;
+  const isValidTimeRange = (start: number, end: number): boolean => {
+    return start <= end;
   };
 
-  const handleStartTimeChange = (time: Date): void => {
+  const handleStartTimeChange = (time: number): void => {
     if (isValidTimeRange(time, endTime)) {
       setStartTime(time);
       void saveSettings(ASYNC_KEYS.startTime24h, time);
     } else {
-      alert(
-        `Start Time "${time.toLocaleTimeString()}" must be less than or equal to End Time "${endTime.toLocaleTimeString()}".`,
-      );
+      alert(`Start Time must be less than or equal to End Time.`);
     }
   };
 
@@ -153,32 +146,9 @@ export const NotificationScreen: React.FC<Props> = ({
 
       // if the current time (ignoring date) is less than the end time and if the current time is greater than the start time (also ignoring date), send a message
       const currentTime = new Date();
-      const currentDateTime = new Date(
-        0,
-        0,
-        0,
-        currentTime.getHours(),
-        currentTime.getMinutes(),
-        currentTime.getSeconds(),
-      );
-      const startDateTime = new Date(
-        0,
-
-        0,
-        0,
-        startTime.getHours(),
-        startTime.getMinutes(),
-        startTime.getSeconds(),
-      );
-      const endDateTime = new Date(
-        0,
-        0,
-        0,
-        endTime.getHours(),
-        endTime.getMinutes(),
-        endTime.getSeconds(),
-      );
-      if (currentDateTime >= startDateTime && currentDateTime <= endDateTime) {
+      const currentIntTime =
+        currentTime.getHours() * 100 + currentTime.getMinutes();
+      if (currentIntTime >= startTime && currentIntTime <= endTime) {
         Alert.alert(strings.copy.newNotificationsSet);
 
         const quote: QuotationInterface = data[0];
@@ -192,9 +162,9 @@ export const NotificationScreen: React.FC<Props> = ({
       } else {
         Alert.alert(
           "Notifications will be sent between " +
-            startTime.toLocaleTimeString() +
+            startTime.toLocaleString() +
             " and " +
-            endTime.toLocaleTimeString() +
+            endTime.toLocaleString() +
             ".",
         );
       }
@@ -204,15 +174,13 @@ export const NotificationScreen: React.FC<Props> = ({
     }
   };
 
-  const handleEndTimeChange = (time: Date): void => {
+  const handleEndTimeChange = (time: number): void => {
     if (isValidTimeRange(startTime, time)) {
       setEndTime(time);
       void saveSettings(ASYNC_KEYS.endTime24h, time);
       void scheduleNotifications();
     } else {
-      alert(
-        `End Time "${time.toLocaleTimeString()}" must be greater than or equal to Start Time "${startTime.toLocaleTimeString()}".`,
-      );
+      alert(`End Time must be greater than or equal to Start Time.`);
     }
   };
 
@@ -290,7 +258,7 @@ export const NotificationScreen: React.FC<Props> = ({
               </View>
             </TouchableOpacity>
             <View style={{ alignItems: "center" }}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.button}
                 onPress={() => {
                   void scheduleNotifications()
@@ -306,7 +274,7 @@ export const NotificationScreen: React.FC<Props> = ({
                 <AppText style={styles.buttonText}>
                   {strings.copy.saveNotificationsButton}
                 </AppText>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
         </ScrollView>
