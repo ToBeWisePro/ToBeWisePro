@@ -33,6 +33,9 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Install ESLint Config
+        run: npm install eslint-config-standard-with-typescript --save-dev
+
       - name: Run ESLint
         run: npx eslint src --ext .js,.jsx,.ts,.tsx --fix
 
@@ -58,5 +61,8 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
+      - name: Install TypeScript
+        run: yarn add typescript --dev
+
       - name: Run TypeScript Compiler
         run: yarn tsc --noEmit
