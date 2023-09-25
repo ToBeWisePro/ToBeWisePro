@@ -55,7 +55,7 @@ jobs:
         run: yarn test
 
   type_check:
-    needs: lint_and_test
+    needs: install_dependencies
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
