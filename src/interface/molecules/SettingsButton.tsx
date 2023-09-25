@@ -15,9 +15,14 @@ export const SettingsButton: React.FC<Props> = ({ icon, title, onPress }) => {
   switch (title) {
     case "Version Number":
       return (
-        <AppText style={{ marginTop: 20, marginLeft: 10 }}>
-          ℹ️ Version Number: 7.1.48
-        </AppText>
+        <>
+          <AppText style={{ marginTop: 20, marginLeft: 10 }}>
+            ℹ️ Version Number: 71.53
+          </AppText>
+          <AppText style={{ marginTop: 20, marginLeft: 10 }}>
+            👨🏻‍💻 Software developed by Griffin Clark
+          </AppText>
+        </>
       );
     default:
       return (

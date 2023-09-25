@@ -38,25 +38,23 @@ export default function App(): JSX.Element {
   };
 
   useEffect(() => {
-    void scheduleNotifications();
     void (async (): Promise<void> => {
-      const defaultStartTime = new Date();
-      defaultStartTime.setHours(9, 0, 0, 0);
-      const defaultEndTime = new Date();
-      defaultEndTime.setHours(17, 0, 0, 0);
-      void saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
-      void saveDefaultValue(ASYNC_KEYS.startTime, defaultStartTime);
-      void saveDefaultValue(ASYNC_KEYS.endTime, defaultEndTime);
-      void saveDefaultValue(
+      await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
+      await saveDefaultValue(ASYNC_KEYS.startTime24h, 900);
+      await saveDefaultValue(ASYNC_KEYS.endTime24h, 1700);
+      await saveDefaultValue(
         ASYNC_KEYS.notificationQuery,
         strings.database.defaultQuery,
       );
-      void saveDefaultValue(
+      await saveDefaultValue(
         ASYNC_KEYS.notificationFilter,
         strings.database.defaultFilter,
       );
+
       void saveDefaultValue(ASYNC_KEYS.spacing, 30);
-    })();
+    })().then(() => {
+      void scheduleNotifications();
+    });
 
     void (async () => {
       const { status } = await Notifications.requestPermissionsAsync();

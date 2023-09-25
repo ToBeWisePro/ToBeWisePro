@@ -74,8 +74,8 @@ export const NotificationScreen: React.FC<Props> = ({
     const savedAllowNotifications = await loadSettings(
       ASYNC_KEYS.allowNotifications,
     );
-    const savedStartTime = await loadSettings(ASYNC_KEYS.startTime);
-    const savedEndTime = await loadSettings(ASYNC_KEYS.endTime);
+    const savedStartTime = await loadSettings(ASYNC_KEYS.startTime24h);
+    const savedEndTime = await loadSettings(ASYNC_KEYS.endTime24h);
     const savedSpacing = await loadSettings(ASYNC_KEYS.spacing);
     const savedQuery = await loadSettings(ASYNC_KEYS.notificationQuery);
 
@@ -122,7 +122,7 @@ export const NotificationScreen: React.FC<Props> = ({
   const handleStartTimeChange = (time: Date): void => {
     if (isValidTimeRange(time, endTime)) {
       setStartTime(time);
-      void saveSettings(ASYNC_KEYS.startTime, time);
+      void saveSettings(ASYNC_KEYS.startTime24h, time);
     } else {
       alert(
         `Start Time "${time.toLocaleTimeString()}" must be less than or equal to End Time "${endTime.toLocaleTimeString()}".`,
@@ -207,7 +207,7 @@ export const NotificationScreen: React.FC<Props> = ({
   const handleEndTimeChange = (time: Date): void => {
     if (isValidTimeRange(startTime, time)) {
       setEndTime(time);
-      void saveSettings(ASYNC_KEYS.endTime, time);
+      void saveSettings(ASYNC_KEYS.endTime24h, time);
       void scheduleNotifications();
     } else {
       alert(

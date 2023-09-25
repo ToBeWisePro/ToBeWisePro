@@ -10,170 +10,92 @@ export async function scheduleNotifications(): Promise<void> {
   } catch (error) {
     console.error("Error cancelling old notifications:", error);
   }
-  // console.log("Scheduling notifications")
-  let allowNotifications = true;
 
+  let allowNotifications = true;
   try {
     const value = await AsyncStorage.getItem(ASYNC_KEYS.allowNotifications);
-    if (value !== null) {
-      allowNotifications = JSON.parse(value);
-    }
+    if (value !== null) allowNotifications = JSON.parse(value);
   } catch (error) {
     console.error("Error loading allowNotifications setting:", error);
   }
 
-  const queryValue = await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery);
+  let startTime = 900;
+  let endTime = 1700;
+  try {
+    const startTimeString = await AsyncStorage.getItem(ASYNC_KEYS.startTime24h);
+    const endTimeString = await AsyncStorage.getItem(ASYNC_KEYS.endTime24h);
+    if (startTimeString != null) startTime = parseInt(startTimeString, 10);
+    if (endTimeString != null) endTime = parseInt(endTimeString, 10);
+
+    console.debug(`Notifications Start Time: ${startTime}`);
+    console.debug(`Notifications End Time: ${endTime}`);
+  } catch (error) {
+    console.error("Error loading start and end times:", error);
+  }
+
   const spacingValue = await AsyncStorage.getItem(ASYNC_KEYS.spacing);
 
-  // const query = queryValue
-  //   ? JSON.parse(queryValue)
-  //   : strings.database.defaultQuery;
-  let query: string;
-  try {
-    query =
-      queryValue != null
-        ? JSON.parse(queryValue)
-        : strings.database.defaultQuery;
-  } catch (error) {
-    console.log("Error parsing queryValue:", error);
-    query = strings.database.defaultQuery;
-  }
-
   const spacing = spacingValue != null ? JSON.parse(spacingValue) : 30;
-
-  const ONE_DAY = 24 * 60 * 60 * 1000; // One day in milliseconds
-  const ONE_MINUTE = 60 * 1000; // One minute in milliseconds
-  const MAX_INTERVALS = 60; // Max number of notifications that can be scheduled at once
+  const ONE_MINUTE = 60 * 1000;
+  const MAX_INTERVALS = 60;
   const spacingInMilliseconds = spacing * ONE_MINUTE;
 
-  const startTime = new Date(Date.now() + 2500); // Fire the first notification 2.5s after queuing it
-  let finalNotificationMessage = "";
-  const durationAfterOneInterval = ONE_DAY - spacingInMilliseconds;
-
-  let totalIntervals = Math.floor(
-    durationAfterOneInterval / spacingInMilliseconds,
-  );
-
-  if (totalIntervals > MAX_INTERVALS) {
-    totalIntervals = MAX_INTERVALS;
-  }
-
   if (allowNotifications && spacing > 0) {
-    await getShuffledQuotes(true)
-      .then(async (quotes) => {
-        const notificationRequests = [];
-        const fireTimes = []; // Array to store the fire times
-        let prevFireTime = 0;
-        let numTimes = 0;
-        // set numTimes to be the lesser of totalIntervals and quotes.length
-        if (totalIntervals < quotes.length) {
-          numTimes = totalIntervals;
-        } else {
-          numTimes = quotes.length;
-        }
-        for (let i = 0; i < numTimes; i++) {
-          const fireDate = new Date(
-            startTime.getTime() + i * spacingInMilliseconds,
-          );
+    try {
+      const quotes = await getShuffledQuotes(true);
+
+      const currentDate = new Date();
+      const fireDate = new Date();
+
+      // If current time is after the end time, set the fireDate to the next day's start time
+      if (currentDate.getHours() * 100 + currentDate.getMinutes() > endTime) {
+        fireDate.setDate(currentDate.getDate() + 1); // Move to next day
+        fireDate.setHours(Math.floor(startTime / 100), startTime % 100, 0, 0); // Set to start time
+      } else if (
+        currentDate.getHours() * 100 + currentDate.getMinutes() <
+        startTime
+      ) {
+        // If before the start time, set to the start time of the same day
+        fireDate.setHours(Math.floor(startTime / 100), startTime % 100, 0, 0); // Set to start time
+      }
+
+      for (let i = 0; i < quotes.length && i < MAX_INTERVALS; i++) {
+        // Only schedule if within the window
+        if (
+          fireDate.getHours() * 100 + fireDate.getMinutes() >= startTime &&
+          fireDate.getHours() * 100 + fireDate.getMinutes() <= endTime
+        ) {
           const quote = quotes[i];
           if (quote.quoteText.length > 0) {
-            if (fireDate.getTime() <= prevFireTime + 5000) {
-              console.log(
-                "Two quotes found that are scheduled too close together. Skipping one.",
-              );
-              continue;
-            }
-            prevFireTime = fireDate.getTime();
-            fireTimes.push(prevFireTime); // Add the fire time to the array
-            notificationRequests.push({
+            console.debug(`Scheduled notification at ${fireDate}`);
+            await Notifications.scheduleNotificationAsync({
               content: {
                 title: "ToBeWise",
                 body: quote.quoteText + "\n-" + quote.author,
-                data: {
-                  quote,
-                },
+                data: { quote },
               },
-              trigger: {
-                date: fireDate.getTime(),
-              },
+              trigger: { date: fireDate.getTime() },
             });
+
+            fireDate.setTime(fireDate.getTime() + spacingInMilliseconds); // Increment fireDate by spacing
+
+            // If it's outside the allowed window, move to the start time of the next day
+            if (fireDate.getHours() * 100 + fireDate.getMinutes() > endTime) {
+              fireDate.setDate(fireDate.getDate() + 1);
+              fireDate.setHours(
+                Math.floor(startTime / 100),
+                startTime % 100,
+                0,
+                0,
+              ); // Reset to start time
+            }
           } else {
             throw Error("Empty quote text");
           }
         }
-
-        const finalFireDate = new Date(
-          startTime.getTime() + (totalIntervals + 1) * spacingInMilliseconds,
-        );
-
-        // build the final notification by setting the finalNotificationMessage to follow this format: The chosen set of NN quotations for author/subject XXXXXXX has been fully played out. For more please go to Settings – Notifications and choose a different author/subject
-
-        if (query === "author") {
-          finalNotificationMessage =
-            "The chosen set of " +
-            quotes.length +
-            " quotations for author " +
-            query +
-            " has been fully played out. For more please go to Settings – Notifications and choose a different author.";
-        } else if (query === "subject") {
-          finalNotificationMessage =
-            "The chosen set of " +
-            quotes.length +
-            " quotations for subject " +
-            query +
-            " has been fully played out. For more please go to Settings – Notifications and choose a different subject.";
-        } else {
-          finalNotificationMessage =
-            "The chosen set of " +
-            quotes.length +
-            " quotations has been fully played out. For more please go to Settings – Notifications and choose a different author/subject.";
-        }
-        fireTimes.push(finalFireDate.getTime()); // Add the final fire time to the array
-        notificationRequests.push({
-          content: {
-            title: "ToBeWise",
-            body: finalNotificationMessage,
-          },
-          trigger: {
-            date: finalFireDate.getTime(),
-          },
-        });
-
-        // Send a notification immidiately which is randomly selected from the quotes array to show that the update worked
-        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-        Notifications.scheduleNotificationAsync({
-          content: {
-            title: "ToBeWise",
-            body: randomQuote.quoteText + "\n\n-" + randomQuote.author,
-            data: {
-              quote: randomQuote,
-            },
-          },
-          trigger: {
-            date: new Date(Date.now() + 5000).getTime(),
-          },
-        }).catch((error) => {
-          console.error("Error scheduling test notification:", error);
-        });
-
-        for (const request of notificationRequests) {
-          try {
-            await Notifications.scheduleNotificationAsync(request);
-            // await sleep(1000);
-          } catch (e) {
-            console.error("Error scheduling notification:", e);
-          }
-        }
-
-        // Calculate and log the difference in fire times
-        // for (let i = 1; i < fireTimes.length; i++) {
-        //   const difference = (fireTimes[i] - fireTimes[i - 1]) / 1000; // Difference in seconds
-        //   // console.log(`Difference in seconds between notification ${i} and ${i+1}: ${difference}`);
-        // }
-      })
-      .catch((error) => {
-        console.log("tossing an error");
-        throw error;
-      });
+      }
+    } catch (error) {
+      console.error("Error during getShuffledQuotes", error);
+    }
   }
 }

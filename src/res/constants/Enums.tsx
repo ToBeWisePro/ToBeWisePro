@@ -42,8 +42,8 @@ export enum IncludeInBottomNav {
 
 export const ASYNC_KEYS = {
   allowNotifications: "allowNotifications",
-  startTime: "startTime",
-  endTime: "endTime",
+  startTime24h: "startTime",
+  endTime24h: "endTime",
   spacing: "spacing",
   query: "query",
   filter: "filter",
