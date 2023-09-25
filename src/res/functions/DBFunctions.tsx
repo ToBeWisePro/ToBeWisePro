@@ -197,7 +197,6 @@ export async function getShuffledQuotes(
   if (userQuery === strings.customDiscoverHeaders.deleted) {
     dbQuery += " WHERE deleted = 1 ORDER BY RANDOM()";
   } else if (userQuery === strings.customDiscoverHeaders.all) {
-    console.log("ALL QUOTES");
     dbQuery += " WHERE deleted = 0 ORDER BY RANDOM()";
   } else if (userQuery === strings.customDiscoverHeaders.top100) {
     dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";

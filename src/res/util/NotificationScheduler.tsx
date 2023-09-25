@@ -25,15 +25,11 @@ export async function scheduleNotifications(): Promise<void> {
     const endTimeString = await AsyncStorage.getItem(ASYNC_KEYS.endTime24h);
     if (startTimeString != null) startTime = parseInt(startTimeString, 10);
     if (endTimeString != null) endTime = parseInt(endTimeString, 10);
-
-    // console.debug(`Notifications Start Time: ${startTime}`);
-    // console.debug(`Notifications End Time: ${endTime}`);
   } catch (error) {
     console.error("Error loading start and end times:", error);
   }
 
   const spacingValue = await AsyncStorage.getItem(ASYNC_KEYS.spacing);
-
   const spacing = spacingValue != null ? JSON.parse(spacingValue) : 30;
   const ONE_MINUTE = 60 * 1000;
   const MAX_INTERVALS = 60;
@@ -42,20 +38,24 @@ export async function scheduleNotifications(): Promise<void> {
   if (allowNotifications && spacing > 0) {
     try {
       const quotes = await getShuffledQuotes(true);
+      let fireDate = new Date();
 
-      const currentDate = new Date();
-      const fireDate = new Date();
-
-      // If current time is after the end time, set the fireDate to the next day's start time
-      if (currentDate.getHours() * 100 + currentDate.getMinutes() > endTime) {
-        fireDate.setDate(currentDate.getDate() + 1); // Move to next day
+      // Ensure fireDate is set to the next available start time
+      const currentTime = fireDate.getHours() * 100 + fireDate.getMinutes();
+      if (currentTime >= endTime) {
+        fireDate.setDate(fireDate.getDate() + 1); // Move to next day
         fireDate.setHours(Math.floor(startTime / 100), startTime % 100, 0, 0); // Set to start time
-      } else if (
-        currentDate.getHours() * 100 + currentDate.getMinutes() <
-        startTime
-      ) {
-        // If before the start time, set to the start time of the same day
+      } else if (currentTime < startTime) {
         fireDate.setHours(Math.floor(startTime / 100), startTime % 100, 0, 0); // Set to start time
+      } else {
+        // If current time is within the allowed window, adjust fireDate to the next spacing interval
+        const nextInterval =
+          Math.ceil(
+            (fireDate.getMinutes() * 1000 * 60) / spacingInMilliseconds,
+          ) * spacingInMilliseconds;
+        fireDate = new Date(
+          fireDate.getTime() - fireDate.getMinutes() * 1000 * 60 + nextInterval,
+        );
       }
 
       for (let i = 0; i < quotes.length && i < MAX_INTERVALS; i++) {
@@ -66,8 +66,6 @@ export async function scheduleNotifications(): Promise<void> {
         ) {
           const quote = quotes[i];
           if (quote.quoteText.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            // console.debug(`Scheduled notification at ${fireDate}`);
             await Notifications.scheduleNotificationAsync({
               content: {
                 title: "ToBeWise",
