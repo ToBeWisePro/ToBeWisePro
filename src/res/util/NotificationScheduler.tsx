@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { getShuffledQuotes } from "../functions/DBFunctions";
-import { strings } from "../constants/Strings";
 import { ASYNC_KEYS } from "../constants/Enums";
 
 export async function scheduleNotifications(): Promise<void> {
@@ -67,6 +66,7 @@ export async function scheduleNotifications(): Promise<void> {
         ) {
           const quote = quotes[i];
           if (quote.quoteText.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             console.debug(`Scheduled notification at ${fireDate}`);
             await Notifications.scheduleNotificationAsync({
               content: {
