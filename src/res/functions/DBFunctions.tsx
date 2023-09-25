@@ -202,6 +202,9 @@ export async function getShuffledQuotes(
   } else if (userQuery === strings.customDiscoverHeaders.top100) {
     dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";
     params = [`%${"Top 100"}%`];
+  } else if (userQuery === "Top 100") {
+    dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";
+    params = [`%${"Top 100"}%`];
   } else if (userQuery === strings.customDiscoverHeaders.favorites) {
     dbQuery += " WHERE favorite = 1 AND deleted = 0 ORDER BY RANDOM()";
   } else if (userQuery === strings.customDiscoverHeaders.all) {
@@ -390,6 +393,12 @@ export async function getQuoteCount(
         query,
         params,
         (_, result) => {
+          console.debug(
+            "Getquotecount key:",
+            key,
+            ": count:",
+            result.rows.item(0).count,
+          );
           resolve(result.rows.item(0).count);
         },
         (_, error) => {

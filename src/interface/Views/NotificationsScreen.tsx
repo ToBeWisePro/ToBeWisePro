@@ -5,13 +5,11 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
-  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { strings } from "../../res/constants/Strings";
 import {
   type NavigationInterface,
-  type QuotationInterface,
   type RouteInterface,
 } from "../../res/constants/Interfaces";
 import {
@@ -28,8 +26,6 @@ import { ScrollView, Switch } from "react-native-gesture-handler";
 import { AppText } from "../atoms/AppText";
 import { CustomTimeInput } from "../atoms/CustomTimeInput";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
-import * as Notifications from "expo-notifications";
-import { getShuffledQuotes } from "../../res/functions/DBFunctions";
 import { TEST_IDS } from "../../res/constants/TestIDs";
 
 interface Props {
@@ -65,8 +61,8 @@ export const NotificationScreen: React.FC<Props> = ({
   route,
 }: Props) => {
   const [allowNotifications, setAllowNotifications] = useState(true);
-  const [startTime, setStartTime] = useState(new Date());
-  const [endTime, setEndTime] = useState(new Date());
+  const [startTime, setStartTime] = useState(0);
+  const [endTime, setEndTime] = useState(2359);
   const [spacing, setSpacing] = useState(30);
   const [query, setQuery] = useState(strings.database.defaultQuery);
 
@@ -74,8 +70,8 @@ export const NotificationScreen: React.FC<Props> = ({
     const savedAllowNotifications = await loadSettings(
       ASYNC_KEYS.allowNotifications,
     );
-    const savedStartTime = await loadSettings(ASYNC_KEYS.startTime);
-    const savedEndTime = await loadSettings(ASYNC_KEYS.endTime);
+    const savedStartTime = await loadSettings(ASYNC_KEYS.startTime24h);
+    const savedEndTime = await loadSettings(ASYNC_KEYS.endTime24h);
     const savedSpacing = await loadSettings(ASYNC_KEYS.spacing);
     const savedQuery = await loadSettings(ASYNC_KEYS.notificationQuery);
 
@@ -86,10 +82,10 @@ export const NotificationScreen: React.FC<Props> = ({
       setAllowNotifications(savedAllowNotifications);
     }
     if (savedStartTime !== null) {
-      setStartTime(new Date(savedStartTime));
+      setStartTime(savedStartTime);
     }
     if (savedEndTime !== null) {
-      setEndTime(new Date(savedEndTime));
+      setEndTime(savedEndTime);
     }
     if (savedSpacing !== null) {
       setSpacing(savedSpacing);
@@ -110,109 +106,77 @@ export const NotificationScreen: React.FC<Props> = ({
     setAllowNotifications(updatedAllowNotifications);
     void saveSettings(ASYNC_KEYS.allowNotifications, updatedAllowNotifications);
   };
-  const isValidTimeRange = (start: Date, end: Date): boolean => {
-    if (start.getHours() < end.getHours()) {
-      return true;
-    } else if (start.getHours() === end.getHours()) {
-      return start.getMinutes() <= end.getMinutes();
-    }
-    return false;
+  const isValidTimeRange = (start: number, end: number): boolean => {
+    return start <= end;
   };
 
-  const handleStartTimeChange = (time: Date): void => {
+  const handleStartTimeChange = (time: number): void => {
     if (isValidTimeRange(time, endTime)) {
       setStartTime(time);
-      void saveSettings(ASYNC_KEYS.startTime, time);
+      void saveSettings(ASYNC_KEYS.startTime24h, time);
     } else {
-      alert(
-        `Start Time "${time.toLocaleTimeString()}" must be less than or equal to End Time "${endTime.toLocaleTimeString()}".`,
-      );
+      alert(`Start Time must be less than or equal to End Time.`);
     }
   };
 
-  const handleButtonPress = async (): Promise<void> => {
-    try {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== "granted") {
-        alert("You need to grant permission to receive notifications");
-        return;
-      }
-      let data = await getShuffledQuotes(true);
-      if (data.length === 0) {
-        alert("Invalid query. Notifications database set to defaults");
-        await AsyncStorage.setItem(
-          ASYNC_KEYS.notificationFilter,
-          strings.database.defaultFilter,
-        );
-        await AsyncStorage.setItem(
-          ASYNC_KEYS.notificationQuery,
-          strings.database.defaultQuery,
-        );
-        data = await getShuffledQuotes(false);
-      }
+  // const handleButtonPress = async (): Promise<void> => {
+  //   try {
+  //     const { status } = await Notifications.requestPermissionsAsync();
+  //     if (status !== "granted") {
+  //       alert("You need to grant permission to receive notifications");
+  //       return;
+  //     }
+  //     let data = await getShuffledQuotes(true);
+  //     if (data.length === 0) {
+  //       alert("Invalid query. Notifications database set to defaults");
+  //       await AsyncStorage.setItem(
+  //         ASYNC_KEYS.notificationFilter,
+  //         strings.database.defaultFilter,
+  //       );
+  //       await AsyncStorage.setItem(
+  //         ASYNC_KEYS.notificationQuery,
+  //         strings.database.defaultQuery,
+  //       );
+  //       data = await getShuffledQuotes(false);
+  //     }
 
-      // if the current time (ignoring date) is less than the end time and if the current time is greater than the start time (also ignoring date), send a message
-      const currentTime = new Date();
-      const currentDateTime = new Date(
-        0,
-        0,
-        0,
-        currentTime.getHours(),
-        currentTime.getMinutes(),
-        currentTime.getSeconds(),
-      );
-      const startDateTime = new Date(
-        0,
+  //     // if the current time (ignoring date) is less than the end time and if the current time is greater than the start time (also ignoring date), send a message
+  //     const currentTime = new Date();
+  //     const currentIntTime =
+  //       currentTime.getHours() * 100 + currentTime.getMinutes();
+  //     if (currentIntTime >= startTime && currentIntTime <= endTime) {
+  //       Alert.alert(strings.copy.newNotificationsSet);
 
-        0,
-        0,
-        startTime.getHours(),
-        startTime.getMinutes(),
-        startTime.getSeconds(),
-      );
-      const endDateTime = new Date(
-        0,
-        0,
-        0,
-        endTime.getHours(),
-        endTime.getMinutes(),
-        endTime.getSeconds(),
-      );
-      if (currentDateTime >= startDateTime && currentDateTime <= endDateTime) {
-        Alert.alert(strings.copy.newNotificationsSet);
+  //       const quote: QuotationInterface = data[0];
+  //       await Notifications.presentNotificationAsync({
+  //         title: strings.copy.notificationTitle,
+  //         body: quote.quoteText + "\n- " + quote.author,
+  //         data: {
+  //           quote,
+  //         },
+  //       });
+  //     } else {
+  //       Alert.alert(
+  //         "Notifications will be sent between " +
+  //           startTime.toLocaleString() +
+  //           " and " +
+  //           endTime.toLocaleString() +
+  //           ".",
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //     alert("An error occurred while trying to send the notification");
+  //   }
+  // };
 
-        const quote: QuotationInterface = data[0];
-        await Notifications.presentNotificationAsync({
-          title: strings.copy.notificationTitle,
-          body: quote.quoteText + "\n- " + quote.author,
-          data: {
-            quote,
-          },
-        });
-      } else {
-        Alert.alert(
-          "Notifications will be sent between " +
-            startTime.toLocaleTimeString() +
-            " and " +
-            endTime.toLocaleTimeString() +
-            ".",
-        );
-      }
-    } catch (error) {
-      console.error(error);
-      alert("An error occurred while trying to send the notification");
-    }
-  };
-
-  const handleEndTimeChange = (time: Date): void => {
+  const handleEndTimeChange = (time: number): void => {
     if (isValidTimeRange(startTime, time)) {
       setEndTime(time);
-      void saveSettings(ASYNC_KEYS.endTime, time);
+      void saveSettings(ASYNC_KEYS.endTime24h, time);
       void scheduleNotifications();
     } else {
-      alert(
-        `End Time "${time.toLocaleTimeString()}" must be greater than or equal to Start Time "${startTime.toLocaleTimeString()}".`,
-      );
+      alert(`End Time must be greater than or equal to Start Time.`);
     }
   };
 
@@ -290,7 +254,7 @@ export const NotificationScreen: React.FC<Props> = ({
               </View>
             </TouchableOpacity>
             <View style={{ alignItems: "center" }}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.button}
                 onPress={() => {
                   void scheduleNotifications()
@@ -306,7 +270,7 @@ export const NotificationScreen: React.FC<Props> = ({
                 <AppText style={styles.buttonText}>
                   {strings.copy.saveNotificationsButton}
                 </AppText>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
         </ScrollView>
