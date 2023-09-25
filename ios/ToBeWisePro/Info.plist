@@ -17,7 +17,7 @@
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
-    <string>71.53.6</string>
+    <string>71.53.4</string>
     <key>CFBundleVersion</key>
     <string>2</string>
     <key>CFBundleSignature</key>
