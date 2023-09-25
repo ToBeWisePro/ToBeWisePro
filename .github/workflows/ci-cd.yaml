@@ -14,36 +14,27 @@ jobs:
         with:
           node-version: "16"
 
-      - name: Cache node_modules
+      - name: Cache Yarn Cache
         uses: actions/cache@v2
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node-
-
+            ${{ runner.os }}-yarn-
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
   lint_and_test:
-    needs: install_dependencies
     runs-on: ubuntu-latest
+    needs: install_dependencies
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
-      - name: Clean Git Cache
-        run: git gc --prune=now && git remote prune origin
-
-      - name: Install dependencies (if needed)
-        run: yarn install --frozen-lockfile
-
-      - name: List Contents of src/res/constants
-        run: ls -l ./src/res/constants/
-
-      - name: List installed binaries
-        run: ls node_modules/.bin
+      - name: Install ESLint Config
+        run: npm install eslint-config-standard-with-typescript --save-dev
 
       - name: Run ESLint
         run: npx eslint src --ext .js,.jsx,.ts,.tsx --fix
@@ -55,36 +46,23 @@ jobs:
         run: yarn test
 
   type_check:
-    needs: lint_and_test
     runs-on: ubuntu-latest
+    needs: install_dependencies
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
 
-      - name: Cache node_modules
+      - name: Cache Yarn Cache
         uses: actions/cache@v2
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Check TypeScript Compiler
-        run: |
-          if ! [ -x "$(command -v npx tsc)" ]; then
-            echo "TypeScript Compiler (tsc) is not installed. Installing..."
-            yarn install --frozen-lockfile
-          fi
+            ${{ runner.os }}-yarn-
+      - name: Install TypeScript
+        run: yarn add typescript --dev
 
       - name: Run TypeScript Compiler
         run: yarn tsc --noEmit
-
-  # build:
-  #   needs: type_check
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-
-  # - name: Build Project
-  #   run: cd ios && pod install && xcodebuild
