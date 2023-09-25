@@ -82,8 +82,13 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       initialDataOrderRef.current = data;
       // Update the prevDataRef with the new data for the next comparison
       prevDataRef.current = data;
-      // If needed, perform additional actions like resetting the scroll position
-      scrollRef.current?.scrollToOffset({ offset: 0, animated: false });
+      const timerId = setTimeout(() => {
+        scrollRef.current?.scrollToIndex({ index: 0, animated: false });
+      }, 0); // Timeout set to ensure the scrollToIndex is called after rendering
+
+      return () => {
+        clearTimeout(timerId);
+      };
     }
   }, [data]);
 
