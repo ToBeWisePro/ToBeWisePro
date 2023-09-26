@@ -175,6 +175,7 @@ export const NotificationScreen: React.FC<Props> = ({
               <AppText>Time between notifications: </AppText>
               <View style={styles.pickerContainer}>
                 <RNPickerSelect
+                  placeholder={{}}
                   onValueChange={async (value) => {
                     await handleSpacingChange(value);
                   }}
