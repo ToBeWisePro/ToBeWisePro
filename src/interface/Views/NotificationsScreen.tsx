@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  Dimensions,
-} from "react-native";
+import { StyleSheet, TouchableOpacity, View, Dimensions } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { strings } from "../../res/constants/Strings";
 import {
@@ -19,6 +13,7 @@ import {
   LIGHT,
   PRIMARY_GREEN,
 } from "../../../styles/Colors";
+import RNPickerSelect from "react-native-picker-select";
 import { BottomNav } from "../organisms/BottomNav";
 import { ASYNC_KEYS, IncludeInBottomNav } from "../../res/constants/Enums";
 import { TopNav } from "../molecules/TopNav";
@@ -119,57 +114,6 @@ export const NotificationScreen: React.FC<Props> = ({
     }
   };
 
-  // const handleButtonPress = async (): Promise<void> => {
-  //   try {
-  //     const { status } = await Notifications.requestPermissionsAsync();
-  //     if (status !== "granted") {
-  //       alert("You need to grant permission to receive notifications");
-  //       return;
-  //     }
-  //     let data = await getShuffledQuotes(true);
-  //     if (data.length === 0) {
-  //       alert("Invalid query. Notifications database set to defaults");
-  //       await AsyncStorage.setItem(
-  //         ASYNC_KEYS.notificationFilter,
-  //         strings.database.defaultFilter,
-  //       );
-  //       await AsyncStorage.setItem(
-  //         ASYNC_KEYS.notificationQuery,
-  //         strings.database.defaultQuery,
-  //       );
-  //       data = await getShuffledQuotes(false);
-  //     }
-
-  //     // if the current time (ignoring date) is less than the end time and if the current time is greater than the start time (also ignoring date), send a message
-  //     const currentTime = new Date();
-  //     const currentIntTime =
-  //       currentTime.getHours() * 100 + currentTime.getMinutes();
-  //     if (currentIntTime >= startTime && currentIntTime <= endTime) {
-  //       Alert.alert(strings.copy.newNotificationsSet);
-
-  //       const quote: QuotationInterface = data[0];
-  //       await Notifications.presentNotificationAsync({
-  //         title: strings.copy.notificationTitle,
-  //         body: quote.quoteText + "\n- " + quote.author,
-  //         data: {
-  //           quote,
-  //         },
-  //       });
-  //     } else {
-  //       Alert.alert(
-  //         "Notifications will be sent between " +
-  //           startTime.toLocaleString() +
-  //           " and " +
-  //           endTime.toLocaleString() +
-  //           ".",
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //     alert("An error occurred while trying to send the notification");
-  //   }
-  // };
-
   const handleEndTimeChange = (time: number): void => {
     if (isValidTimeRange(startTime, time)) {
       setEndTime(time);
@@ -229,16 +173,21 @@ export const NotificationScreen: React.FC<Props> = ({
             </View>
             <View style={styles.menuOptionContainerBottom}>
               <AppText>Time between notifications: </AppText>
-              <View style={{ flexDirection: "row" }}>
-                <TextInput
-                  keyboardType="numeric"
-                  style={styles.frequencyInput}
-                  value={String(spacing)}
-                  onChangeText={(text) => {
-                    void handleSpacingChange(Number(text));
+              <View style={styles.pickerContainer}>
+                <RNPickerSelect
+                  onValueChange={async (value) => {
+                    await handleSpacingChange(value);
                   }}
+                  items={Array.from({ length: 60 }, (_, i) => ({
+                    label: String(i + 1),
+                    value: i + 1,
+                  }))}
+                  value={spacing}
+                  style={pickerSelectStyles}
                 />
-                <AppText>minute(s)</AppText>
+                <View style={styles.textContainer}>
+                  <AppText>minute(s)</AppText>
+                </View>
               </View>
             </View>
             <AppText style={styles.title}>Notification Database</AppText>
@@ -253,25 +202,7 @@ export const NotificationScreen: React.FC<Props> = ({
                 <AppText>{`Current Notifications From: ${query}`}</AppText>
               </View>
             </TouchableOpacity>
-            <View style={{ alignItems: "center" }}>
-              {/* <TouchableOpacity
-                style={styles.button}
-                onPress={() => {
-                  void scheduleNotifications()
-                    .then(async () => {
-                      await handleButtonPress();
-                    })
-                    .catch((err) => {
-                      console.error(err);
-                      Alert.alert(err.toString());
-                    });
-                }}
-              >
-                <AppText style={styles.buttonText}>
-                  {strings.copy.saveNotificationsButton}
-                </AppText>
-              </TouchableOpacity> */}
-            </View>
+            <View style={{ alignItems: "center" }}></View>
           </View>
         </ScrollView>
       </View>
@@ -355,5 +286,37 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     backgroundColor: GRAY_6,
     textAlign: "center",
+  },
+  pickerContainer: {
+    flexDirection: "row",
+    alignItems: "center", // Aligns children vertically in the center
+    justifyContent: "flex-end", // Aligns children to the end of the container
+  },
+
+  textContainer: {
+    marginLeft: 10, // Adds some space between the picker and the text
+  },
+});
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    backgroundColor: GRAY_6,
+    marginRight: 10,
+    height: 30, // Adjusted height
+    borderRadius: 8,
+    alignSelf: "center",
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 0.5,
+    borderColor: "purple",
+    borderRadius: 8,
+    color: "black",
+    paddingRight: 30, // to ensure the text is never behind the icon
   },
 });

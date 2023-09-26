@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { getShuffledQuotes } from "../functions/DBFunctions";
 import { ASYNC_KEYS } from "../constants/Enums";
+import { Alert } from "react-native";
 
 export async function scheduleNotifications(): Promise<void> {
   try {
@@ -72,7 +73,9 @@ export async function scheduleNotifications(): Promise<void> {
                 body: quote.quoteText + "\n-" + quote.author,
                 data: { quote },
               },
-              trigger: { date: fireDate.getTime() },
+              trigger: {
+                seconds: (fireDate.getTime() - new Date().getTime()) / 1000,
+              },
             });
 
             fireDate.setTime(fireDate.getTime() + spacingInMilliseconds); // Increment fireDate by spacing
@@ -95,5 +98,31 @@ export async function scheduleNotifications(): Promise<void> {
     } catch (error) {
       console.error("Error during getShuffledQuotes", error);
     }
+  }
+
+  try {
+    const scheduledNotifications =
+      await Notifications.getAllScheduledNotificationsAsync();
+    const nextThreeNotifications = scheduledNotifications
+      .slice(0, 3)
+      .map((notification) => {
+        if ("seconds" in notification.trigger) {
+          return new Date(
+            new Date().getTime() + notification.trigger.seconds * 1000,
+          ).toLocaleString();
+        } else {
+          return "Notification trigger does not have a seconds property";
+        }
+      })
+      .join("\n");
+
+    Alert.alert(
+      "Next 3 Notifications",
+      nextThreeNotifications.length > 0
+        ? nextThreeNotifications
+        : "No Notifications Scheduled",
+    );
+  } catch (error) {
+    console.error("Error fetching scheduled notifications:", error);
   }
 }
