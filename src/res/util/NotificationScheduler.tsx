@@ -2,7 +2,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { getShuffledQuotes } from "../functions/DBFunctions";
 import { ASYNC_KEYS } from "../constants/Enums";
-import { Alert } from "react-native";
 
 export async function scheduleNotifications(): Promise<void> {
   try {

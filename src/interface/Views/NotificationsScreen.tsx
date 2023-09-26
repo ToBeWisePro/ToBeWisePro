@@ -176,6 +176,7 @@ export const NotificationScreen: React.FC<Props> = ({
               <View style={styles.pickerContainer}>
                 <RNPickerSelect
                   placeholder={{}}
+                  // eslint-disable-next-line @typescript-eslint/no-misused-promises
                   onValueChange={async (value) => {
                     await handleSpacingChange(value);
                   }}
