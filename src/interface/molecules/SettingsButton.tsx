@@ -17,10 +17,10 @@ export const SettingsButton: React.FC<Props> = ({ icon, title, onPress }) => {
       return (
         <>
           <AppText style={{ marginTop: 20, marginLeft: 10 }}>
-            ℹ️ Version Number: 71.53.4
+            ℹ️ Version Number: 71.53.5
           </AppText>
           <AppText style={{ marginTop: 20, marginLeft: 10 }}>
-            👨🏻‍💻 Software developed by Griffin Clark
+            👨🏻‍💻 Software programmed by Griffin Clark in San Diego, CA
           </AppText>
         </>
       );

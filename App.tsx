@@ -19,6 +19,7 @@ import {
   type NavigationContainerRef,
 } from "@react-navigation/native";
 import { ASYNC_KEYS } from "./src/res/constants/Enums";
+import { convertDateTo24h } from "./src/res/util/BackwardsCompatability";
 export const navigationRef =
   React.createRef<NavigationContainerRef<NavigationInterface>>();
 
@@ -40,8 +41,8 @@ export default function App(): JSX.Element {
   useEffect(() => {
     void (async (): Promise<void> => {
       await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
-      await saveDefaultValue(ASYNC_KEYS.startTime24h, 900);
-      await saveDefaultValue(ASYNC_KEYS.endTime24h, 1700);
+      await convertDateTo24h(ASYNC_KEYS.startTime24h, 900);
+      await convertDateTo24h(ASYNC_KEYS.endTime24h, 1700);
       await saveDefaultValue(
         ASYNC_KEYS.notificationQuery,
         strings.database.defaultQuery,
