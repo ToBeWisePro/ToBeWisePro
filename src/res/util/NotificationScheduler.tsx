@@ -66,13 +66,20 @@ export async function scheduleNotifications(): Promise<void> {
         ) {
           const quote = quotes[i];
           if (quote.quoteText.length > 0) {
+            // Ensure fireDate is in the future
+            while (fireDate.getTime() <= new Date().getTime()) {
+              fireDate.setTime(fireDate.getTime() + spacingInMilliseconds);
+            }
+
             await Notifications.scheduleNotificationAsync({
               content: {
                 title: "ToBeWise",
                 body: quote.quoteText + "\n-" + quote.author,
                 data: { quote },
               },
-              trigger: { date: fireDate.getTime() },
+              trigger: {
+                seconds: (fireDate.getTime() - new Date().getTime()) / 1000,
+              },
             });
 
             fireDate.setTime(fireDate.getTime() + spacingInMilliseconds); // Increment fireDate by spacing
@@ -95,5 +102,31 @@ export async function scheduleNotifications(): Promise<void> {
     } catch (error) {
       console.error("Error during getShuffledQuotes", error);
     }
+  }
+
+  try {
+    const scheduledNotifications =
+      await Notifications.getAllScheduledNotificationsAsync();
+    const nextThreeNotifications = scheduledNotifications
+      .slice(0, 3)
+      .map((notification) => {
+        if ("seconds" in notification.trigger) {
+          return new Date(
+            new Date().getTime() + notification.trigger.seconds * 1000,
+          ).toLocaleString();
+        } else {
+          return "Notification trigger does not have a seconds property";
+        }
+      })
+      .join("\n");
+
+    console.debug(
+      "Next 3 Notifications",
+      nextThreeNotifications.length > 0
+        ? nextThreeNotifications
+        : "No Notifications Scheduled",
+    );
+  } catch (error) {
+    console.error("Error fetching scheduled notifications:", error);
   }
 }

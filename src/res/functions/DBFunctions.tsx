@@ -392,12 +392,6 @@ export async function getQuoteCount(
         query,
         params,
         (_, result) => {
-          console.debug(
-            "Getquotecount key:",
-            key,
-            ": count:",
-            result.rows.item(0).count,
-          );
           resolve(result.rows.item(0).count);
         },
         (_, error) => {
