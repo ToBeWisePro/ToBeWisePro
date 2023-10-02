@@ -20,7 +20,7 @@ export const SettingsButton: React.FC<Props> = ({ icon, title, onPress }) => {
             ℹ️ Version Number: 71.53.7
           </AppText>
           <AppText style={{ marginTop: 20, marginLeft: 10 }}>
-            👨🏻‍💻 Software programmed by Griffin Clark in San Diego, CA
+            👨🏻‍💻 Programmed by Griffin Clark in San Diego, CA
           </AppText>
         </>
       );

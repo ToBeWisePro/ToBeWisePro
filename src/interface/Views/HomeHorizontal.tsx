@@ -18,6 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native-gesture-handler";
 import { useFocusEffect } from "@react-navigation/native";
 import { TEST_IDS } from "../../res/constants/TestIDs";
+
 interface Props {
   navigation: NavigationInterface;
   route: RouteInterface;
@@ -30,7 +31,6 @@ export const HomeHorizontal = ({ navigation, route }: Props): JSX.Element => {
   );
   const [backButton, showBackButton] = useState(true);
 
-  // set the title and firstQuote (which was passed to us via route). Also determine whether or not there should be a back button
   useFocusEffect(
     useCallback(() => {
       const getData = async (): Promise<void> => {
@@ -44,6 +44,10 @@ export const HomeHorizontal = ({ navigation, route }: Props): JSX.Element => {
             setTitle(notifTitle);
             showBackButton(false);
             setFirstQuote(JSON.parse(notifQuote));
+
+            // Reset the notification data after using it
+            await AsyncStorage.removeItem(ASYNC_KEYS.notifTitle);
+            await AsyncStorage.removeItem(ASYNC_KEYS.notifQuote);
           } else {
             const retrievedQuery = savedQuery ?? strings.database.defaultQuery;
             const retrievedFilter =
@@ -55,16 +59,8 @@ export const HomeHorizontal = ({ navigation, route }: Props): JSX.Element => {
       };
 
       void getData();
-      return () => {
-        void AsyncStorage.removeItem(ASYNC_KEYS.notifTitle);
-        void AsyncStorage.removeItem(ASYNC_KEYS.notifQuote);
-      };
     }, [navigation, route]),
   );
-
-  // Set title from AsyncStorage or from route params
-  // Set title from AsyncStorage or from route params
-  useEffect(() => {}, []);
 
   return (
     <View style={styles.container}>

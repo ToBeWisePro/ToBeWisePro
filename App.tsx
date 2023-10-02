@@ -1,4 +1,3 @@
-// App.js
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, ActivityIndicator, Alert } from "react-native";
 import {
@@ -20,14 +19,16 @@ import {
 } from "@react-navigation/native";
 import { ASYNC_KEYS } from "./src/res/constants/Enums";
 import { convertDateTo24h } from "./src/res/util/BackwardsCompatability";
+
 export const navigationRef =
   React.createRef<NavigationContainerRef<NavigationInterface>>();
 
-export default function App(): JSX.Element {
+export default function App() {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     [],
   );
-  const saveDefaultValue = async (key: string, value: any): Promise<void> => {
+
+  const saveDefaultValue = async (key: string, value: any) => {
     try {
       const storedValue = await AsyncStorage.getItem(key);
       if (storedValue === null) {
@@ -39,7 +40,7 @@ export default function App(): JSX.Element {
   };
 
   useEffect(() => {
-    void (async (): Promise<void> => {
+    (async () => {
       await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
       await convertDateTo24h(ASYNC_KEYS.startTime24h, 900);
       await convertDateTo24h(ASYNC_KEYS.endTime24h, 1700);
@@ -51,18 +52,18 @@ export default function App(): JSX.Element {
         ASYNC_KEYS.notificationFilter,
         strings.database.defaultFilter,
       );
-
-      void saveDefaultValue(ASYNC_KEYS.spacing, 30);
+      await saveDefaultValue(ASYNC_KEYS.spacing, 30);
     })().then(() => {
-      void scheduleNotifications();
+      scheduleNotifications();
     });
 
-    void (async () => {
+    (async () => {
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {
         console.error("Notification permissions not granted.");
       }
     })();
+
     Notifications.addNotificationResponseReceivedListener((response) => {
       const quote = response.notification.request.content.data.quote;
       if (quote == null) {
@@ -94,13 +95,10 @@ export default function App(): JSX.Element {
         } catch (error) {
           console.error("Error saving quote:", error);
         }
-      })().catch((error) => {
-        console.error("Unexpected error:", error);
-      });
+      })();
     });
 
-    // Set a default filter if none is set
-    const i = async (): Promise<void> => {
+    const initialize = async () => {
       await AsyncStorage.getItem(ASYNC_KEYS.filter).then(async (res) => {
         if (res === null) {
           await AsyncStorage.setItem(
@@ -110,7 +108,6 @@ export default function App(): JSX.Element {
         }
       });
 
-      // set a default subject if none is set
       await AsyncStorage.getItem(ASYNC_KEYS.query).then(async (res) => {
         if (res === null) {
           await AsyncStorage.setItem(
@@ -120,20 +117,18 @@ export default function App(): JSX.Element {
         }
       });
     };
-    void i();
+    initialize();
   }, []);
 
   useEffect(() => {
-    const i = async (): Promise<void> => {
-      // log the default query and filter
-
+    const initialize = async () => {
       await dataImporter().then(async () => {
         await getShuffledQuotes(false).then((res) => {
           setShuffledQuotes(res);
         });
       });
     };
-    i().catch((error) => {
+    initialize().catch((error) => {
       Alert.alert("Error", error.message);
     });
   }, []);

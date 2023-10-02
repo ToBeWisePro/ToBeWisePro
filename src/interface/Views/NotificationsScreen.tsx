@@ -127,13 +127,7 @@ export const NotificationScreen: React.FC<Props> = ({
   const handleSpacingChange = async (value: number): Promise<void> => {
     await saveSettings(ASYNC_KEYS.spacing, value).then(async () => {
       setSpacing(value);
-      await scheduleNotifications()
-        .then(() => {
-          console.log("notifs scheduled");
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      await scheduleNotifications();
     });
   };
 
