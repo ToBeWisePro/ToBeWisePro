@@ -23,7 +23,7 @@ import { convertDateTo24h } from "./src/res/util/BackwardsCompatability";
 export const navigationRef =
   React.createRef<NavigationContainerRef<NavigationInterface>>();
 
-export default function App() {
+export default function App(): JSX.Element {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     [],
   );
@@ -117,7 +117,7 @@ export default function App() {
         }
       });
     };
-    initialize();
+    void initialize();
   }, []);
 
   useEffect(() => {

@@ -169,8 +169,15 @@ export async function getShuffledQuotes(
   userQuery = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.query}`);
   filter = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.filter}`);
 
+  console.debug("User Query before replaceAll:", userQuery);
+  console.debug("Filter before replaceAll:", filter);
+
   if (userQuery != null) userQuery = userQuery.replaceAll('"', "");
   if (filter != null) filter = filter.replaceAll('"', "");
+
+  console.debug("User Query after replaceAll:", userQuery);
+  console.debug("Filter after replaceAll:", filter);
+
   if (forNotifications ?? false) {
     // TODO I can't for the life of me figure out why these sometimes get wrapped in quotation marks
     await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery).then(
@@ -193,6 +200,8 @@ export async function getShuffledQuotes(
 
   if (userQuery == null || filter == null)
     throw new Error("Invalid userQuery or filter");
+  console.debug("DB Query:", dbQuery);
+  console.debug("Params:", params);
 
   if (userQuery === strings.customDiscoverHeaders.deleted) {
     dbQuery += " WHERE deleted = 1 ORDER BY RANDOM()";
