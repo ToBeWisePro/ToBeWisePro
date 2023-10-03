@@ -3,6 +3,7 @@ import * as Notifications from "expo-notifications";
 import { scheduleNotifications } from "./NotificationScheduler";
 import { getShuffledQuotes } from "../functions/DBFunctions";
 import { type QuotationInterface } from "../constants/Interfaces";
+import { ASYNC_KEYS } from "../constants/Enums";
 
 // Mock required for AsyncStorage
 jest.mock("@react-native-async-storage/async-storage", () =>
@@ -10,7 +11,6 @@ jest.mock("@react-native-async-storage/async-storage", () =>
 );
 jest.mock("expo-notifications");
 
-// This will generate five quotes adhering to the QuotationInterface
 const mockQuotes: QuotationInterface[] = [];
 for (let i = 1; i <= 5; i++) {
   mockQuotes.push({
@@ -21,27 +21,28 @@ for (let i = 1; i <= 5; i++) {
     authorLink: `https://author-link-${i}.com`,
     videoLink: `https://video-link-${i}.com`,
     contributedBy: "TestUser",
-    favorite: i % 2 === 0, // Even IDs will be marked as favorite
+    favorite: i % 2 === 0,
     deleted: false,
   });
 }
 
-// Mock the DBFunctions module
 jest.mock("../functions/DBFunctions", () => ({
   getShuffledQuotes: jest.fn().mockResolvedValue(mockQuotes),
 }));
 
 describe("scheduleNotifications", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.resetAllMocks();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
   it("should handle null values from AsyncStorage gracefully", async () => {
     (
       AsyncStorage.getItem as jest.MockedFunction<typeof AsyncStorage.getItem>
     ).mockResolvedValue(null);
     await scheduleNotifications();
-    // Instead of checking JSON.parse, check the outcome or any side effects that should occur when the value is null.
   });
 
   it("should not schedule notifications when there are no quotes", async () => {
@@ -80,7 +81,7 @@ describe("scheduleNotifications", () => {
         typeof Notifications.scheduleNotificationAsync
       >
     ).mockResolvedValue("notificationId");
-    await scheduleNotifications();
+    await scheduleNotifications("Action", "Subjects");
     expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledTimes(
       mockQuotes.length,
     );

@@ -50,8 +50,8 @@ export const ASYNC_KEYS = {
   notifTitle: "notifTitle",
   notifQuote: "notifQuote",
   frequency: "frequency",
-  notificationQuery: "notificationQuery",
-  notificationFilter: "notificationFilter",
+  notificationQuery: "notificationquery",
+  notificationFilter: "notificationfilter",
   scrollSpeed: "@scrollspeed",
   scrollPosition: "@scrollposition",
 };

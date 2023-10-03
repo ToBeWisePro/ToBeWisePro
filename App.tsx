@@ -23,12 +23,19 @@ import { convertDateTo24h } from "./src/res/util/BackwardsCompatability";
 export const navigationRef =
   React.createRef<NavigationContainerRef<NavigationInterface>>();
 
-export default function App() {
+export default function App(): JSX.Element {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     [],
   );
 
   const saveDefaultValue = async (key: string, value: any) => {
+    // if the key is notificationQuery or notificationFilter, log it
+    if (
+      key === ASYNC_KEYS.notificationQuery ||
+      key === ASYNC_KEYS.notificationFilter
+    ) {
+      console.log("From App.tsx: ", key, value);
+    }
     try {
       const storedValue = await AsyncStorage.getItem(key);
       if (storedValue === null) {
