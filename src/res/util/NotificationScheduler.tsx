@@ -40,33 +40,31 @@ export async function scheduleNotifications(): Promise<void> {
       const quotes = await getShuffledQuotes(true);
       let fireDate = new Date();
 
-      // Ensure fireDate is set to the next available start time
       const currentTime = fireDate.getHours() * 100 + fireDate.getMinutes();
       if (currentTime >= endTime) {
-        fireDate.setDate(fireDate.getDate() + 1); // Move to next day
-        fireDate.setHours(Math.floor(startTime / 100), startTime % 100, 0, 0); // Set to start time
+        fireDate.setDate(fireDate.getDate() + 1);
+        fireDate.setHours(Math.floor(startTime / 100), startTime % 100, 0, 0);
       } else if (currentTime < startTime) {
-        fireDate.setHours(Math.floor(startTime / 100), startTime % 100, 0, 0); // Set to start time
+        fireDate.setHours(Math.floor(startTime / 100), startTime % 100, 0, 0);
       } else {
-        // If current time is within the allowed window, adjust fireDate to the next spacing interval
         const nextInterval =
           Math.ceil(
-            (fireDate.getMinutes() * 1000 * 60) / spacingInMilliseconds,
+            (fireDate.getMinutes() * ONE_MINUTE) / spacingInMilliseconds,
           ) * spacingInMilliseconds;
         fireDate = new Date(
-          fireDate.getTime() - fireDate.getMinutes() * 1000 * 60 + nextInterval,
+          fireDate.getTime() -
+            fireDate.getMinutes() * ONE_MINUTE +
+            nextInterval,
         );
       }
 
       for (let i = 0; i < quotes.length && i < MAX_INTERVALS; i++) {
-        // Only schedule if within the window
         if (
           fireDate.getHours() * 100 + fireDate.getMinutes() >= startTime &&
           fireDate.getHours() * 100 + fireDate.getMinutes() <= endTime
         ) {
           const quote = quotes[i];
           if (quote.quoteText.length > 0) {
-            // Ensure fireDate is in the future
             while (fireDate.getTime() <= new Date().getTime()) {
               fireDate.setTime(fireDate.getTime() + spacingInMilliseconds);
             }
@@ -82,9 +80,7 @@ export async function scheduleNotifications(): Promise<void> {
               },
             });
 
-            fireDate.setTime(fireDate.getTime() + spacingInMilliseconds); // Increment fireDate by spacing
-
-            // If it's outside the allowed window, move to the start time of the next day
+            fireDate.setTime(fireDate.getTime() + spacingInMilliseconds);
             if (fireDate.getHours() * 100 + fireDate.getMinutes() > endTime) {
               fireDate.setDate(fireDate.getDate() + 1);
               fireDate.setHours(
@@ -92,7 +88,7 @@ export async function scheduleNotifications(): Promise<void> {
                 startTime % 100,
                 0,
                 0,
-              ); // Reset to start time
+              );
             }
           } else {
             throw Error("Empty quote text");
