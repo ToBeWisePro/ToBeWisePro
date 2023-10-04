@@ -116,32 +116,6 @@ export async function scheduleNotifications(
         console.error("Error during getShuffledQuotes", error);
       }
     }
-
-    // try {
-    //   const scheduledNotifications =
-    //     await Notifications.getAllScheduledNotificationsAsync();
-    //   const nextThreeNotifications = scheduledNotifications
-    //     .slice(0, 3)
-    //     .map((notification) => {
-    //       if ("seconds" in notification.trigger) {
-    //         return new Date(
-    //           new Date().getTime() + notification.trigger.seconds * 1000,
-    //         ).toLocaleString();
-    //       } else {
-    //         return "Notification trigger does not have a seconds property";
-    //       }
-    //     })
-    //     .join("\n");
-
-    //   console.debug(
-    //     "Next 3 Notifications",
-    //     nextThreeNotifications.length > 0
-    //       ? nextThreeNotifications
-    //       : "No Notifications Scheduled",
-    //   );
-    // } catch (error) {
-    //   console.error("Error fetching scheduled notifications:", error);
-    // }
   } catch (error) {
     console.error("Error fetching scheduled notifications:", error);
   }

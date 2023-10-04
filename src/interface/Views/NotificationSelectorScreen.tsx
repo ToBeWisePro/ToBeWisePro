@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import { strings } from "../../res/constants/Strings";
 import { maxWindowSize } from "../../res/constants/Values";
@@ -14,6 +14,7 @@ import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import { saveSettings } from "./NotificationsScreen";
 import { TEST_IDS } from "../../res/constants/TestIDs";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
+import * as Notifications from "expo-notifications";
 
 interface Props {
   navigation: NavigationInterface;
@@ -127,7 +128,38 @@ export const NotificationSelectorScreen = ({
                 await saveSettings(ASYNC_KEYS.notificationFilter, filter);
               },
             );
-            void scheduleNotifications();
+            void scheduleNotifications().then(async () => {
+              try {
+                const scheduledNotifications =
+                  await Notifications.getAllScheduledNotificationsAsync();
+                const nextNotification = scheduledNotifications
+                  .slice(0, 1)
+                  .map((notification) => {
+                    if ("seconds" in notification.trigger) {
+                      return new Date(
+                        new Date().getTime() +
+                          notification.trigger.seconds * 1000,
+                      ).toLocaleString();
+                    } else {
+                      return "Notification trigger does not have a seconds property";
+                    }
+                  })
+                  .join("\n");
+
+                console.debug(
+                  "Next Notification",
+                  nextNotification.length > 0
+                    ? nextNotification
+                    : "No Notifications Scheduled",
+                );
+
+                if (nextNotification.length > 0) {
+                  Alert.alert(strings.copy.newNotificationsSet);
+                }
+              } catch (error) {
+                console.error("Error fetching scheduled notifications:", error);
+              }
+            });
             navigation.goBack();
           }}
           testID={TEST_IDS.alphabetListSection}
