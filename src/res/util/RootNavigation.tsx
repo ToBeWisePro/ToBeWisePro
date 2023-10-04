@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import { StatusBar } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
@@ -11,7 +9,10 @@ import { HomeVertical } from "../../interface/Views/HomeVertical";
 import { Settings } from "../../interface/Views/Settings";
 import { NotificationScreen } from "../../interface/Views/NotificationsScreen";
 import { NotificationSelectorScreen } from "../../interface/Views/NotificationSelectorScreen";
-import React from "react";
+import React, { useEffect } from "react";
+import * as Notifications from "expo-notifications";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ASYNC_KEYS } from "../constants/Enums";
 
 interface RootProps {
   initialRoute: string;
@@ -24,8 +25,45 @@ const Stack = createStackNavigator();
 export const RootNavigation: React.FC<RootProps> = ({
   initialRoute,
 }: RootProps) => {
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    Notifications.addNotificationResponseReceivedListener(async (response) => {
+      const quote = response.notification.request.content.data.quote;
+      if (quote === undefined) {
+        console.error("Data from notification is not defined");
+        return;
+      }
+      try {
+        await AsyncStorage.multiSet([
+          [ASYNC_KEYS.notifQuote, JSON.stringify(quote)],
+          [ASYNC_KEYS.notifTitle, strings.copy.notificationFrom],
+        ]);
+        console.debug("Prepared quote for navigation.");
+        navigationRef.current?.reset({
+          index: 0,
+          routes: [
+            {
+              name: strings.screenName.homeHorizontal,
+              params: {
+                quoteSearch: {
+                  query: quote.subjects,
+                  filter: "",
+                },
+                currentQuotes: [quote],
+                showBackButton: false,
+              },
+            },
+          ],
+        });
+        console.debug("Navigation dispatched.");
+      } catch (error) {
+        console.error("Error saving quote:", error);
+      }
+    });
+  }, []);
+
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <StatusBar barStyle={"dark-content"} />
       <Stack.Navigator
         initialRouteName={initialRoute}

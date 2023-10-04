@@ -116,6 +116,12 @@ export const NotificationSelectorScreen = ({
           setFilter={setFilter}
           search={search}
           onPress={async (query: string, filter: string) => {
+            console.debug(
+              "From NotificationSelectorScreen.tsx: ",
+              query,
+              filter,
+            );
+
             await saveSettings(ASYNC_KEYS.notificationQuery, query).then(
               async () => {
                 await saveSettings(ASYNC_KEYS.notificationFilter, filter);

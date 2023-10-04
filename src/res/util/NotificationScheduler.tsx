@@ -48,12 +48,12 @@ export async function scheduleNotifications(
 
     if (allowNotifications && spacing > 0) {
       try {
-        // get query and filter from storage and log them
+        // // get query and filter from storage and log them
         const query = await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery);
         const filter = await AsyncStorage.getItem(
           ASYNC_KEYS.notificationFilter,
         );
-        console.log("From NotificationScheduler.tsx: ", query, filter);
+        console.debug("From NotificationScheduler.tsx: ", query, filter);
         const quotes = await getShuffledQuotes(true);
         let fireDate = new Date();
 
@@ -117,31 +117,31 @@ export async function scheduleNotifications(
       }
     }
 
-    try {
-      const scheduledNotifications =
-        await Notifications.getAllScheduledNotificationsAsync();
-      const nextThreeNotifications = scheduledNotifications
-        .slice(0, 3)
-        .map((notification) => {
-          if ("seconds" in notification.trigger) {
-            return new Date(
-              new Date().getTime() + notification.trigger.seconds * 1000,
-            ).toLocaleString();
-          } else {
-            return "Notification trigger does not have a seconds property";
-          }
-        })
-        .join("\n");
+    // try {
+    //   const scheduledNotifications =
+    //     await Notifications.getAllScheduledNotificationsAsync();
+    //   const nextThreeNotifications = scheduledNotifications
+    //     .slice(0, 3)
+    //     .map((notification) => {
+    //       if ("seconds" in notification.trigger) {
+    //         return new Date(
+    //           new Date().getTime() + notification.trigger.seconds * 1000,
+    //         ).toLocaleString();
+    //       } else {
+    //         return "Notification trigger does not have a seconds property";
+    //       }
+    //     })
+    //     .join("\n");
 
-      console.debug(
-        "Next 3 Notifications",
-        nextThreeNotifications.length > 0
-          ? nextThreeNotifications
-          : "No Notifications Scheduled",
-      );
-    } catch (error) {
-      console.error("Error fetching scheduled notifications:", error);
-    }
+    //   console.debug(
+    //     "Next 3 Notifications",
+    //     nextThreeNotifications.length > 0
+    //       ? nextThreeNotifications
+    //       : "No Notifications Scheduled",
+    //   );
+    // } catch (error) {
+    //   console.error("Error fetching scheduled notifications:", error);
+    // }
   } catch (error) {
     console.error("Error fetching scheduled notifications:", error);
   }

@@ -6,7 +6,6 @@ import { shuffle } from "./UtilFunctions";
 import * as SQLite from "expo-sqlite";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ASYNC_KEYS } from "../constants/Enums";
-import { Alert } from "react-native";
 
 export async function dataImporter(): Promise<void> {
   const db = SQLite.openDatabase(dbName);
@@ -170,10 +169,10 @@ export async function getShuffledQuotes(
   userQuery = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.query}`);
   filter = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.filter}`);
   if (userQuery !== null && filter !== null) {
-    if (forNotifications === true) {
-      console.debug("notificaition userQuery:", userQuery);
-      console.debug("notification filter:", filter);
-    }
+    // if (forNotifications === true) {
+    //   console.debug("notificaition userQuery:", userQuery);
+    //   console.debug("notification filter:", filter);
+    // }
     userQuery = userQuery.replaceAll('"', "");
     filter = filter.replaceAll('"', "");
     const db = SQLite.openDatabase(dbName);
@@ -212,10 +211,10 @@ export async function getShuffledQuotes(
       throw new Error(string);
     }
 
-    if (forNotifications === true) {
-      console.debug("dbQuery:", dbQuery);
-      console.debug("params:", params);
-    }
+    // if (forNotifications === true) {
+    //   console.debug("dbQuery:", dbQuery);
+    //   console.debug("params:", params);
+    // }
 
     return await new Promise<QuotationInterface[]>((resolve, reject) => {
       db.transaction((tx) => {

@@ -6,48 +6,23 @@ import {
 } from "./src/res/functions/DBFunctions";
 import { strings } from "./src/res/constants/Strings";
 import { RootNavigation } from "./src/res/util/RootNavigation";
-import {
-  type NavigationInterface,
-  type QuotationInterface,
-} from "./src/res/constants/Interfaces";
+import { type QuotationInterface } from "./src/res/constants/Interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { scheduleNotifications } from "./src/res/util/NotificationScheduler";
-import {
-  CommonActions,
-  type NavigationContainerRef,
-} from "@react-navigation/native";
 import { ASYNC_KEYS } from "./src/res/constants/Enums";
 import { convertDateTo24h } from "./src/res/util/BackwardsCompatability";
+import { type NavigationContainerRef } from "@react-navigation/native";
 
-export const navigationRef =
-  React.createRef<NavigationContainerRef<NavigationInterface>>();
+export const navigationRef = React.createRef<NavigationContainerRef<any>>();
 
 export default function App(): JSX.Element {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     [],
   );
 
-  const saveDefaultValue = async (key: string, value: any) => {
-    // if the key is notificationQuery or notificationFilter, log it
-    if (
-      key === ASYNC_KEYS.notificationQuery ||
-      key === ASYNC_KEYS.notificationFilter
-    ) {
-      console.log("From App.tsx: ", key, value);
-    }
-    try {
-      const storedValue = await AsyncStorage.getItem(key);
-      if (storedValue === null) {
-        await AsyncStorage.setItem(key, JSON.stringify(value));
-      }
-    } catch (error) {
-      console.error("Error saving default value:", error);
-    }
-  };
-
   useEffect(() => {
-    (async () => {
+    void (async () => {
       await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
       await convertDateTo24h(ASYNC_KEYS.startTime24h, 900);
       await convertDateTo24h(ASYNC_KEYS.endTime24h, 1700);
@@ -60,52 +35,16 @@ export default function App(): JSX.Element {
         strings.database.defaultFilter,
       );
       await saveDefaultValue(ASYNC_KEYS.spacing, 30);
-    })().then(() => {
-      scheduleNotifications();
-    });
-
-    (async () => {
+      void scheduleNotifications();
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {
         console.error("Notification permissions not granted.");
       }
     })();
+  }, []);
 
-    Notifications.addNotificationResponseReceivedListener((response) => {
-      const quote = response.notification.request.content.data.quote;
-      if (quote == null) {
-        console.error("Data from notification is not defined");
-        return;
-      }
-
-      (async () => {
-        try {
-          await AsyncStorage.setItem(
-            ASYNC_KEYS.notifQuote,
-            JSON.stringify(quote),
-          );
-          await AsyncStorage.setItem(
-            ASYNC_KEYS.notifTitle,
-            strings.copy.notificationFrom,
-          );
-
-          navigationRef.current?.dispatch(
-            CommonActions.navigate(strings.screenName.homeHorizontal, {
-              quoteSearch: {
-                query: quote.subjects,
-                filter: "",
-              },
-              currentQuotes: [quote],
-              showBackButton: false,
-            }),
-          );
-        } catch (error) {
-          console.error("Error saving quote:", error);
-        }
-      })();
-    });
-
-    const initialize = async () => {
+  useEffect(() => {
+    void (async () => {
       await AsyncStorage.getItem(ASYNC_KEYS.filter).then(async (res) => {
         if (res === null) {
           await AsyncStorage.setItem(
@@ -114,7 +53,6 @@ export default function App(): JSX.Element {
           );
         }
       });
-
       await AsyncStorage.getItem(ASYNC_KEYS.query).then(async (res) => {
         if (res === null) {
           await AsyncStorage.setItem(
@@ -123,22 +61,31 @@ export default function App(): JSX.Element {
           );
         }
       });
-    };
-    initialize();
+    })();
   }, []);
 
   useEffect(() => {
-    const initialize = async () => {
+    (async () => {
       await dataImporter().then(async () => {
         await getShuffledQuotes(false).then((res) => {
           setShuffledQuotes(res);
         });
       });
-    };
-    initialize().catch((error) => {
+    })().catch((error) => {
       Alert.alert("Error", error.message);
     });
   }, []);
+
+  const saveDefaultValue = async (key: string, value: any): Promise<void> => {
+    try {
+      const storedValue = await AsyncStorage.getItem(key);
+      if (storedValue === null) {
+        await AsyncStorage.setItem(key, JSON.stringify(value));
+      }
+    } catch (error) {
+      console.error("Error saving default value:", error);
+    }
+  };
 
   if (shuffledQuotes.length === 0) {
     return (
@@ -147,6 +94,7 @@ export default function App(): JSX.Element {
       </View>
     );
   }
+  console.debug("Rendering RootNavigation with initialRoute:", "Home");
 
   return <RootNavigation initialRoute={"Home"} />;
 }
