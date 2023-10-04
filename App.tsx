@@ -94,8 +94,6 @@ export default function App(): JSX.Element {
       </View>
     );
   }
-  console.debug("Rendering RootNavigation with initialRoute:", "Home");
-
   return <RootNavigation initialRoute={"Home"} />;
 }
 
