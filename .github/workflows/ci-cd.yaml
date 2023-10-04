@@ -1,6 +1,14 @@
 name: CI Pipeline
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches-ignore:
+      - "**" # This will ignore all branches for push events
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  workflow_dispatch:
 
 jobs:
   install_dependencies:
@@ -67,41 +75,49 @@ jobs:
       - name: Run TypeScript Compiler
         run: yarn tsc --noEmit
 
-  # build_ios:
-  #   needs: install_dependencies
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-  #       with:
-  #         fetch-depth: 1
+build_ios:
+  needs: install_dependencies
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
 
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v2
-  #       with:
-  #         node-version: "16"
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: "16"
 
-  #     - name: Cache Yarn Cache
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ~/.cache/yarn
-  #         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-yarn-
-  #     - name: Install dependencies
-  #       run: yarn install --frozen-lockfile
+    - name: Cache Yarn Cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/yarn
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
 
-  #     - name: Install EAS CLI
-  #       run: npm install -g eas-cli
+    - name: Install EAS CLI
+      run: npm install -g eas-cli
 
-  #     - name: Install Expo CLI
-  #       run: npm install -g expo-cli
+    - name: Install Expo CLI
+      run: npm install -g expo-cli
 
-  #     - name: Login to Expo CLI
-  #       run: echo $EXPO_CLI_PASSWORD | expo login -u $EXPO_CLI_USERNAME --non-interactive
-  #       env:
-  #         EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
-  #         EXPO_CLI_PASSWORD: ${{ secrets.EXPO_CLI_PASSWORD }}
+    - name: Login to Expo CLI
+      run: echo $EXPO_CLI_PASSWORD | expo login -u $EXPO_CLI_USERNAME --non-interactive
+      env:
+        EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
+        EXPO_CLI_PASSWORD: ${{ secrets.EXPO_CLI_PASSWORD }}
 
-  #     - name: Build iOS app with EAS
-  #       run: eas build --platform ios --non-interactive
+    - name: Build iOS app with EAS
+      run: |
+        OUTPUT=$(eas build --platform ios --non-interactive 2>&1)
+        if [[ $OUTPUT == *"error message related to running out of free EAS builds"* ]]; then
+          echo "Ran out of free EAS builds. This will not fail the workflow."
+          exit 0
+        elif [[ $OUTPUT == *"error message indicating any other build failure"* ]]; then
+          echo "Build failed due to an error."
+          exit 1
+        fi
