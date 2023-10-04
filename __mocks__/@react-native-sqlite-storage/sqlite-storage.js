@@ -1,4 +1,3 @@
-// __mocks__/react-native-sqlite-storage.js
 module.exports = {
   openDatabase: jest.fn(() => ({
     transaction: jest.fn((callback) => {

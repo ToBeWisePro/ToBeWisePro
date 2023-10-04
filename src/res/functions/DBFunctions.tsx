@@ -162,98 +162,106 @@ export async function removeQuote(quoteId: number): Promise<void> {
 export async function getShuffledQuotes(
   forNotifications?: boolean,
 ): Promise<QuotationInterface[]> {
-  // log what was passed and what should be returned
   let userQuery, filter;
+  // try {
   const keyPrefix = forNotifications ?? false ? "notification" : "";
 
   userQuery = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.query}`);
   filter = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.filter}`);
+  if (userQuery !== null && filter !== null) {
+    // if (forNotifications === true) {
+    //   console.debug("notificaition userQuery:", userQuery);
+    //   console.debug("notification filter:", filter);
+    // }
+    userQuery = userQuery.replaceAll('"', "");
+    filter = filter.replaceAll('"', "");
+    const db = SQLite.openDatabase(dbName);
+    let dbQuery = `SELECT * FROM ${dbName}`;
+    let params: any[] = [];
 
-  console.debug("User Query before replaceAll:", userQuery);
-  console.debug("Filter before replaceAll:", filter);
+    if (userQuery === strings.customDiscoverHeaders.deleted) {
+      dbQuery += " WHERE deleted = 1 ORDER BY RANDOM()";
+    } else if (userQuery === strings.customDiscoverHeaders.all) {
+      dbQuery += " WHERE deleted = 0 ORDER BY RANDOM()";
+    } else if (userQuery === strings.customDiscoverHeaders.top100) {
+      dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";
+      params = [`%${"Top 100"}%`];
+    } else if (userQuery === "Top 100") {
+      dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";
+      params = [`%${"Top 100"}%`];
+    } else if (userQuery === strings.customDiscoverHeaders.favorites) {
+      dbQuery += " WHERE favorite = 1 AND deleted = 0 ORDER BY RANDOM()";
+    } else if (userQuery === strings.customDiscoverHeaders.all) {
+      dbQuery += " AND deleted = 1";
+    } else if (userQuery === strings.customDiscoverHeaders.addedByMe) {
+      dbQuery += " WHERE contributedBy = ? AND deleted = 0 ORDER BY RANDOM()";
+      params = [defaultUsername]; // ensure the correct username is used here
+    } else if (filter === strings.filters.author) {
+      dbQuery += ` WHERE deleted = 0 AND author LIKE '%${userQuery}%' ORDER BY RANDOM()`;
+    } else if (filter === strings.filters.subject) {
+      dbQuery +=
+        " WHERE deleted = 0 AND (subjects LIKE ? OR subjects LIKE ? OR subjects LIKE ?) ORDER BY RANDOM()";
+      params = [
+        `%${userQuery.trim()}%`,
+        `%${userQuery.trim()},%`,
+        `%,${userQuery.trim()}%`,
+      ];
+    } else {
+      const string = `Invalid filter provided: ${filter}`;
+      throw new Error(string);
+    }
 
-  if (userQuery != null) userQuery = userQuery.replaceAll('"', "");
-  if (filter != null) filter = filter.replaceAll('"', "");
+    // if (forNotifications === true) {
+    //   console.debug("dbQuery:", dbQuery);
+    //   console.debug("params:", params);
+    // }
 
-  console.debug("User Query after replaceAll:", userQuery);
-  console.debug("Filter after replaceAll:", filter);
-
-  if (forNotifications ?? false) {
-    // TODO I can't for the life of me figure out why these sometimes get wrapped in quotation marks
-    await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery).then(
-      (res) => (userQuery = res?.replaceAll('"', "")),
-    );
-    await AsyncStorage.getItem(ASYNC_KEYS.notificationFilter).then(
-      (res) => (filter = res?.replaceAll('"', "")),
-    );
-  } else {
-    await AsyncStorage.getItem(ASYNC_KEYS.query).then(
-      (res) => (userQuery = res?.replaceAll('"', "")),
-    );
-    await AsyncStorage.getItem(ASYNC_KEYS.filter).then(
-      (res) => (filter = res?.replaceAll('"', "")),
-    );
-  }
-  const db = SQLite.openDatabase(dbName);
-  let dbQuery = `SELECT * FROM ${dbName}`;
-  let params: any[] = [];
-
-  if (userQuery == null || filter == null)
-    throw new Error("Invalid userQuery or filter");
-  console.debug("DB Query:", dbQuery);
-  console.debug("Params:", params);
-
-  if (userQuery === strings.customDiscoverHeaders.deleted) {
-    dbQuery += " WHERE deleted = 1 ORDER BY RANDOM()";
-  } else if (userQuery === strings.customDiscoverHeaders.all) {
-    dbQuery += " WHERE deleted = 0 ORDER BY RANDOM()";
-  } else if (userQuery === strings.customDiscoverHeaders.top100) {
-    dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";
-    params = [`%${"Top 100"}%`];
-  } else if (userQuery === "Top 100") {
-    dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";
-    params = [`%${"Top 100"}%`];
-  } else if (userQuery === strings.customDiscoverHeaders.favorites) {
-    dbQuery += " WHERE favorite = 1 AND deleted = 0 ORDER BY RANDOM()";
-  } else if (userQuery === strings.customDiscoverHeaders.all) {
-    dbQuery += " AND deleted = 1";
-  } else if (userQuery === strings.customDiscoverHeaders.addedByMe) {
-    dbQuery += " WHERE contributedBy = ? AND deleted = 0 ORDER BY RANDOM()";
-    params = [defaultUsername]; // ensure the correct username is used here
-  } else if (filter === strings.filters.author) {
-    dbQuery += ` WHERE deleted = 0 AND author LIKE '%${userQuery}%' ORDER BY RANDOM()`;
-  } else if (filter === strings.filters.subject) {
-    dbQuery +=
-      " WHERE deleted = 0 AND (subjects LIKE ? OR subjects LIKE ? OR subjects LIKE ?) ORDER BY RANDOM()";
-    params = [
-      `%${userQuery.trim()}%`,
-      `%${userQuery.trim()},%`,
-      `%,${userQuery.trim()}%`,
-    ];
-  } else {
-    const string = `Invalid filter provided: ${filter}`;
-    throw new Error(string);
-  }
-  return await new Promise<QuotationInterface[]>((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        dbQuery,
-        params,
-        (_, result) => {
-          const quotes: QuotationInterface[] = [];
-          for (let i = 0; i < result.rows.length; i++) {
-            quotes.push(result.rows.item(i));
-          }
-          resolve(quotes);
-        },
-        (_, error) => {
-          console.error(error);
-          reject(error);
-          return true;
-        },
-      );
+    return await new Promise<QuotationInterface[]>((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          dbQuery,
+          params,
+          (_, result) => {
+            const quotes: QuotationInterface[] = [];
+            for (let i = 0; i < result.rows.length; i++) {
+              quotes.push(result.rows.item(i));
+            }
+            resolve(quotes);
+          },
+          (_, error) => {
+            console.error(error);
+            reject(error);
+            return true;
+          },
+        );
+      });
     });
-  });
+  } else {
+    console.log("From getShuffledQuotes: ", userQuery, filter);
+    throw new Error("Invalid userQuery or filter");
+  }
+
+  // } catch (error) {
+  //   // make error into a string
+  //   Alert.alert(
+  //     "An error quote has been generated by the system. If you see it, please share it with Griffin Clark at 760-889-3464",
+  //   );
+  //   // @ts-expect-error error is a string
+  //   const strError = error.toString();
+  //   return [
+  //     {
+  //       quoteText:
+  //         strError + "\n userQuery: " + userQuery + "\n filter: " + filter,
+  //       subjects: "Error",
+  //       author: "Error",
+  //       contributedBy: "Error",
+  //       authorLink: "Error",
+  //       videoLink: "Error",
+  //       favorite: false,
+  //       deleted: false,
+  //     },
+  //   ];
+  // }
 }
 
 export async function getFromDB(key: string): Promise<string[]> {

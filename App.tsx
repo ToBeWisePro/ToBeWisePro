@@ -6,29 +6,84 @@ import {
 } from "./src/res/functions/DBFunctions";
 import { strings } from "./src/res/constants/Strings";
 import { RootNavigation } from "./src/res/util/RootNavigation";
-import {
-  type NavigationInterface,
-  type QuotationInterface,
-} from "./src/res/constants/Interfaces";
+import { type QuotationInterface } from "./src/res/constants/Interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { scheduleNotifications } from "./src/res/util/NotificationScheduler";
-import {
-  CommonActions,
-  type NavigationContainerRef,
-} from "@react-navigation/native";
 import { ASYNC_KEYS } from "./src/res/constants/Enums";
 import { convertDateTo24h } from "./src/res/util/BackwardsCompatability";
+import { type NavigationContainerRef } from "@react-navigation/native";
 
-export const navigationRef =
-  React.createRef<NavigationContainerRef<NavigationInterface>>();
+export const navigationRef = React.createRef<NavigationContainerRef<any>>();
 
 export default function App(): JSX.Element {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     [],
   );
 
-  const saveDefaultValue = async (key: string, value: any) => {
+  useEffect(() => {
+    void (async () => {
+      try {
+        await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
+        await convertDateTo24h(ASYNC_KEYS.startTime24h, 900);
+        await convertDateTo24h(ASYNC_KEYS.endTime24h, 1700);
+        await saveDefaultValue(
+          ASYNC_KEYS.notificationQuery,
+          strings.database.defaultQuery,
+        );
+        await saveDefaultValue(
+          ASYNC_KEYS.notificationFilter,
+          strings.database.defaultFilter,
+        );
+        await saveDefaultValue(ASYNC_KEYS.spacing, 30);
+        await scheduleNotifications();
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== "granted") {
+          console.error("Notification permissions not granted.");
+        }
+      } catch (error) {
+        console.error("Error in useEffect:", error);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const filter = await AsyncStorage.getItem(ASYNC_KEYS.filter);
+        if (filter === null) {
+          await AsyncStorage.setItem(
+            ASYNC_KEYS.filter,
+            strings.database.defaultFilter,
+          );
+        }
+        const query = await AsyncStorage.getItem(ASYNC_KEYS.query);
+        if (query === null) {
+          await AsyncStorage.setItem(
+            ASYNC_KEYS.query,
+            strings.database.defaultQuery,
+          );
+        }
+      } catch (error) {
+        console.error("Error in useEffect:", error);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        await dataImporter();
+        const quotes = await getShuffledQuotes(false);
+        setShuffledQuotes(quotes);
+      } catch (error) {
+        // @ts-expect-error Type 'string' is not assignable to type 'never'.
+        Alert.alert("Error", error.message);
+      }
+    })();
+  }, []);
+
+  const saveDefaultValue = async (key: string, value: any): Promise<void> => {
     try {
       const storedValue = await AsyncStorage.getItem(key);
       if (storedValue === null) {
@@ -39,100 +94,6 @@ export default function App(): JSX.Element {
     }
   };
 
-  useEffect(() => {
-    (async () => {
-      await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
-      await convertDateTo24h(ASYNC_KEYS.startTime24h, 900);
-      await convertDateTo24h(ASYNC_KEYS.endTime24h, 1700);
-      await saveDefaultValue(
-        ASYNC_KEYS.notificationQuery,
-        strings.database.defaultQuery,
-      );
-      await saveDefaultValue(
-        ASYNC_KEYS.notificationFilter,
-        strings.database.defaultFilter,
-      );
-      await saveDefaultValue(ASYNC_KEYS.spacing, 30);
-    })().then(() => {
-      scheduleNotifications();
-    });
-
-    (async () => {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== "granted") {
-        console.error("Notification permissions not granted.");
-      }
-    })();
-
-    Notifications.addNotificationResponseReceivedListener((response) => {
-      const quote = response.notification.request.content.data.quote;
-      if (quote == null) {
-        console.error("Data from notification is not defined");
-        return;
-      }
-
-      (async () => {
-        try {
-          await AsyncStorage.setItem(
-            ASYNC_KEYS.notifQuote,
-            JSON.stringify(quote),
-          );
-          await AsyncStorage.setItem(
-            ASYNC_KEYS.notifTitle,
-            strings.copy.notificationFrom,
-          );
-
-          navigationRef.current?.dispatch(
-            CommonActions.navigate(strings.screenName.homeHorizontal, {
-              quoteSearch: {
-                query: quote.subjects,
-                filter: "",
-              },
-              currentQuotes: [quote],
-              showBackButton: false,
-            }),
-          );
-        } catch (error) {
-          console.error("Error saving quote:", error);
-        }
-      })();
-    });
-
-    const initialize = async () => {
-      await AsyncStorage.getItem(ASYNC_KEYS.filter).then(async (res) => {
-        if (res === null) {
-          await AsyncStorage.setItem(
-            ASYNC_KEYS.filter,
-            strings.database.defaultFilter,
-          );
-        }
-      });
-
-      await AsyncStorage.getItem(ASYNC_KEYS.query).then(async (res) => {
-        if (res === null) {
-          await AsyncStorage.setItem(
-            ASYNC_KEYS.query,
-            strings.database.defaultQuery,
-          );
-        }
-      });
-    };
-    void initialize();
-  }, []);
-
-  useEffect(() => {
-    const initialize = async () => {
-      await dataImporter().then(async () => {
-        await getShuffledQuotes(false).then((res) => {
-          setShuffledQuotes(res);
-        });
-      });
-    };
-    initialize().catch((error) => {
-      Alert.alert("Error", error.message);
-    });
-  }, []);
-
   if (shuffledQuotes.length === 0) {
     return (
       <View style={styles.container}>
@@ -140,7 +101,6 @@ export default function App(): JSX.Element {
       </View>
     );
   }
-
   return <RootNavigation initialRoute={"Home"} />;
 }
 

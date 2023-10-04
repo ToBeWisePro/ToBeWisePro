@@ -13,6 +13,7 @@ import { getFromDB } from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import { saveSettings } from "./NotificationsScreen";
 import { TEST_IDS } from "../../res/constants/TestIDs";
+import { scheduleNotifications } from "../../res/util/NotificationScheduler";
 
 interface Props {
   navigation: NavigationInterface;
@@ -115,11 +116,18 @@ export const NotificationSelectorScreen = ({
           setFilter={setFilter}
           search={search}
           onPress={async (query: string, filter: string) => {
+            console.debug(
+              "From NotificationSelectorScreen.tsx: ",
+              query,
+              filter,
+            );
+
             await saveSettings(ASYNC_KEYS.notificationQuery, query).then(
               async () => {
                 await saveSettings(ASYNC_KEYS.notificationFilter, filter);
               },
             );
+            void scheduleNotifications();
             navigation.goBack();
           }}
           testID={TEST_IDS.alphabetListSection}
