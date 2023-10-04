@@ -23,57 +23,64 @@ export default function App(): JSX.Element {
 
   useEffect(() => {
     void (async () => {
-      await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
-      await convertDateTo24h(ASYNC_KEYS.startTime24h, 900);
-      await convertDateTo24h(ASYNC_KEYS.endTime24h, 1700);
-      await saveDefaultValue(
-        ASYNC_KEYS.notificationQuery,
-        strings.database.defaultQuery,
-      );
-      await saveDefaultValue(
-        ASYNC_KEYS.notificationFilter,
-        strings.database.defaultFilter,
-      );
-      await saveDefaultValue(ASYNC_KEYS.spacing, 30);
-      void scheduleNotifications();
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== "granted") {
-        console.error("Notification permissions not granted.");
+      try {
+        await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
+        await convertDateTo24h(ASYNC_KEYS.startTime24h, 900);
+        await convertDateTo24h(ASYNC_KEYS.endTime24h, 1700);
+        await saveDefaultValue(
+          ASYNC_KEYS.notificationQuery,
+          strings.database.defaultQuery,
+        );
+        await saveDefaultValue(
+          ASYNC_KEYS.notificationFilter,
+          strings.database.defaultFilter,
+        );
+        await saveDefaultValue(ASYNC_KEYS.spacing, 30);
+        await scheduleNotifications();
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== "granted") {
+          console.error("Notification permissions not granted.");
+        }
+      } catch (error) {
+        console.error("Error in useEffect:", error);
       }
     })();
   }, []);
 
   useEffect(() => {
     void (async () => {
-      await AsyncStorage.getItem(ASYNC_KEYS.filter).then(async (res) => {
-        if (res === null) {
+      try {
+        const filter = await AsyncStorage.getItem(ASYNC_KEYS.filter);
+        if (filter === null) {
           await AsyncStorage.setItem(
             ASYNC_KEYS.filter,
             strings.database.defaultFilter,
           );
         }
-      });
-      await AsyncStorage.getItem(ASYNC_KEYS.query).then(async (res) => {
-        if (res === null) {
+        const query = await AsyncStorage.getItem(ASYNC_KEYS.query);
+        if (query === null) {
           await AsyncStorage.setItem(
             ASYNC_KEYS.query,
             strings.database.defaultQuery,
           );
         }
-      });
+      } catch (error) {
+        console.error("Error in useEffect:", error);
+      }
     })();
   }, []);
 
   useEffect(() => {
-    (async () => {
-      await dataImporter().then(async () => {
-        await getShuffledQuotes(false).then((res) => {
-          setShuffledQuotes(res);
-        });
-      });
-    })().catch((error) => {
-      Alert.alert("Error", error.message);
-    });
+    void (async () => {
+      try {
+        await dataImporter();
+        const quotes = await getShuffledQuotes(false);
+        setShuffledQuotes(quotes);
+      } catch (error) {
+        // @ts-expect-error Type 'string' is not assignable to type 'never'.
+        Alert.alert("Error", error.message);
+      }
+    })();
   }, []);
 
   const saveDefaultValue = async (key: string, value: any): Promise<void> => {
