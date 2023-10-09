@@ -76,23 +76,15 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   }
 
   useEffect(() => {
-    // If data has changed, then pause playPressed and the animation
     if (!areArraysEquivalent(prevDataRef.current, data)) {
       setPlayPressed(false);
       cancelAnimation(scrollPosition);
-
-      // Scroll to the top
       setTimeout(() => {
         scrollRef.current?.scrollToIndex({ index: 0, animated: false });
-
-        // After ensuring we've scrolled to the top, set playPressed to true again
-        setTimeout(() => {
-          setPlayPressed(true);
-        }, 100); // This delay is to ensure that the scrolling action has finished
-      }, 0);
-
-      // Update the previous data reference
-      prevDataRef.current = data;
+        prevDataRef.current = data;
+        currentPosition.current = 0; // <-- Resetting it directly here
+        setPlayPressed(true);
+      }, 100);
     }
   }, [data]);
 
@@ -211,8 +203,10 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   }, [setPlayPressed]);
 
   useDerivedValue(() => {
-    runOnJS(scrollTo)(scrollPosition.value);
-  }, [scrollPosition]);
+    if (playPressed) {
+      runOnJS(scrollTo)(scrollPosition.value);
+    }
+  }, [scrollPosition, playPressed]);
 
   const handleScroll = (event: any): void => {
     currentPosition.current = event.nativeEvent.contentOffset.y;
@@ -254,6 +248,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     <View style={styles.container} testID={TEST_IDS.autoScrollingQuotesList}>
       <FlatList
         testID={TEST_IDS.flatlist}
+        key={data[0]?._id}
         data={data}
         renderItem={renderItem}
         scrollEventThrottle={16}
