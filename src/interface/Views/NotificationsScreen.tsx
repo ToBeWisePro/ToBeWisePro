@@ -30,6 +30,7 @@ import { CustomTimeInput } from "../atoms/CustomTimeInput";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
 import { TEST_IDS } from "../../res/constants/TestIDs";
 import * as Notifications from "expo-notifications";
+import { convertTo12HourFormat } from "../../res/functions/UtilFunctions";
 
 interface Props {
   navigation: NavigationInterface;
@@ -59,7 +60,7 @@ export const loadSettings = async (key: string): Promise<any | null> => {
   }
 };
 
-const saveChangesAndScheduleNotifications = async (
+export const saveChangesAndScheduleNotifications = async (
   allowNotifications: boolean,
   startTime: number,
   endTime: number,
@@ -94,7 +95,40 @@ const saveChangesAndScheduleNotifications = async (
     );
 
     if (nextNotification.length > 0) {
-      Alert.alert(strings.copy.newNotificationsSet);
+      // if the current time (in 24 h format) is between the start and end time, let them know notifs are beginning now. If not, let the user know when they will start
+      const currentTime = new Date();
+      const currentHour = currentTime.getHours();
+      const currentMinute = currentTime.getMinutes();
+      const currentMinuteOfDay = currentHour * 60 + currentMinute;
+      const startTimeHour = Math.floor(startTime / 100);
+      const startTimeMinute = startTime % 100;
+      const startTimeMinuteOfDay = startTimeHour * 60 + startTimeMinute;
+      const endTimeHour = Math.floor(endTime / 100);
+      const endTimeMinute = endTime % 100;
+      const endTimeMinuteOfDay = endTimeHour * 60 + endTimeMinute;
+      if (
+        currentMinuteOfDay >= startTimeMinuteOfDay &&
+        currentMinuteOfDay <= endTimeMinuteOfDay
+      ) {
+        Alert.alert(strings.copy.newNotificationsSet);
+      } else {
+        const minutesDiff = startTimeMinuteOfDay - currentMinuteOfDay;
+        if (minutesDiff > 0) {
+          const hours = Math.floor(minutesDiff / 60);
+          const minutes = minutesDiff % 60;
+          Alert.alert(
+            `Notifications will begin in ${hours} hour(s) and ${minutes} minute(s).`,
+          );
+        } else {
+          const formattedStartTime = convertTo12HourFormat(
+            startTimeHour,
+            startTimeMinute,
+          );
+          Alert.alert(
+            `Notifications will start tomorrow at ${formattedStartTime.hour}:${formattedStartTime.minute} ${formattedStartTime.period}.`,
+          );
+        }
+      }
     }
   } catch (error) {
     console.error("Error fetching scheduled notifications:", error);
@@ -330,7 +364,7 @@ export const NotificationScreen: React.FC<Props> = ({
 };
 const styles = StyleSheet.create({
   notificationButton: {
-    width: 300,
+    width: 270,
     height: 50,
 
     justifyContent: "center",
