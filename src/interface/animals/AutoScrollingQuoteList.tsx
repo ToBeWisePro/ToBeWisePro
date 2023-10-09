@@ -33,7 +33,6 @@ interface Props {
   navigation: NavigationInterface;
   query: string;
   filter: string;
-  setIsLoading: (status: boolean) => void;
 }
 
 export const AutoScrollingQuoteList: React.FC<Props> = ({
@@ -42,10 +41,10 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   setPlayPressed,
   navigation,
   query,
-  setIsLoading,
   filter,
 }) => {
   const scrollRef = useRef<FlatList>(null);
+  const initialDataOrder = useRef(data);
   const initialDataOrderRef = useRef<QuotationInterface[]>([]);
   const prevDataRef = useRef<QuotationInterface[]>(data); // to store the previous data
 
@@ -76,27 +75,21 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   if (initialDataOrderRef.current.length === 0) {
     initialDataOrderRef.current = data;
   }
-
   useEffect(() => {
-    // If data has changed, then pause playPressed and the animation
+    // If data prop has changed
     if (!areArraysEquivalent(prevDataRef.current, data)) {
-      setPlayPressed(false);
-      cancelAnimation(scrollPosition);
-
-      // Scroll to the top
-      setTimeout(() => {
-        scrollRef.current?.scrollToIndex({ index: 0, animated: false });
-
-        // After ensuring we've scrolled to the top, set playPressed to true again
-        setTimeout(() => {
-          setPlayPressed(true);
-        }, 100); // This delay is to ensure that the scrolling action has finished
-      }, 0);
-
-      // Update the previous data reference
+      // Update the initialDataOrderRef with the new data
+      initialDataOrderRef.current = data;
+      // Update the prevDataRef with the new data for the next comparison
       prevDataRef.current = data;
+      const timerId = setTimeout(() => {
+        scrollRef.current?.scrollToIndex({ index: 0, animated: false });
+      }, 0); // Timeout set to ensure the scrollToIndex is called after rendering
+
+      return () => {
+        clearTimeout(timerId);
+      };
     }
-    setIsLoading(false); // Set loading to false after the logic completes.
   }, [data]);
 
   const handlePress = useCallback(
@@ -117,6 +110,11 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     },
     [filter, query, data, navigation],
   );
+
+  useEffect(() => {
+    // Update the ref value if the data prop changes
+    initialDataOrder.current = data;
+  }, [data]);
 
   const setAndStoreScrollSpeed = (
     value: React.SetStateAction<number>,
@@ -175,8 +173,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
         offset: currentPosition.current,
         animated: false,
       });
-      setIsLoading(false); // Set loading to false after the logic completes.
-
       return () => {
         if (playPressed) {
           cancelAnimation(scrollPosition);
@@ -259,7 +255,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     <View style={styles.container} testID={TEST_IDS.autoScrollingQuotesList}>
       <FlatList
         testID={TEST_IDS.flatlist}
-        data={data}
+        data={initialDataOrderRef.current}
         renderItem={renderItem}
         scrollEventThrottle={16}
         ref={scrollRef}

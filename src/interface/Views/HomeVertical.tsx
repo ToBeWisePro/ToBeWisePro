@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
 import { GRADIENT_START, GRADIENT_END } from "../../../styles/Colors";
@@ -26,7 +26,6 @@ export const HomeVertical = ({ navigation, route }: Props): JSX.Element => {
   const [backButton, setBackButton] = useState(false);
   const [quotes, setQuotes] = useState<QuotationInterface[]>([]);
   const [playPressed, setPlayPressed] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState(false); // TODO add in this logic
 
   useFocusEffect(
     useCallback(() => {
@@ -60,38 +59,29 @@ export const HomeVertical = ({ navigation, route }: Props): JSX.Element => {
 
   return (
     <View style={styles.container}>
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" />
-        </View>
-      ) : (
-        <>
-          <TopNav
-            title={title}
-            testID={TEST_IDS.topNav}
-            stickyHeader={true}
-            backButton={backButton}
-            backFunction={() => {
-              navigation.goBack();
-            }}
-          />
-          <LinearGradient
-            colors={[GRADIENT_START, GRADIENT_END]}
-            style={styles.background}
-          >
-            <AutoScrollingQuoteList
-              data={quotes}
-              playPressed={playPressed}
-              setIsLoading={setIsLoading}
-              setPlayPressed={setPlayPressed}
-              navigation={navigation}
-              // TODO remove unused imports in ASQL
-              query={""}
-              filter={""}
-            />
-          </LinearGradient>
-        </>
-      )}
+      <TopNav
+        title={title}
+        testID={TEST_IDS.topNav}
+        stickyHeader={true}
+        backButton={backButton}
+        backFunction={() => {
+          navigation.goBack();
+        }}
+      />
+      <LinearGradient
+        colors={[GRADIENT_START, GRADIENT_END]}
+        style={styles.background}
+      >
+        <AutoScrollingQuoteList
+          data={quotes}
+          playPressed={playPressed}
+          setPlayPressed={setPlayPressed}
+          navigation={navigation}
+          // TODO remove unused imports in ASQL
+          query={""}
+          filter={""}
+        />
+      </LinearGradient>
     </View>
   );
 };
@@ -106,11 +96,5 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     height: "100%",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFF", // Or your desired background color
   },
 });
