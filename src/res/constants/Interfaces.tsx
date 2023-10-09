@@ -16,6 +16,7 @@ export interface RouteInterface {
     backButtonNavigationFunction: BackButtonNavEnum;
     notificationKey: string;
     notificationFilter: string;
+    notifyChange: () => void;
   };
 }
 
