@@ -69,7 +69,7 @@ export const strings = new LocalizedStrings({
     },
     settings: {
       notifications: "Schedule Notifications",
-      info: "More Info",
+      info: "ToBeWise Website",
       rateUs: "Rate Us On The App Store",
       share: "Tell A Friend",
       shareMessage:

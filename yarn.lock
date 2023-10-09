@@ -10102,6 +10102,11 @@ react-native-picker-select@^8.1.0:
     "@react-native-picker/picker" "^1.8.3"
     lodash.isequal "^4.5.0"
 
+react-native-rate@^1.2.12:
+  version "1.2.12"
+  resolved "https://registry.yarnpkg.com/react-native-rate/-/react-native-rate-1.2.12.tgz#d4307b2994f9c849b987eb65599ec467db4aee04"
+  integrity sha512-A/z3s7Zth08aXcJnru6S4p71NG8acx2w5LhIfItwTJUbQruNJugk8WrN51dLBCSDv8W33kbS5YoUT4M9jOP5gA==
+
 react-native-ratings@8.0.4:
   version "8.0.4"
   resolved "https://registry.npmjs.org/react-native-ratings/-/react-native-ratings-8.0.4.tgz"

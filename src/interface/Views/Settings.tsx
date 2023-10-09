@@ -9,6 +9,7 @@ import { openLink } from "../../res/functions/UtilFunctions";
 import { SettingsButton } from "../molecules/SettingsButton";
 import { TEST_IDS } from "../../res/constants/TestIDs";
 import { type NavigationInterface } from "../../res/constants/Interfaces";
+import Rate, { AndroidMarket } from "react-native-rate";
 
 interface Props {
   navigation: NavigationInterface;
@@ -21,6 +22,22 @@ interface Button {
 }
 
 export const Settings = ({ navigation }: Props): JSX.Element => {
+  const rateApp = () => {
+    const options = {
+      AppleAppID: "1156018700", // Your Apple App Store ID
+      preferredAndroidMarket: AndroidMarket.Google, // Even though you're not using Android, this needs to be here.
+      preferInApp: true,
+      openAppStoreIfInAppFails: true,
+      fallbackPlatformURL: "https://www.apple.com/ios/app-store/",
+    };
+
+    Rate.rate(options, (success) => {
+      if (success) {
+        // User successfully went to the App Store (or just opened the in-app review dialog)
+      }
+    });
+  };
+
   const buttons: Button[] = [
     {
       icon: "notifications",
@@ -42,11 +59,7 @@ export const Settings = ({ navigation }: Props): JSX.Element => {
       icon: "star",
       title: strings.settings.rateUs,
       onPress: () => {
-        void (async () => {
-          await openLink(
-            "https://apps.apple.com/ca/app/tobewise-pro/id1156018700",
-          );
-        })();
+        rateApp();
       },
     },
     {
