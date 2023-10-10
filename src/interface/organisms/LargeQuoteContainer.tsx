@@ -23,6 +23,7 @@ export const LargeQuoteContainer: React.FC<Props> = ({
 }: Props) => {
   const [contributedBy, setContributedBy] = useState<string>("");
   const [quote, setQuote] = useState<QuotationInterface>(passedInQuote);
+
   useEffect(() => {
     setQuote(passedInQuote);
     try {
@@ -38,7 +39,6 @@ export const LargeQuoteContainer: React.FC<Props> = ({
     return (
       <View style={styles.container}>
         <ScrollView style={{ height: "100%" }}>
-          {/* This is intentionally Text so that the user's system overrides work here (bigger font size specifically) */}
           <Text style={globalStyles.quoteText} numberOfLines={2048}>
             {quote.quoteText}
           </Text>
@@ -51,10 +51,7 @@ export const LargeQuoteContainer: React.FC<Props> = ({
           )}
           <TouchableOpacity
             onPress={() => {
-              const safeLink = quote.author.replaceAll(" ", "_");
-              openLink(quote.authorLink).catch(async () => {
-                await openLink("https://www.wikipedia.com/wiki/" + safeLink);
-              });
+              void openLink(quote.authorLink);
             }}
           >
             <AppText style={[globalStyles.authorText, { color: PRIMARY_BLUE }]}>

@@ -98,3 +98,26 @@ export const openLink = async (url: string): Promise<void> => {
     });
   } else await Linking.openURL(url);
 };
+
+interface TimeFormat {
+  hour: number;
+  minute: string;
+  period: "AM" | "PM";
+}
+
+export const convertTo12HourFormat = (
+  hour24: number,
+  minute: number,
+): TimeFormat => {
+  let period: "AM" | "PM" = "AM";
+  if (hour24 >= 12) {
+    period = "PM";
+    if (hour24 > 12) hour24 -= 12;
+  }
+  if (hour24 === 0) hour24 = 12;
+  return {
+    hour: hour24,
+    minute: minute < 10 ? "0" + minute : minute.toString(),
+    period,
+  };
+};

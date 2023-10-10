@@ -13,6 +13,7 @@ import { getFromDB } from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TEST_IDS } from "../../res/constants/TestIDs";
+import ReactHapticFeedback from "react-native-haptic-feedback";
 
 interface Props {
   navigation: NavigationInterface;
@@ -123,6 +124,10 @@ export const Discover = ({ navigation }: Props): JSX.Element => {
           onPress={async (query, filter) => {
             await AsyncStorage.setItem(ASYNC_KEYS.query, query);
             await AsyncStorage.setItem(ASYNC_KEYS.filter, filter);
+            ReactHapticFeedback.trigger("selection", {
+              enableVibrateFallback: true,
+              ignoreAndroidSystemSettings: false,
+            });
             navigation.navigate(strings.screenName.home);
           }}
         />

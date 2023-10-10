@@ -14,6 +14,7 @@ import {
 } from "../../res/functions/DBFunctions";
 import { QuoteContainerButtons } from "../../res/constants/Enums";
 import { openLink } from "../../res/functions/UtilFunctions";
+import ReactHapticFeedback from "react-native-haptic-feedback"; // <-- Import the module
 
 interface Props {
   quote: QuotationInterface;
@@ -37,6 +38,12 @@ export const QuoteButtonBar: React.FC<Props> = ({
   const handleFavoritePress = async (): Promise<void> => {
     const updatedFavoriteStatus = !isFavorite;
     setIsFavorite(updatedFavoriteStatus);
+    if (updatedFavoriteStatus) {
+      ReactHapticFeedback.trigger("notificationSuccess", {
+        enableVibrateFallback: true,
+        ignoreAndroidSystemSettings: false,
+      });
+    }
 
     // Update the quote's favorite status in the database
     const updatedQuote = { ...quote, favorite: updatedFavoriteStatus };
@@ -152,20 +159,16 @@ export const QuoteButtonBar: React.FC<Props> = ({
   return (
     <View style={styles.buttonContainer}>
       {buttons.map((button) => (
-        <TouchableOpacity
-          onPress={button.onPress}
-          key={button.id}
-          style={styles.button}
-        >
-          <View style={styles.button}>
+        <View style={styles.buttonWrapper} key={button.id}>
+          <TouchableOpacity onPress={button.onPress}>
             <IconFactory
               selected={false}
               color={button.color}
               icon={button.iconName}
             />
-            <AppText>{button.name}</AppText>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+          <AppText>{button.name}</AppText>
+        </View>
       ))}
     </View>
   );
@@ -174,11 +177,11 @@ export const QuoteButtonBar: React.FC<Props> = ({
 const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
-    height: 40,
+    height: 60, // Adjusted to give room for text below buttons
     width: "100%",
     justifyContent: "space-between",
   },
-  button: {
-    height: "100%",
+  buttonWrapper: {
+    alignItems: "center", // Center the child components (Icon and Text)
   },
 });

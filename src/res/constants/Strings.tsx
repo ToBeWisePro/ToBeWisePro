@@ -39,8 +39,7 @@ export const strings = new LocalizedStrings({
       saveNotificationsButton: "Start Notifications Now",
       countZeroErrorText:
         "Please select an author or filter with more than 0 quotes",
-      newNotificationsSet:
-        "Updated notifications have started 🥳. Head back to the home screen to keep scrolling.",
+      newNotificationsSet: "Updated notifications are on their way 🥳",
       saveButton: "Save Changes",
       saveButtonBlank: "Add New Quote",
       editQuoteTitle: "Edit Quote",
@@ -70,7 +69,7 @@ export const strings = new LocalizedStrings({
     },
     settings: {
       notifications: "Schedule Notifications",
-      info: "More Info",
+      info: "ToBeWise Website",
       rateUs: "Rate Us On The App Store",
       share: "Tell A Friend",
       shareMessage:

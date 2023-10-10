@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Alert } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import { strings } from "../../res/constants/Strings";
 import { maxWindowSize } from "../../res/constants/Values";
 import { type IData } from "react-native-section-alphabet-list";
 import { GRAY_6, LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
 import { BottomNav } from "../organisms/BottomNav";
-import { type NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { IncludeInBottomNav, ASYNC_KEYS } from "../../res/constants/Enums";
 import { getFromDB } from "../../res/functions/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import { saveSettings } from "./NotificationsScreen";
 import { TEST_IDS } from "../../res/constants/TestIDs";
-import { scheduleNotifications } from "../../res/util/NotificationScheduler";
-import * as Notifications from "expo-notifications";
+import { type RouteInterface } from "../../res/constants/Interfaces";
+import ReactHapticFeedback from "react-native-haptic-feedback";
 
 interface Props {
-  navigation: NavigationInterface;
+  // create navigation interface WITHOUT using custom navigation interface prop
+  navigation: any;
+  route: RouteInterface;
 }
 
 export const NotificationSelectorScreen = ({
   navigation,
+  route,
 }: Props): JSX.Element => {
   const [subjects, setSubjects] = useState<IData[]>([]);
   const [authors, setAuthors] = useState<IData[]>([]);
@@ -117,50 +119,25 @@ export const NotificationSelectorScreen = ({
           setFilter={setFilter}
           search={search}
           onPress={async (query: string, filter: string) => {
-            console.debug(
-              "From NotificationSelectorScreen.tsx: ",
-              query,
-              filter,
-            );
+            ReactHapticFeedback.trigger("selection", {
+              enableVibrateFallback: true,
+              ignoreAndroidSystemSettings: false,
+            });
 
             await saveSettings(ASYNC_KEYS.notificationQuery, query).then(
               async () => {
                 await saveSettings(ASYNC_KEYS.notificationFilter, filter);
               },
             );
-            void scheduleNotifications().then(async () => {
-              try {
-                const scheduledNotifications =
-                  await Notifications.getAllScheduledNotificationsAsync();
-                const nextNotification = scheduledNotifications
-                  .slice(0, 1)
-                  .map((notification) => {
-                    if ("seconds" in notification.trigger) {
-                      return new Date(
-                        new Date().getTime() +
-                          notification.trigger.seconds * 1000,
-                      ).toLocaleString();
-                    } else {
-                      return "Notification trigger does not have a seconds property";
-                    }
-                  })
-                  .join("\n");
 
-                console.debug(
-                  "Next Notification",
-                  nextNotification.length > 0
-                    ? nextNotification
-                    : "No Notifications Scheduled",
-                );
+            // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+            if (route.params.notifyChange) {
+              route.params.notifyChange();
+            }
 
-                if (nextNotification.length > 0) {
-                  Alert.alert(strings.copy.newNotificationsSet);
-                }
-              } catch (error) {
-                console.error("Error fetching scheduled notifications:", error);
-              }
+            navigation.goBack({
+              query,
             });
-            navigation.goBack();
           }}
           testID={TEST_IDS.alphabetListSection}
         />

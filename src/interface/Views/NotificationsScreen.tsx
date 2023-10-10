@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, TouchableOpacity, View, Dimensions } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Dimensions,
+  Alert,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { strings } from "../../res/constants/Strings";
 import {
@@ -8,6 +14,7 @@ import {
 } from "../../res/constants/Interfaces";
 import {
   GRAY_2,
+  GRAY_3,
   GRAY_5,
   GRAY_6,
   LIGHT,
@@ -22,6 +29,9 @@ import { AppText } from "../atoms/AppText";
 import { CustomTimeInput } from "../atoms/CustomTimeInput";
 import { scheduleNotifications } from "../../res/util/NotificationScheduler";
 import { TEST_IDS } from "../../res/constants/TestIDs";
+import * as Notifications from "expo-notifications";
+import { convertTo12HourFormat } from "../../res/functions/UtilFunctions";
+import ReactHapticFeedback from "react-native-haptic-feedback"; // <-- Import the module
 
 interface Props {
   navigation: NavigationInterface;
@@ -51,6 +61,81 @@ export const loadSettings = async (key: string): Promise<any | null> => {
   }
 };
 
+export const saveChangesAndScheduleNotifications = async (
+  allowNotifications: boolean,
+  startTime: number,
+  endTime: number,
+  spacing: number,
+): Promise<void> => {
+  try {
+    await saveSettings(ASYNC_KEYS.allowNotifications, allowNotifications);
+    await saveSettings(ASYNC_KEYS.startTime24h, startTime);
+    await saveSettings(ASYNC_KEYS.endTime24h, endTime);
+    await saveSettings(ASYNC_KEYS.spacing, spacing);
+    await scheduleNotifications();
+    const scheduledNotifications =
+      await Notifications.getAllScheduledNotificationsAsync();
+    const nextNotification = scheduledNotifications
+      .slice(0, 1)
+      .map((notification) => {
+        if ("seconds" in notification.trigger) {
+          return new Date(
+            new Date().getTime() + notification.trigger.seconds * 1000,
+          ).toLocaleString();
+        } else {
+          return "Notification trigger does not have a seconds property";
+        }
+      })
+      .join("\n");
+
+    console.debug(
+      "Next Notification",
+      nextNotification.length > 0
+        ? nextNotification
+        : "No Notifications Scheduled",
+    );
+
+    if (nextNotification.length > 0) {
+      // if the current time (in 24 h format) is between the start and end time, let them know notifs are beginning now. If not, let the user know when they will start
+      const currentTime = new Date();
+      const currentHour = currentTime.getHours();
+      const currentMinute = currentTime.getMinutes();
+      const currentMinuteOfDay = currentHour * 60 + currentMinute;
+      const startTimeHour = Math.floor(startTime / 100);
+      const startTimeMinute = startTime % 100;
+      const startTimeMinuteOfDay = startTimeHour * 60 + startTimeMinute;
+      const endTimeHour = Math.floor(endTime / 100);
+      const endTimeMinute = endTime % 100;
+      const endTimeMinuteOfDay = endTimeHour * 60 + endTimeMinute;
+      if (
+        currentMinuteOfDay >= startTimeMinuteOfDay &&
+        currentMinuteOfDay <= endTimeMinuteOfDay
+      ) {
+        Alert.alert(strings.copy.newNotificationsSet);
+      } else {
+        const minutesDiff = startTimeMinuteOfDay - currentMinuteOfDay;
+        if (minutesDiff > 0) {
+          const hours = Math.floor(minutesDiff / 60);
+          const minutes = minutesDiff % 60;
+          Alert.alert(
+            `Notifications will begin in ${hours} hour(s) and ${minutes} minute(s).`,
+          );
+        } else {
+          const formattedStartTime = convertTo12HourFormat(
+            startTimeHour,
+            startTimeMinute,
+          );
+          Alert.alert(
+            `Notifications will start tomorrow at ${formattedStartTime.hour}:${formattedStartTime.minute} ${formattedStartTime.period}.`,
+          );
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching scheduled notifications:", error);
+  }
+};
+
 export const NotificationScreen: React.FC<Props> = ({
   navigation,
   route,
@@ -60,8 +145,12 @@ export const NotificationScreen: React.FC<Props> = ({
   const [endTime, setEndTime] = useState(2359);
   const [spacing, setSpacing] = useState(30);
   const [query, setQuery] = useState(strings.database.defaultQuery);
+  const [settingsChanged, setSettingsChanged] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const loadSavedSettings = async (): Promise<void> => {
+    if (hasUnsavedChanges) return; // If there are unsaved changes, don't reload settings from AsyncStorage.
+
     const savedAllowNotifications = await loadSettings(
       ASYNC_KEYS.allowNotifications,
     );
@@ -92,23 +181,50 @@ export const NotificationScreen: React.FC<Props> = ({
       void loadSavedSettings();
     });
 
+    // Run it once initially
+    void loadSavedSettings();
+
     // Clean up the event listener on component unmount
     return unsubscribe;
   }, [navigation]);
 
-  const toggleSwitch = (): void => {
-    const updatedAllowNotifications = !allowNotifications;
-    setAllowNotifications(updatedAllowNotifications);
-    void saveSettings(ASYNC_KEYS.allowNotifications, updatedAllowNotifications);
-  };
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      const passedQuery: string = route.params?.quoteSearch?.query ?? "";
+      if (passedQuery.length > 0) {
+        setQuery(passedQuery);
+      } else {
+        void loadSavedSettings();
+      }
+    });
+
+    // Run it once initially
+    void loadSavedSettings();
+
+    // Clean up the event listener on component unmount
+    return unsubscribe;
+  }, [navigation, route.params]);
+
   const isValidTimeRange = (start: number, end: number): boolean => {
     return start <= end;
   };
 
+  const toggleSwitch = (): void => {
+    const updatedAllowNotifications = !allowNotifications;
+    if (updatedAllowNotifications !== allowNotifications) {
+      setSettingsChanged(true);
+      setHasUnsavedChanges(true);
+    }
+    setAllowNotifications(updatedAllowNotifications);
+  };
+
   const handleStartTimeChange = (time: number): void => {
     if (isValidTimeRange(time, endTime)) {
+      if (time !== startTime) {
+        setSettingsChanged(true);
+        setHasUnsavedChanges(true);
+      }
       setStartTime(time);
-      void saveSettings(ASYNC_KEYS.startTime24h, time);
     } else {
       alert(`Start Time must be less than or equal to End Time.`);
     }
@@ -116,19 +232,22 @@ export const NotificationScreen: React.FC<Props> = ({
 
   const handleEndTimeChange = (time: number): void => {
     if (isValidTimeRange(startTime, time)) {
+      if (time !== endTime) {
+        setSettingsChanged(true);
+        setHasUnsavedChanges(true);
+      }
       setEndTime(time);
-      void saveSettings(ASYNC_KEYS.endTime24h, time);
-      void scheduleNotifications();
     } else {
       alert(`End Time must be greater than or equal to Start Time.`);
     }
   };
 
-  const handleSpacingChange = async (value: number): Promise<void> => {
-    await saveSettings(ASYNC_KEYS.spacing, value).then(async () => {
-      setSpacing(value);
-      await scheduleNotifications();
-    });
+  const handleSpacingChange = (value: number): void => {
+    if (value !== spacing) {
+      setSettingsChanged(true);
+      setHasUnsavedChanges(true);
+    }
+    setSpacing(value);
   };
 
   return (
@@ -172,7 +291,7 @@ export const NotificationScreen: React.FC<Props> = ({
                   placeholder={{}}
                   // eslint-disable-next-line @typescript-eslint/no-misused-promises
                   onValueChange={async (value) => {
-                    await handleSpacingChange(value);
+                    handleSpacingChange(value);
                   }}
                   items={Array.from({ length: 60 }, (_, i) => ({
                     label: String(i + 1),
@@ -189,16 +308,51 @@ export const NotificationScreen: React.FC<Props> = ({
             <AppText style={styles.title}>Notification Database</AppText>
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate(
-                  strings.screenName.notificationSelectorScreen,
-                );
+                navigation.push(strings.screenName.notificationSelectorScreen, {
+                  currentAllowNotifications: allowNotifications,
+                  currentStartTime: startTime,
+                  currentEndTime: endTime,
+                  currentSpacing: spacing,
+                  currentQuery: query,
+                  notifyChange: () => {
+                    setSettingsChanged(true);
+                    setHasUnsavedChanges(true);
+                  },
+                });
               }}
             >
               <View style={styles.menuOptionContainerBottom}>
                 <AppText>{`Current Notifications From: ${query}`}</AppText>
               </View>
             </TouchableOpacity>
-            <View style={{ alignItems: "center" }}></View>
+
+            <View style={{ alignItems: "center" }}>
+              <TouchableOpacity
+                disabled={!settingsChanged}
+                style={[
+                  styles.notificationButton,
+                  {
+                    backgroundColor: settingsChanged ? PRIMARY_GREEN : GRAY_3,
+                  },
+                ]}
+                onPress={() => {
+                  ReactHapticFeedback.trigger("notificationSuccess", {
+                    enableVibrateFallback: true,
+                    ignoreAndroidSystemSettings: false,
+                  });
+                  void saveChangesAndScheduleNotifications(
+                    allowNotifications,
+                    startTime,
+                    endTime,
+                    spacing,
+                  );
+                }}
+              >
+                <AppText style={{ color: LIGHT }}>
+                  Save Changes & Begin Notifications
+                </AppText>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -214,6 +368,16 @@ export const NotificationScreen: React.FC<Props> = ({
   );
 };
 const styles = StyleSheet.create({
+  notificationButton: {
+    width: 270,
+    height: 50,
+
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+    marginBottom: 10,
+    alignSelf: "center",
+  },
   container: {
     backgroundColor: "#000",
     height: "100%",

@@ -88,6 +88,7 @@ export const RootNavigation: React.FC<RootProps> = ({
         />
         <Stack.Screen
           name={strings.screenName.notificationSelectorScreen}
+          // @ts-expect-error Type '({ navigation, route }: Props) => JSX.Element' is not assignable to type 'ScreenComponentType<ParamListBase, string> | undefined'.
           component={NotificationSelectorScreen}
         />
         <Stack.Screen name={strings.screenName.settings} component={Settings} />

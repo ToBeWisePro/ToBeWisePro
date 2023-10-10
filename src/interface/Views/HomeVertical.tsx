@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { View, StyleSheet } from "react-native";
 import { TopNav } from "../molecules/TopNav";
 import LinearGradient from "react-native-linear-gradient";
@@ -27,28 +27,40 @@ export const HomeVertical = ({ navigation, route }: Props): JSX.Element => {
   const [quotes, setQuotes] = useState<QuotationInterface[]>([]);
   const [playPressed, setPlayPressed] = useState<boolean>(false);
 
+  const prevQueryRef = useRef<string | null>(null);
+  const prevFilterRef = useRef<string | null>(null);
+
   useFocusEffect(
     useCallback(() => {
       const getData = async (): Promise<void> => {
-        await Promise.all([
+        const [savedQuery, savedFilter] = await Promise.all([
           AsyncStorage.getItem(ASYNC_KEYS.query),
           AsyncStorage.getItem(ASYNC_KEYS.filter),
-        ]).then(async ([savedQuery, savedFilter]) => {
-          const retrievedQuery =
-            savedQuery != null && savedQuery.length > 0
-              ? savedQuery
-              : strings.database.defaultQuery;
-          const retrievedFilter =
-            savedFilter != null && savedFilter.length > 0
-              ? savedFilter
-              : strings.database.defaultFilter;
+        ]);
+
+        const retrievedQuery =
+          savedQuery != null && savedQuery.length > 0
+            ? savedQuery
+            : strings.database.defaultQuery;
+        const retrievedFilter =
+          savedFilter != null && savedFilter.length > 0
+            ? savedFilter
+            : strings.database.defaultFilter;
+
+        if (
+          prevQueryRef.current !== retrievedQuery ||
+          prevFilterRef.current !== retrievedFilter
+        ) {
           await getShuffledQuotes(false).then((res) => {
             setQuotes(res);
             setTitle(retrievedFilter + ": " + retrievedQuery);
+            prevQueryRef.current = retrievedQuery;
+            prevFilterRef.current = retrievedFilter;
           });
-        });
+        }
       };
       void getData();
+
       try {
         setBackButton(route.params.showBackButton);
       } catch {
@@ -77,7 +89,6 @@ export const HomeVertical = ({ navigation, route }: Props): JSX.Element => {
           playPressed={playPressed}
           setPlayPressed={setPlayPressed}
           navigation={navigation}
-          // TODO remove unused imports in ASQL
           query={""}
           filter={""}
         />

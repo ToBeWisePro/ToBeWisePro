@@ -44,7 +44,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   filter,
 }) => {
   const scrollRef = useRef<FlatList>(null);
-  const initialDataOrder = useRef(data);
   const initialDataOrderRef = useRef<QuotationInterface[]>([]);
   const prevDataRef = useRef<QuotationInterface[]>(data); // to store the previous data
 
@@ -75,20 +74,17 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   if (initialDataOrderRef.current.length === 0) {
     initialDataOrderRef.current = data;
   }
-  useEffect(() => {
-    // If data prop has changed
-    if (!areArraysEquivalent(prevDataRef.current, data)) {
-      // Update the initialDataOrderRef with the new data
-      initialDataOrderRef.current = data;
-      // Update the prevDataRef with the new data for the next comparison
-      prevDataRef.current = data;
-      const timerId = setTimeout(() => {
-        scrollRef.current?.scrollToIndex({ index: 0, animated: false });
-      }, 0); // Timeout set to ensure the scrollToIndex is called after rendering
 
-      return () => {
-        clearTimeout(timerId);
-      };
+  useEffect(() => {
+    if (!areArraysEquivalent(prevDataRef.current, data)) {
+      setPlayPressed(false);
+      cancelAnimation(scrollPosition);
+      setTimeout(() => {
+        scrollRef.current?.scrollToIndex({ index: 0, animated: false });
+        prevDataRef.current = data;
+        currentPosition.current = 0; // <-- Resetting it directly here
+        setPlayPressed(true);
+      }, 100);
     }
   }, [data]);
 
@@ -110,11 +106,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     },
     [filter, query, data, navigation],
   );
-
-  useEffect(() => {
-    // Update the ref value if the data prop changes
-    initialDataOrder.current = data;
-  }, [data]);
 
   const setAndStoreScrollSpeed = (
     value: React.SetStateAction<number>,
@@ -212,8 +203,10 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   }, [setPlayPressed]);
 
   useDerivedValue(() => {
-    runOnJS(scrollTo)(scrollPosition.value);
-  }, [scrollPosition]);
+    if (playPressed) {
+      runOnJS(scrollTo)(scrollPosition.value);
+    }
+  }, [scrollPosition, playPressed]);
 
   const handleScroll = (event: any): void => {
     currentPosition.current = event.nativeEvent.contentOffset.y;
@@ -255,7 +248,8 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     <View style={styles.container} testID={TEST_IDS.autoScrollingQuotesList}>
       <FlatList
         testID={TEST_IDS.flatlist}
-        data={initialDataOrderRef.current}
+        key={data[0]?._id}
+        data={data}
         renderItem={renderItem}
         scrollEventThrottle={16}
         ref={scrollRef}
