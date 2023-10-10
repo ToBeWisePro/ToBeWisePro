@@ -31,6 +31,7 @@ import { scheduleNotifications } from "../../res/util/NotificationScheduler";
 import { TEST_IDS } from "../../res/constants/TestIDs";
 import * as Notifications from "expo-notifications";
 import { convertTo12HourFormat } from "../../res/functions/UtilFunctions";
+import ReactHapticFeedback from "react-native-haptic-feedback"; // <-- Import the module
 
 interface Props {
   navigation: NavigationInterface;
@@ -335,6 +336,10 @@ export const NotificationScreen: React.FC<Props> = ({
                   },
                 ]}
                 onPress={() => {
+                  ReactHapticFeedback.trigger("notificationSuccess", {
+                    enableVibrateFallback: true,
+                    ignoreAndroidSystemSettings: false,
+                  });
                   void saveChangesAndScheduleNotifications(
                     allowNotifications,
                     startTime,

@@ -22,7 +22,7 @@ interface Button {
 }
 
 export const Settings = ({ navigation }: Props): JSX.Element => {
-  const rateApp = () => {
+  const rateApp = (): void => {
     const options = {
       AppleAppID: "1156018700", // Your Apple App Store ID
       preferredAndroidMarket: AndroidMarket.Google, // Even though you're not using Android, this needs to be here.

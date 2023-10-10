@@ -13,6 +13,7 @@ import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import { saveSettings } from "./NotificationsScreen";
 import { TEST_IDS } from "../../res/constants/TestIDs";
 import { type RouteInterface } from "../../res/constants/Interfaces";
+import ReactHapticFeedback from "react-native-haptic-feedback";
 
 interface Props {
   // create navigation interface WITHOUT using custom navigation interface prop
@@ -118,11 +119,10 @@ export const NotificationSelectorScreen = ({
           setFilter={setFilter}
           search={search}
           onPress={async (query: string, filter: string) => {
-            console.debug(
-              "From NotificationSelectorScreen.tsx: ",
-              query,
-              filter,
-            );
+            ReactHapticFeedback.trigger("selection", {
+              enableVibrateFallback: true,
+              ignoreAndroidSystemSettings: false,
+            });
 
             await saveSettings(ASYNC_KEYS.notificationQuery, query).then(
               async () => {
