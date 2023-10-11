@@ -20,11 +20,15 @@ export default function App(): JSX.Element {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     [],
   );
+  const [firstLogin, setFirstLogin] = useState(false);
+  const [hasCheckedLogin, setHasCheckedLogin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     void (async () => {
       try {
         await saveDefaultValue(ASYNC_KEYS.allowNotifications, true);
+        await saveDefaultValue(ASYNC_KEYS.firstTimeLogin, true);
         await convertDateTo24h(ASYNC_KEYS.startTime24h, 900);
         await convertDateTo24h(ASYNC_KEYS.endTime24h, 1700);
         await saveDefaultValue(
@@ -37,10 +41,20 @@ export default function App(): JSX.Element {
         );
         await saveDefaultValue(ASYNC_KEYS.spacing, 30);
         await scheduleNotifications();
+
         const { status } = await Notifications.requestPermissionsAsync();
         if (status !== "granted") {
           console.error("Notification permissions not granted.");
         }
+
+        const isFirstLogin = await AsyncStorage.getItem(
+          ASYNC_KEYS.firstTimeLogin,
+        );
+        if (isFirstLogin === null || JSON.parse(isFirstLogin) === true) {
+          setFirstLogin(true);
+        }
+        setHasCheckedLogin(true);
+        setIsLoading(false);
       } catch (error) {
         console.error("Error in useEffect:", error);
       }
@@ -77,7 +91,6 @@ export default function App(): JSX.Element {
         const quotes = await getShuffledQuotes(false);
         setShuffledQuotes(quotes);
       } catch (error) {
-        // @ts-expect-error Type 'string' is not assignable to type 'never'.
         Alert.alert("Error", error.message);
       }
     })();
@@ -94,14 +107,22 @@ export default function App(): JSX.Element {
     }
   };
 
-  if (shuffledQuotes.length === 0) {
+  if (isLoading || shuffledQuotes.length === 0) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
-  return <RootNavigation initialRoute={"Home"} />;
+
+  const initialRoute = firstLogin
+    ? strings.screenName.firstLogin
+    : strings.screenName.home;
+  console.debug("Navigating to:", initialRoute);
+  if (initialRoute === strings.screenName.firstLogin) {
+    void AsyncStorage.setItem(ASYNC_KEYS.firstTimeLogin, JSON.stringify(false));
+  }
+  return <RootNavigation initialRoute={initialRoute} />;
 }
 
 const styles = StyleSheet.create({
