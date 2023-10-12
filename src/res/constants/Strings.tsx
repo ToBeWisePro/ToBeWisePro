@@ -11,6 +11,7 @@ export const strings = new LocalizedStrings({
       search: "Search Quotes",
       notificationsScreen: "Configure Notifications",
       notificationSelectorScreen: "Choose Notification Database",
+      firstLogin: "First Login",
     },
     database: {
       safeChar: "%",

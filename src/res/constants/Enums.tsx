@@ -54,4 +54,5 @@ export const ASYNC_KEYS = {
   notificationFilter: "notificationfilter",
   scrollSpeed: "@scrollspeed",
   scrollPosition: "@scrollposition",
+  firstTimeLogin: "firstTimeLogin",
 };
