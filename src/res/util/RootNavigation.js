@@ -14,7 +14,7 @@ import { NotificationSelectorScreen } from "../../interface/Views/NotificationSe
 import { strings } from "../constants/Strings";
 import { ASYNC_KEYS } from "../constants/Enums";
 import analytics from "@react-native-firebase/analytics";
-// import { FirstLogin } from "../../interface/Views/FirstLogin";
+import { FirstLogin } from "../../interface/Views/FirstLogin";
 
 export const navigationRef = React.createRef();
 
@@ -88,10 +88,10 @@ export const RootNavigation = ({ initialRoute }) => {
         initialRouteName={initialRoute}
         screenOptions={{ animationEnabled: false, headerShown: false }}
       >
-        {/* <Stack.Screen
+        <Stack.Screen
           name={strings.screenName.firstLogin}
           component={FirstLogin}
-        /> */}
+        />
 
         <Stack.Screen name={strings.screenName.discover} component={Discover} />
         <Stack.Screen name={strings.screenName.home} component={HomeVertical} />
