@@ -73,9 +73,12 @@ export const shuffle = (
 };
 
 export const openLink = async (url: string): Promise<void> => {
+  // Convert spaces to browser-friendly format
+  const formattedUrl = url.replace(/ /g, "%20");
+
   // Open a link in an in-app web browser
   if (await InAppBrowser.isAvailable()) {
-    await InAppBrowser.open(url, {
+    await InAppBrowser.open(formattedUrl, {
       // iOS Properties
       dismissButtonStyle: "cancel",
       preferredBarTintColor: PRIMARY_BLUE,
@@ -96,7 +99,7 @@ export const openLink = async (url: string): Promise<void> => {
         "my-custom-header": "my custom header value",
       },
     });
-  } else await Linking.openURL(url);
+  } else await Linking.openURL(formattedUrl);
 };
 
 interface TimeFormat {
