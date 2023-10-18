@@ -110,13 +110,19 @@ export const Settings = ({ navigation }: Props): JSX.Element => {
       },
     },
     {
+      icon: "play-circle-filled",
+      title: strings.settings.introVideo,
+      onPress: () => {
+        navigation.navigate(strings.screenName.firstLogin);
+      },
+    },
+    {
       icon: "",
       title: strings.settings.versionNumberText,
       onPress: () => {},
     },
   ];
 
-  // ... rest of the component
   return (
     <View style={styles.container}>
       <TopNav
