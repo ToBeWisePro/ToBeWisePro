@@ -43,6 +43,7 @@ export const FirstLogin = ({ navigation }: Props): JSX.Element => {
             );
             navigation.navigate(strings.screenName.home);
           }}
+          style={{ backgroundColor: "#f0f", height: 500, width: 500 }}
         >
           <AppText>Go to app</AppText>
         </TouchableOpacity>
