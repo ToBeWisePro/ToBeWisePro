@@ -11,6 +11,7 @@ import {
   GRADIENT_END,
   GRADIENT_START,
   GRAY_6,
+  PRIMARY_BLUE,
   PRIMARY_GREEN,
 } from "../../../styles/Colors";
 import { type NavigationInterface } from "../../res/constants/Interfaces";
@@ -20,7 +21,6 @@ import { TEST_IDS } from "../../res/constants/TestIDs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ASYNC_KEYS } from "../../res/constants/Enums";
 import LinearGradient from "react-native-linear-gradient";
-import Config from "react-native-config"; // Import Config
 import { AppText } from "../atoms/AppText";
 
 interface Props {
@@ -28,7 +28,7 @@ interface Props {
 }
 
 export const FirstLogin = ({ navigation }: Props): JSX.Element => {
-  const apiKey = Config.YOUTUBE_API_KEY;
+  const apiKey = "AIzaSyAUrtxd5sz0N5oGEnH7nU2HKq6DCpuDw0o";
 
   if (apiKey == null) {
     console.error("YouTube API key is not defined!");
@@ -43,9 +43,15 @@ export const FirstLogin = ({ navigation }: Props): JSX.Element => {
             );
             navigation.navigate(strings.screenName.home);
           }}
-          style={{ backgroundColor: "#f0f", height: 500, width: 500 }}
+          style={{
+            backgroundColor: PRIMARY_BLUE,
+            height: 200,
+            width: 200,
+            alignContent: "center",
+            justifyContent: "center",
+          }}
         >
-          <AppText>Go to app</AppText>
+          <AppText>Go to app :/ </AppText>
         </TouchableOpacity>
       </View>
     );
