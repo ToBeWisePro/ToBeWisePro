@@ -15,6 +15,10 @@ import {
 import { QuoteContainerButtons } from "../../res/constants/Enums";
 import { openLink } from "../../res/functions/UtilFunctions";
 import ReactHapticFeedback from "react-native-haptic-feedback"; // <-- Import the module
+import {
+  firebaseEventsKeys,
+  logFirebaseEvent,
+} from "../../backend/FirebaseConfig";
 
 interface Props {
   quote: QuotationInterface;
@@ -36,6 +40,8 @@ export const QuoteButtonBar: React.FC<Props> = ({
   }, [isDeleted]);
 
   const handleFavoritePress = async (): Promise<void> => {
+    logFirebaseEvent(firebaseEventsKeys.pressedFavorite, { quote });
+
     const updatedFavoriteStatus = !isFavorite;
     setIsFavorite(updatedFavoriteStatus);
     if (updatedFavoriteStatus) {
@@ -51,6 +57,8 @@ export const QuoteButtonBar: React.FC<Props> = ({
   };
 
   const onShare = async (): Promise<void> => {
+    logFirebaseEvent(firebaseEventsKeys.pressedShare, { quote });
+
     try {
       const message = `"${quote.quoteText}"\n-${quote.author}\n\nRead more on ToBeWise™ at https://www.ToBeWise.co`;
 
@@ -93,6 +101,7 @@ export const QuoteButtonBar: React.FC<Props> = ({
       id: QuoteContainerButtons.Add,
       name: QuoteContainerButtons.Add,
       onPress: () => {
+        logFirebaseEvent(firebaseEventsKeys.pressedAdd, { quote });
         navigation.push(strings.screenName.editQuote, {
           editingQuote: {
             _id: parseInt(String(Math.random() * 100000)),
@@ -113,6 +122,8 @@ export const QuoteButtonBar: React.FC<Props> = ({
       id: QuoteContainerButtons.Delete,
       name: isDeleted ? "Restore" : QuoteContainerButtons.Delete,
       onPress: () => {
+        logFirebaseEvent(firebaseEventsKeys.pressedDelete, { quote });
+
         void deleteFunction(quote);
       },
       iconName: isDeleted ? "restore" : "delete",
@@ -123,6 +134,8 @@ export const QuoteButtonBar: React.FC<Props> = ({
       id: QuoteContainerButtons.Edit,
       name: QuoteContainerButtons.Edit,
       onPress: () => {
+        logFirebaseEvent(firebaseEventsKeys.pressedEdit, { quote });
+
         navigation.push(strings.screenName.editQuote, {
           editingQuote: quote,
           editingExistingQuote: true,
@@ -135,6 +148,8 @@ export const QuoteButtonBar: React.FC<Props> = ({
       id: QuoteContainerButtons.Video,
       name: QuoteContainerButtons.Video,
       onPress: async () => {
+        logFirebaseEvent(firebaseEventsKeys.pressedVideo, { quote });
+
         await openLink(quote.videoLink);
       },
       iconName: "movie",

@@ -15,6 +15,7 @@ import { strings } from "../constants/Strings";
 import { ASYNC_KEYS } from "../constants/Enums";
 import analytics from "@react-native-firebase/analytics";
 import { FirstLogin } from "../../interface/Views/FirstLogin";
+import { logFirebaseEvent } from "../../backend/FirebaseConfig";
 
 export const navigationRef = React.createRef();
 
@@ -47,6 +48,7 @@ export const RootNavigation = ({ initialRoute }) => {
             [ASYNC_KEYS.notifQuote, JSON.stringify(quote)],
             [ASYNC_KEYS.notifTitle, strings.copy.notificationFrom],
           ]);
+          logFirebaseEvent("notification_opened");
           navigationRef.current?.reset({
             index: 0,
             routes: [
