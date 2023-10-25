@@ -21,7 +21,7 @@ export const logFirebaseEvent = (
   // eslint-disable-next-line @typescript-eslint/ban-types
   data: {},
 ): void => {
-  // @ts-expect-error   Type 'FirebaseApp' is missing the following properties from type 'FirebaseApp': delete, utils, analyticsts(2345)
+  // @ts-expect-error Type 'FirebaseApp' is missing the following properties from type 'FirebaseApp': delete, utils, analyticsts(2345)
   const analytics = getAnalytics(app);
   void logEvent(analytics, event, data);
 };
