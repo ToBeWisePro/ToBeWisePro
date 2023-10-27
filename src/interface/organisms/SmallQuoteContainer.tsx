@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { DARK, LIGHT } from "../../../styles/Colors";
+import { LIGHT } from "../../../styles/Colors";
 import { type QuotationInterface } from "../../res/constants/Interfaces";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { AppText } from "../atoms/AppText";
@@ -56,15 +56,18 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+
   quoteContainer: {
+    paddingTop: 40, // Equivalent of two blank lines
+    paddingBottom: 20, // Equivalent of one blank line
     height: globalStyles.smallQuoteContainer.height - 70,
+    alignItems: "center",
+    justifyContent: "center",
   },
   authorContainer: {
-    justifyContent: "flex-end",
-    alignContent: "flex-end",
+    justifyContent: "center",
+    alignContent: "center",
     height: 40,
-    borderColor: DARK,
-    borderTopWidth: 0.5,
   },
   contributedByText: {
     fontSize: 14,

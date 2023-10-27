@@ -21,6 +21,7 @@ export const logFirebaseEvent = (
   // eslint-disable-next-line @typescript-eslint/ban-types
   data: {},
 ): void => {
+  // @ts-expect-error Argument of type 'import("/Users/griffinclark/Documents/GitHub/ToBeWise/ToBeWisePro/node_modules/@firebase/app/dist/app-public").FirebaseApp' is not assignable to parameter of type 'import("/Users/griffinclark/Documents/GitHub/ToBeWise/ToBeWisePro/node_modules/@react-native-firebase/app/lib/index").ReactNativeFirebase.FirebaseApp'.
   const analytics = getAnalytics(app);
   void logEvent(analytics, event, data);
 };
