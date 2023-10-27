@@ -8,7 +8,7 @@ import {
   type QuotationInterface,
   type RouteInterface,
 } from "../../res/constants/Interfaces";
-import { getShuffledQuotes } from "../../res/functions/DBFunctions";
+import { getShuffledQuotes } from "../../backend/DBFunctions";
 import { strings } from "../../res/constants/Strings";
 import { AutoScrollingQuoteList } from "../animals/AutoScrollingQuoteList";
 import AsyncStorage from "@react-native-async-storage/async-storage";

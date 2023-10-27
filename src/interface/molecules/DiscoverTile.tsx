@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, StyleSheet } from "react-native";
 import { GRAY_3, LIGHT } from "../../../styles/Colors";
 import { AppText } from "../atoms/AppText";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { getQuoteCount } from "../../res/functions/DBFunctions";
+import { getQuoteCount } from "../../backend/DBFunctions";
 import { type NavigationInterface } from "../../res/constants/Interfaces";
 import { strings } from "../../res/constants/Strings";
 import AsyncStorage from "@react-native-async-storage/async-storage";

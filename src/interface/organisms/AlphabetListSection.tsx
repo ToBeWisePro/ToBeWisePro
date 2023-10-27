@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import { AlphabetList } from "react-native-section-alphabet-list";
 import { strings } from "../../res/constants/Strings";
-import { getFromDB } from "../../res/functions/DBFunctions";
+import { getFromDB } from "../../backend/DBFunctions";
 import { DiscoverSectionHeader } from "../atoms/DiscoverSectionHeader";
 import { DiscoverTile } from "../molecules/DiscoverTile";
 import { maxWindowSize } from "../../res/constants/Values";

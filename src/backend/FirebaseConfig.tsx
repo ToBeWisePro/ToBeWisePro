@@ -1,27 +1,31 @@
-// Import the functions you need from the SDKs you need
-
 import { getAnalytics, logEvent } from "@react-native-firebase/analytics";
 import { initializeApp } from "firebase/app";
 
-// Your web app's Firebase configuration
+// Import values from the .env file
+import {
+  FIREBASE_API_KEY,
+  FIREBASE_AUTH_DOMAIN,
+  FIREBASE_PROJECT_ID,
+  FIREBASE_STORAGE_BUCKET,
+  FIREBASE_MESSAGING_SENDER_ID,
+  FIREBASE_APP_ID,
+  FIREBASE_MEASUREMENT_ID,
+} from "@env";
+
+// Updated Firebase configuration to use environment variables
 export const firebaseConfig = {
-  apiKey: "AIzaSyAxul3mJRh-CZoBwEfBs6Qqqb--_JLJMRo",
-  authDomain: "tobewise-187b9.firebaseapp.com",
-  projectId: "tobewise-187b9",
-  storageBucket: "tobewise-187b9.appspot.com",
-  messagingSenderId: "185980455678",
-  appId: "1:185980455678:web:66855b574fe056efa9b3af",
-  measurementId: "G-T3Y9SLZ7PH",
+  apiKey: FIREBASE_API_KEY,
+  authDomain: FIREBASE_AUTH_DOMAIN,
+  projectId: FIREBASE_PROJECT_ID,
+  storageBucket: FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
+  appId: FIREBASE_APP_ID,
+  measurementId: FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
 
-export const logFirebaseEvent = (
-  event: string,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  data: {},
-): void => {
-  // @ts-expect-error Argument of type 'import("/Users/griffinclark/Documents/GitHub/ToBeWise/ToBeWisePro/node_modules/@firebase/app/dist/app-public").FirebaseApp' is not assignable to parameter of type 'import("/Users/griffinclark/Documents/GitHub/ToBeWise/ToBeWisePro/node_modules/@react-native-firebase/app/lib/index").ReactNativeFirebase.FirebaseApp'.
+export const logFirebaseEvent = (event: string, data: {}): void => {
   const analytics = getAnalytics(app);
   void logEvent(analytics, event, data);
 };

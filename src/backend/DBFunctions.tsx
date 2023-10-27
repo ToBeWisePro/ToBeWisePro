@@ -1,69 +1,13 @@
-import { jsonQuotes } from "../../../data/jsonQuotes";
-import { type QuotationInterface } from "../constants/Interfaces";
-import { strings } from "../constants/Strings";
-import { dbName, defaultUsername } from "../constants/Values";
-import { shuffle } from "./UtilFunctions";
+import { type QuotationInterface } from "../res/constants/Interfaces";
+import { strings } from "../res/constants/Strings";
+import { dbName, defaultUsername } from "../res/constants/Values";
+import { shuffle } from "../res/functions/UtilFunctions";
 import * as SQLite from "expo-sqlite";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ASYNC_KEYS } from "../constants/Enums";
-
-export async function dataImporter(): Promise<void> {
-  const db = SQLite.openDatabase(dbName);
-
-  // Use try-catch to handle errors
-  try {
-    // Use const for functions that do not change
-    const createTable = new Promise<void>((resolve, reject) => {
-      db.transaction((tx) => {
-        tx.executeSql(
-          `CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite BOOLEAN, deleted BOOLEAN);`,
-          [],
-          () => {
-            resolve();
-          },
-          (_, error) => {
-            console.error(error);
-            reject(error);
-            return true;
-          },
-        );
-      });
-    });
-
-    await createTable;
-
-    const isDbEmpty = await new Promise<boolean>((resolve, reject) => {
-      db.transaction((tx) => {
-        tx.executeSql(
-          `SELECT * FROM ${dbName}`,
-          [],
-          (_, result) => {
-            resolve(result.rows.length === 0);
-          },
-          (_, error) => {
-            console.error(error);
-            reject(error);
-            return true;
-          },
-        );
-      });
-    });
-
-    if (isDbEmpty) {
-      const quotes: QuotationInterface[] = jsonQuotes.map((quote) => ({
-        ...quote,
-        favorite: false,
-        deleted: false,
-      }));
-
-      for (const quote of quotes) {
-        await saveQuoteToDatabase(quote);
-      }
-    }
-  } catch (error) {
-    console.error("Error in dataImporter:", error);
-  }
-}
+import { ASYNC_KEYS } from "../res/constants/Enums";
+import firestore from "@react-native-firebase/firestore";
+import { getApps, initializeApp } from "firebase/app";
+import { firebaseConfig } from "./FirebaseConfig";
 
 export async function createDatabaseAndTable(): Promise<void> {
   const db = SQLite.openDatabase(dbName);
@@ -91,39 +35,28 @@ export async function createDatabaseAndTable(): Promise<void> {
 }
 
 export async function populateDatabase(): Promise<void> {
-  const db = SQLite.openDatabase(dbName);
-
   try {
-    const isDbEmpty = await new Promise<boolean>((resolve, reject) => {
-      db.transaction((tx) => {
-        tx.executeSql(
-          `SELECT * FROM ${dbName}`,
-          [],
-          (_, result) => {
-            resolve(result.rows.length === 0);
-          },
-          (_, error) => {
-            console.error(error);
-            reject(error);
-            return true;
-          },
-        );
-      });
-    });
+    // Check if the default app is initialized, if not initialize it
+    if (getApps().length === 0) {
+      initializeApp(firebaseConfig);
+    }
 
-    if (isDbEmpty) {
-      const quotes: QuotationInterface[] = jsonQuotes.map((quote) => ({
-        ...quote,
+    // Now you're sure the app is initialized, proceed with fetching from Firestore
+    const quotesSnapshot = await firestore().collection("quotes").get();
+
+    // Iterate through each document and save it to the local SQLite database
+    for (const doc of quotesSnapshot.docs) {
+      const quoteData = doc.data();
+      const quote: QuotationInterface = {
+        ...quoteData,
         favorite: false,
         deleted: false,
-      }));
+      };
 
-      for (const quote of quotes) {
-        await saveQuoteToDatabase(quote);
-      }
+      await saveQuoteToDatabase(quote);
     }
   } catch (error) {
-    console.error("Error in populateDatabase:", error);
+    console.error("Error fetching data from Firestore:", error);
   }
 }
 

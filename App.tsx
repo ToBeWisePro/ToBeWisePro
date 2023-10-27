@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, ActivityIndicator, Alert } from "react-native";
-import { getShuffledQuotes, initDB } from "./src/res/functions/DBFunctions";
+import { getShuffledQuotes, initDB } from "./src/backend/DBFunctions";
 import { strings } from "./src/res/constants/Strings";
 import { RootNavigation } from "./src/res/util/RootNavigation";
 import { type QuotationInterface } from "./src/res/constants/Interfaces";

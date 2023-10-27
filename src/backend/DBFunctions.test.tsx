@@ -2,7 +2,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getShuffledQuotes } from "../functions/DBFunctions";
 import * as SQLite from "expo-sqlite";
-import { strings } from "../constants/Strings";
+import { strings } from "../res/constants/Strings";
 
 const mockExecuteSql = jest.fn();
 

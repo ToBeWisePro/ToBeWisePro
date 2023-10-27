@@ -2,7 +2,7 @@ import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { DiscoverTile } from "./DiscoverTile";
 import "@testing-library/jest-native/extend-expect";
-import { getQuoteCount } from "../../res/functions/DBFunctions";
+import { getQuoteCount } from "../../backend/DBFunctions";
 import { mockNavigation } from "../../res/constants/test_types/mockNavigation";
 
 // Mocking AsyncStorage

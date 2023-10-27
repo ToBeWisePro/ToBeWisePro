@@ -8,10 +8,7 @@ import { IconFactory } from "../atoms/IconFactory";
 import { PRIMARY_GREEN, PRIMARY_RED } from "../../../styles/Colors";
 import { AppText } from "../atoms/AppText";
 import { strings } from "../../res/constants/Strings";
-import {
-  markQuoteAsDeleted,
-  updateQuote,
-} from "../../res/functions/DBFunctions";
+import { markQuoteAsDeleted, updateQuote } from "../../backend/DBFunctions";
 import { QuoteContainerButtons } from "../../res/constants/Enums";
 import { openLink } from "../../res/functions/UtilFunctions";
 import ReactHapticFeedback from "react-native-haptic-feedback"; // <-- Import the module

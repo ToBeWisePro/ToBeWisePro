@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
-import { getShuffledQuotes } from "../functions/DBFunctions";
+import { getShuffledQuotes } from "../../backend/DBFunctions";
 import { ASYNC_KEYS } from "../constants/Enums";
 
 export async function scheduleNotifications(
