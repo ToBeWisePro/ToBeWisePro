@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, ActivityIndicator, Alert } from "react-native";
-import {
-  dataImporter,
-  getShuffledQuotes,
-} from "./src/res/functions/DBFunctions";
+import { getShuffledQuotes, initDB } from "./src/res/functions/DBFunctions";
 import { strings } from "./src/res/constants/Strings";
 import { RootNavigation } from "./src/res/util/RootNavigation";
 import { type QuotationInterface } from "./src/res/constants/Interfaces";
@@ -86,7 +83,7 @@ export default function App(): JSX.Element {
   useEffect(() => {
     void (async () => {
       try {
-        await dataImporter();
+        await initDB();
         const quotes = await getShuffledQuotes(false);
         setShuffledQuotes(quotes);
       } catch (error) {

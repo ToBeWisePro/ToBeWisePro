@@ -65,6 +65,139 @@ export async function dataImporter(): Promise<void> {
   }
 }
 
+export async function createDatabaseAndTable(): Promise<void> {
+  const db = SQLite.openDatabase(dbName);
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          `CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite BOOLEAN, deleted BOOLEAN);`,
+          [],
+          () => {
+            resolve();
+          },
+          (_, error) => {
+            console.error(error);
+            reject(error);
+            return true;
+          },
+        );
+      });
+    });
+  } catch (error) {
+    console.error("Error in createDatabaseAndTable:", error);
+  }
+}
+
+export async function populateDatabase(): Promise<void> {
+  const db = SQLite.openDatabase(dbName);
+
+  try {
+    const isDbEmpty = await new Promise<boolean>((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          `SELECT * FROM ${dbName}`,
+          [],
+          (_, result) => {
+            resolve(result.rows.length === 0);
+          },
+          (_, error) => {
+            console.error(error);
+            reject(error);
+            return true;
+          },
+        );
+      });
+    });
+
+    if (isDbEmpty) {
+      const quotes: QuotationInterface[] = jsonQuotes.map((quote) => ({
+        ...quote,
+        favorite: false,
+        deleted: false,
+      }));
+
+      for (const quote of quotes) {
+        await saveQuoteToDatabase(quote);
+      }
+    }
+  } catch (error) {
+    console.error("Error in populateDatabase:", error);
+  }
+}
+
+export async function fetchUpdates(): Promise<void> {
+  // Right now, this will just console.debug that it's been fired
+  console.debug("Fetching updates...");
+}
+
+export async function initDB(): Promise<void> {
+  const db = SQLite.openDatabase(dbName);
+
+  // Step 1: Check if the database or the table exists. If not, create it.
+  let tableExists = true;
+  try {
+    await new Promise<void>((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          `SELECT name FROM sqlite_master WHERE type='table' AND name='${dbName}';`,
+          [],
+          (_, result) => {
+            if (result.rows.length === 0) {
+              tableExists = false;
+            }
+            resolve();
+          },
+          (_, error) => {
+            console.error(error);
+            reject(error);
+            return true;
+          },
+        );
+      });
+    });
+  } catch (error) {
+    console.error("Error checking if table exists:", error);
+  }
+
+  if (!tableExists) {
+    await createDatabaseAndTable();
+  }
+
+  // Step 2: Check if the database is populated. If not, populate it.
+  let isDbEmpty = true;
+  try {
+    isDbEmpty = await new Promise<boolean>((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          `SELECT * FROM ${dbName}`,
+          [],
+          (_, result) => {
+            resolve(result.rows.length === 0);
+          },
+          (_, error) => {
+            console.error(error);
+            reject(error);
+            return true;
+          },
+        );
+      });
+    });
+  } catch (error) {
+    console.error("Error checking if database is empty:", error);
+  }
+
+  if (isDbEmpty) {
+    await populateDatabase();
+  }
+
+  // Step 3: If the database exists and is populated, fetch updates.
+  if (!isDbEmpty) {
+    await fetchUpdates();
+  }
+}
+
 export async function editQuote(
   quoteId: number,
   newQuote: QuotationInterface,
