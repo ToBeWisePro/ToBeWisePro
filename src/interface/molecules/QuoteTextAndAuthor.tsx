@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View, TouchableOpacity } from "react-native";
+import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { PRIMARY_BLUE } from "../../../styles/Colors";
 import { openLink } from "../../res/functions/UtilFunctions";
@@ -43,11 +43,11 @@ const QuoteTextAndAuthor: React.FC<QuoteTextAndAuthorProps> = ({
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   quoteAuthorBox: {
     justifyContent: "center",
     alignItems: "center",
   },
-};
+});
 
 export default QuoteTextAndAuthor;
