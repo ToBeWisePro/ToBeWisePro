@@ -10,6 +10,8 @@ import { scheduleNotifications } from "./src/res/util/NotificationScheduler";
 import { ASYNC_KEYS } from "./src/res/constants/Enums";
 import { convertDateTo24h } from "./src/res/util/BackwardsCompatability";
 import { type NavigationContainerRef } from "@react-navigation/native";
+import { getApps, initializeApp } from "@firebase/app";
+import { firebaseConfig } from "./src/backend/FirebaseConfig";
 
 export const navigationRef = React.createRef<NavigationContainerRef<any>>();
 
@@ -19,6 +21,13 @@ export default function App(): JSX.Element {
   );
   const [firstLogin, setFirstLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if the default app is initialized, if not initialize it
+    if (getApps().length === 0) {
+      initializeApp(firebaseConfig);
+    }
+  }, []);
 
   useEffect(() => {
     void (async () => {

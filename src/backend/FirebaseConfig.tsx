@@ -1,5 +1,4 @@
 import { getAnalytics, logEvent } from "@react-native-firebase/analytics";
-import { initializeApp } from "firebase/app";
 
 // Import values from the .env file
 import {
@@ -22,8 +21,6 @@ export const firebaseConfig = {
   appId: FIREBASE_APP_ID,
   measurementId: FIREBASE_MEASUREMENT_ID,
 };
-
-const app = initializeApp(firebaseConfig);
 
 export const logFirebaseEvent = (event: string, data: {}): void => {
   const analytics = getAnalytics(app);

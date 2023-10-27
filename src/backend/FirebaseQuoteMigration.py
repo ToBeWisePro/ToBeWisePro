@@ -1,15 +1,15 @@
 import csv
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import firestore
+from auth import initialize_firestore
 
 # Initialize Firestore
-cred = credentials.Certificate('firebaseAdminSDK.json')
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+firebase_app = initialize_firestore()
+db = firestore.client(app=firebase_app)
 quotes_collection = db.collection('quotes')
 
 # Read CSV and upload to Firestore
-with open('quotes.csv', 'r', encoding='utf-8', errors='replace') as file:
+with open('../../data/quotes.csv', 'r', encoding='utf-8', errors='replace') as file:
     reader = csv.DictReader(file)
     
     for row in reader:
@@ -20,7 +20,7 @@ with open('quotes.csv', 'r', encoding='utf-8', errors='replace') as file:
                 'subjects': row['Subjects'].split(', '),
                 'authorLink': row['AuthorLink'],
                 'videoLink': row['VideoLink'],
-                'quotation': row['Quotation']
+                'quoteText': row['Quotation']
             }
             
             # Add data to Firestore
