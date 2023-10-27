@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Share, TouchableOpacity, View, StyleSheet, Alert } from "react-native";
 import {
   type NavigationInterface,
@@ -32,13 +32,6 @@ export const QuoteButtonBar: React.FC<Props> = ({
   const [isFavorite, setIsFavorite] = useState(quote.favorite);
   const [isDeleted, setIsDeleted] = useState(quote.deleted);
 
-  useEffect(() => {
-    quote.favorite = isFavorite;
-  }, [isFavorite]);
-  useEffect(() => {
-    quote.deleted = isDeleted;
-  }, [isDeleted]);
-
   const handleFavoritePress = async (): Promise<void> => {
     logFirebaseEvent(firebaseEventsKeys.pressedFavorite, { quote });
 
@@ -51,7 +44,7 @@ export const QuoteButtonBar: React.FC<Props> = ({
       });
     }
 
-    // Update the quote's favorite status in the database
+    // Use a cloned version of the quote object with the updated favorite status
     const updatedQuote = { ...quote, favorite: updatedFavoriteStatus };
     await updateQuote(updatedQuote);
   };
@@ -79,9 +72,13 @@ export const QuoteButtonBar: React.FC<Props> = ({
   };
 
   const deleteFunction = async (quote: QuotationInterface): Promise<void> => {
-    const shouldDelete = !quote.deleted; // If the quote is not currently deleted, we should delete it.
+    const shouldDelete = !quote.deleted;
     setIsDeleted(shouldDelete);
-    await markQuoteAsDeleted(quote, shouldDelete);
+
+    // Use a cloned version of the quote object with the updated deleted status
+    const updatedQuote = { ...quote, deleted: shouldDelete };
+    await markQuoteAsDeleted(updatedQuote, shouldDelete);
+
     Alert.alert(
       shouldDelete
         ? "Quote deleted successfully!"
