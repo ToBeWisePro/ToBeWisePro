@@ -9,7 +9,7 @@ db = firestore.client(app=firebase_app)
 quotes_collection = db.collection('quotes')
 
 # Read CSV and upload to Firestore
-with open('../../data/quotes.csv', 'r', encoding='utf-8', errors='replace') as file:
+with open('../../tagged_manual_quotes.csv', 'r', encoding='utf-8', errors='replace') as file:
     reader = csv.DictReader(file)
     
     for row in reader:

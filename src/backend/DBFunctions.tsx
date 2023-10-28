@@ -6,8 +6,6 @@ import * as SQLite from "expo-sqlite";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ASYNC_KEYS } from "../res/constants/Enums";
 import firestore from "@react-native-firebase/firestore";
-import { getApps, initializeApp } from "firebase/app";
-import { firebaseConfig } from "./FirebaseConfig";
 
 export async function createDatabaseAndTable(): Promise<void> {
   const db = SQLite.openDatabase(dbName);
@@ -35,34 +33,59 @@ export async function createDatabaseAndTable(): Promise<void> {
 }
 
 export async function populateDatabase(): Promise<void> {
-  try {
-    // Check if the default app is initialized, if not initialize it
-    if (getApps().length === 0) {
-      initializeApp(firebaseConfig);
-    }
+  // [I'm assuming previous code for setting up SQLite and firestore connections]
 
-    // Now you're sure the app is initialized, proceed with fetching from Firestore
-    const quotesSnapshot = await firestore().collection("quotes").get();
+  const quotesSnapshot = await firestore().collection("quotes").get();
+  const quotesArray: QuotationInterface[] = [];
 
-    // Iterate through each document and save it to the local SQLite database
-    for (const doc of quotesSnapshot.docs) {
-      const quoteData = doc.data();
-      const quote: QuotationInterface = {
-        ...quoteData,
-        favorite: false,
-        deleted: false,
-      };
-
-      await saveQuoteToDatabase(quote);
-    }
-  } catch (error) {
-    console.error("Error fetching data from Firestore:", error);
+  for (const doc of quotesSnapshot.docs) {
+    const quoteData = doc.data();
+    const quote: QuotationInterface = {
+      ...quoteData,
+      favorite: false,
+      deleted: false,
+    };
+    quotesArray.push(quote);
   }
+
+  // Clean up quotes
+  const cleanedQuotes = cleanUpQuotesData(quotesArray);
+
+  for (const quote of cleanedQuotes) {
+    await saveQuoteToDatabase(quote);
+  }
+
+  // [Close the SQLite connection or any other cleanup tasks if needed]
 }
 
 export async function fetchUpdates(): Promise<void> {
-  // Right now, this will just console.debug that it's been fired
-  console.debug("Fetching updates...");
+  // [I'm assuming previous code for setting up SQLite and firestore connections]
+
+  const quotesSnapshot = await firestore().collection("quotes").get();
+  const quotesArray: QuotationInterface[] = [];
+
+  for (const doc of quotesSnapshot.docs) {
+    const quoteData = doc.data();
+    const quote: QuotationInterface = {
+      ...quoteData,
+      favorite: false,
+      deleted: false,
+    };
+    quotesArray.push(quote);
+  }
+
+  // Clean up quotes
+  const cleanedQuotes = cleanUpQuotesData(quotesArray);
+
+  for (const quote of cleanedQuotes) {
+    const exists = await checkIfQuoteExistsInDatabase(quote); // Assuming you have this function
+    // If quote does not exist in the local SQLite database, save it
+    if (!exists) {
+      await saveQuoteToDatabase(quote);
+    }
+  }
+
+  // [Close the SQLite connection or any other cleanup tasks if needed]
 }
 
 export async function initDB(): Promise<void> {
@@ -131,6 +154,46 @@ export async function initDB(): Promise<void> {
   }
 }
 
+export function cleanUpQuotesData(
+  quotes: QuotationInterface[],
+): QuotationInterface[] {
+  // Clean up function for subjects and authors
+  const cleanUpString = (str: unknown) => {
+    if (typeof str !== "string") {
+      console.warn("Expected a string but received:", str);
+      return "";
+    }
+    return str.replace(/["()]/g, "").trim();
+  };
+
+  const seenQuotes = new Set();
+
+  return quotes
+    .map((quote) => {
+      // Clean up subject and author
+      if (Array.isArray(quote.subjects)) {
+        quote.subjects = quote.subjects.map((subject) =>
+          cleanUpString(subject),
+        );
+      }
+
+      if (typeof quote.author === "string") {
+        quote.author = cleanUpString(quote.author);
+      }
+
+      // Use a combination of quote text and author to check for uniqueness
+      const uniqueKey = `${quote.quoteText}-${quote.author}`;
+
+      // Check if the quote is a duplicate
+      if (seenQuotes.has(uniqueKey)) {
+        return null;
+      }
+      seenQuotes.add(uniqueKey);
+      return quote;
+    })
+    .filter(Boolean); // Filter out any null values (removed duplicates)
+}
+
 export async function editQuote(
   quoteId: number,
   newQuote: QuotationInterface,
@@ -172,8 +235,24 @@ export async function saveQuoteToDatabase(
 
   const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  // console.log("Attempting to save quote:", quote);
-  // console.log("Using insert query:", insertQuery);
+  // Clean up function for subjects and authors
+  const cleanUpString = (str: unknown) => {
+    if (typeof str !== "string") {
+      console.warn("Expected a string but received:", str);
+      return "";
+    }
+    return str.replace(/["()]/g, "").trim();
+  };
+
+  // turn subjects from an array into a comma separated string
+  if (Array.isArray(quote.subjects)) {
+    quote.subjects = quote.subjects.join(", ");
+  }
+
+  // Clean up the subjects and author before saving
+
+  const cleanedSubjects = cleanUpString(quote.subjects);
+  const cleanedAuthor = cleanUpString(quote.author);
 
   await new Promise((resolve, reject) => {
     db.transaction((tx) => {
@@ -181,15 +260,16 @@ export async function saveQuoteToDatabase(
         insertQuery,
         [
           quote.quoteText,
-          quote.author,
+          cleanedAuthor,
           quote.contributedBy,
-          quote.subjects,
+          cleanedSubjects,
           quote.authorLink,
           quote.videoLink,
           quote.favorite ? 1 : 0, // Convert boolean to number
           quote.deleted ? 1 : 0, // Convert boolean to number
         ],
         (_, resultSet) => {
+          console.debug(cleanedSubjects);
           resolve(resultSet.insertId);
         },
         (_, error) => {
@@ -545,6 +625,38 @@ export async function markQuoteAsDeleted(
         },
         (_, error) => {
           console.error(error);
+          reject(error);
+          return true; // abort the transaction
+        },
+      );
+    });
+  });
+}
+
+export async function checkIfQuoteExistsInDatabase(
+  quote: QuotationInterface,
+): Promise<boolean> {
+  const db = SQLite.openDatabase(dbName);
+
+  const trimmedQuoteText = quote.quoteText.trim();
+  const trimmedAuthor = quote.author.trim();
+
+  return await new Promise<boolean>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT COUNT(*) as count FROM ${dbName} WHERE quoteText = ? AND author = ?`,
+        [trimmedQuoteText, trimmedAuthor],
+        (_, result) => {
+          if (result.rows.item(0).count > 0) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        },
+        (_, error) => {
+          console.error(
+            `Error in checkIfQuoteExistsInDatabase: ${JSON.stringify(error)}`,
+          );
           reject(error);
           return true; // abort the transaction
         },
