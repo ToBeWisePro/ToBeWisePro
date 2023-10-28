@@ -49,11 +49,11 @@ export async function scheduleNotifications(
     if (allowNotifications && spacing > 0) {
       try {
         // // get query and filter from storage and log them
-        const query = await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery);
-        const filter = await AsyncStorage.getItem(
-          ASYNC_KEYS.notificationFilter,
-        );
-        console.debug("From NotificationScheduler.tsx: ", query, filter);
+        // const query = await AsyncStorage.getItem(ASYNC_KEYS.notificationQuery);
+        // const filter = await AsyncStorage.getItem(
+        //   ASYNC_KEYS.notificationFilter,
+        // );
+        // console.debug("From NotificationScheduler.tsx: ", query, filter);
         const quotes = await getShuffledQuotes(true);
         let fireDate = new Date();
 

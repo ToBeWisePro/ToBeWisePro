@@ -269,7 +269,6 @@ export async function saveQuoteToDatabase(
           quote.deleted ? 1 : 0, // Convert boolean to number
         ],
         (_, resultSet) => {
-          console.debug(cleanedSubjects);
           resolve(resultSet.insertId);
         },
         (_, error) => {
