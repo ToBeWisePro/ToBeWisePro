@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { globalStyles } from "../../../styles/GlobalStyles";
 import { PRIMARY_BLUE } from "../../../styles/Colors";
 import { openLink } from "../../res/functions/UtilFunctions";
@@ -16,29 +16,28 @@ const QuoteTextAndAuthor: React.FC<QuoteTextAndAuthorProps> = ({
   author,
   authorLink,
 }) => {
+  const handleAuthorLink = (): void => {
+    const link =
+      authorLink ||
+      `https://www.google.com/search?q=${encodeURIComponent(author)}`;
+    void openLink(link);
+  };
+
   return (
     <View style={styles.quoteAuthorBox}>
       <AppText style={globalStyles.quoteText} numberOfLines={2048}>
         {quoteText}
       </AppText>
-      {authorLink != null ? (
-        <TouchableOpacity
-          onPress={() => {
-            void openLink(authorLink);
-          }}
+      <TouchableOpacity onPress={handleAuthorLink}>
+        <AppText
+          style={[
+            globalStyles.authorText,
+            { color: PRIMARY_BLUE, paddingTop: 20 },
+          ]}
         >
-          <AppText
-            style={[
-              globalStyles.authorText,
-              { color: PRIMARY_BLUE, paddingTop: 20 },
-            ]}
-          >
-            {author}
-          </AppText>
-        </TouchableOpacity>
-      ) : (
-        <Text style={globalStyles.authorText}>{author}</Text>
-      )}
+          {author}
+        </AppText>
+      </TouchableOpacity>
     </View>
   );
 };

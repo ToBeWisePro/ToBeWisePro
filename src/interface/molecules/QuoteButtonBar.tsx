@@ -144,8 +144,17 @@ export const QuoteButtonBar: React.FC<Props> = ({
       onPress: async () => {
         logFirebaseEvent(firebaseEventsKeys.pressedVideo, { quote });
 
-        await openLink(quote.videoLink);
+        // Extracting the first subject from the subjects list (assuming subjects are comma-separated)
+        const firstSubject = quote.subjects.split(",")[0].trim();
+
+        const link =
+          quote.videoLink.trim() === ""
+            ? `https://www.ted.com/search?q=${encodeURIComponent(firstSubject)}`
+            : quote.videoLink;
+
+        await openLink(link);
       },
+
       iconName: "movie",
       color: PRIMARY_GREEN,
     },
