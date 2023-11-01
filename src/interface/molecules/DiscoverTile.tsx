@@ -116,6 +116,7 @@ const styles = StyleSheet.create({
   },
   title: {
     marginLeft: 6,
+    fontSize: 16,
   },
   count: {
     color: GRAY_3,

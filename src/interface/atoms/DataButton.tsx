@@ -46,8 +46,10 @@ const styles = StyleSheet.create({
   },
   selected: {
     color: LIGHT,
+    fontSize: 18,
   },
   deselected: {
     color: LIGHT,
+    fontSize: 18,
   },
 });

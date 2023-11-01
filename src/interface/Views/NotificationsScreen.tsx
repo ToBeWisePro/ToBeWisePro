@@ -265,7 +265,7 @@ export const NotificationScreen: React.FC<Props> = ({
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           <View style={styles.main}>
             <View style={styles.menuOptionContainerBottom}>
-              <AppText>Allow Notifications: </AppText>
+              <AppText style={styles.label}>Allow Notifications: </AppText>
               <Switch
                 onValueChange={toggleSwitch}
                 value={allowNotifications}
@@ -274,18 +274,20 @@ export const NotificationScreen: React.FC<Props> = ({
             </View>
             <AppText style={styles.title}>Notification Timing</AppText>
             <View style={styles.menuOptionContainer}>
-              <AppText>Start Time: </AppText>
+              <AppText style={styles.label}>Start Time: </AppText>
               <CustomTimeInput
                 time={startTime}
                 setTime={handleStartTimeChange}
               />
             </View>
             <View style={styles.menuOptionContainerBottom}>
-              <AppText>End Time: </AppText>
+              <AppText style={styles.label}>End Time: </AppText>
               <CustomTimeInput time={endTime} setTime={handleEndTimeChange} />
             </View>
             <View style={styles.menuOptionContainerBottom}>
-              <AppText>Time between notifications: </AppText>
+              <AppText style={styles.label}>
+                Time between notifications:{" "}
+              </AppText>
               <View style={styles.pickerContainer}>
                 <RNPickerSelect
                   placeholder={{}}
@@ -383,10 +385,13 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
   },
+  label: {
+    fontSize: 16,
+  },
   title: {
     alignSelf: "center",
     marginBottom: 10,
-    fontSize: 15,
+    fontSize: 20,
     fontWeight: "bold",
   },
   dataSelector: {
