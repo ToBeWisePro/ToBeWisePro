@@ -29,7 +29,6 @@ export default function App(): JSX.Element {
       await Font.loadAsync({
         TimesNewRoman: require("./assets/fonts/times_new_roman.ttf"),
       });
-      console.log("Fonts loaded successfully");
       setFontsLoaded(true);
     } catch (error) {
       console.error("Error loading fonts:", error);
@@ -72,7 +71,6 @@ export default function App(): JSX.Element {
           setFirstLogin(true);
         }
 
-        console.log("Setting isLoading to false");
         setIsLoading(false);
       } catch (error) {
         console.error("Error in useEffect:", error);
@@ -108,7 +106,6 @@ export default function App(): JSX.Element {
       try {
         await initDB();
         const quotes = await getShuffledQuotes(false);
-        console.log("Setting shuffledQuotes:", quotes);
         setShuffledQuotes(quotes);
       } catch (error) {
         Alert.alert("Error", error.message);

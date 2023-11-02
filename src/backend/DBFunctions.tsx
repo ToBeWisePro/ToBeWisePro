@@ -9,7 +9,6 @@ import firestore from "@react-native-firebase/firestore";
 import { migrateAndCleanOldData } from "../res/util/BackwardsCompatability";
 
 export async function createDatabaseAndTable(): Promise<void> {
-  console.log("createDatabaseAndTable - start");
   const db = SQLite.openDatabase(dbName);
 
   try {
@@ -30,7 +29,6 @@ export async function createDatabaseAndTable(): Promise<void> {
           )`,
           [],
           () => {
-            console.log("createDatabaseAndTable - table created");
             resolve();
           },
           (_, error) => {
@@ -44,7 +42,6 @@ export async function createDatabaseAndTable(): Promise<void> {
   } catch (error) {
     console.error("createDatabaseAndTable - catch error:", error);
   }
-  console.log("createDatabaseAndTable - end");
 }
 
 async function getTableColumns(): Promise<string[]> {
@@ -73,11 +70,9 @@ async function getTableColumns(): Promise<string[]> {
 }
 
 export async function syncDatabase(): Promise<void> {
-  console.log("syncDatabase - start");
   await migrateAndCleanOldData();
 
   const quotesSnapshot = await firestore().collection("quotes").get();
-  console.log("syncDatabase - fetched data from Firestore");
   const quotesArray: QuotationInterface[] = [];
   const valuesToUpdate: string[] = [
     "createdAt",
@@ -116,7 +111,6 @@ export async function syncDatabase(): Promise<void> {
     }
     quotesArray.push(quote);
   }
-  console.log("syncDatabase - processed Firestore data");
 
   // Clean up quotes
   const cleanedQuotes = cleanUpQuotesData(quotesArray);
@@ -139,7 +133,6 @@ export async function syncDatabase(): Promise<void> {
       }
     }
   }
-  console.log("syncDatabase - end");
 }
 
 async function getQuoteFromDatabaseByText(
@@ -195,8 +188,6 @@ async function updateQuoteInDatabaseByText(
 }
 
 export async function initDB(): Promise<void> {
-  console.log("initDB - start");
-
   const db = SQLite.openDatabase(dbName);
 
   // Step 1: Check if the database or the table exists. If not, create it.
@@ -228,10 +219,8 @@ export async function initDB(): Promise<void> {
   if (!tableExists) {
     await createDatabaseAndTable();
   }
-  console.log("initDB - about to sync database");
 
   await syncDatabase();
-  console.log("initDB - end");
 
   // Then log createdAt values
 }
@@ -440,8 +429,6 @@ export async function getShuffledQuotes(
 
     return await new Promise<QuotationInterface[]>((resolve, reject) => {
       db.transaction((tx) => {
-        console.log("Executing SQLite query:", dbQuery, "with params:", params);
-
         tx.executeSql(
           dbQuery,
           params,
@@ -461,7 +448,6 @@ export async function getShuffledQuotes(
       });
     });
   } else {
-    console.log("From getShuffledQuotes: ", userQuery, filter);
     throw new Error("Invalid userQuery or filter");
   }
 }

@@ -46,7 +46,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const scrollRef = useRef<FlatList>(null);
   const initialDataOrderRef = useRef<QuotationInterface[]>([]);
   const prevDataRef = useRef<QuotationInterface[]>(data); // to store the previous data
-
   const scrollPosition = useSharedValue(0);
   const [scrollSpeed, setScrollSpeed] = useState(0.0275);
   const currentPosition = useRef(0);
@@ -87,6 +86,10 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
       }, 100);
     }
   }, [data]);
+
+  useEffect(() => {
+    console.log("query", query);
+  }, []);
 
   const handlePress = useCallback(
     (quote: QuotationInterface) => {
