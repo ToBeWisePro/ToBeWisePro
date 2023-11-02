@@ -170,7 +170,6 @@ const styles = StyleSheet.create({
     height: maxWindowSize - 51 - 32 - 33 - 35 - 115,
     // maxWindowSize - search bar height - data button height - search bar padding - data selector padding - add'l value
   },
-
   searchContainer: {
     height: "100%",
     width: "100%",

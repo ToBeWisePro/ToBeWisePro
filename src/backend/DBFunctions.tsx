@@ -16,7 +16,7 @@ export async function createDatabaseAndTable(): Promise<void> {
       db.transaction((tx) => {
         tx.executeSql(
           `CREATE TABLE IF NOT EXISTS ${dbName} (
-             id INTEGER PRIMARY KEY,
+             _id INTEGER PRIMARY KEY,
              quoteText TEXT,
              author TEXT,
              contributedBy TEXT,
@@ -385,6 +385,7 @@ export async function getShuffledQuotes(
 
   userQuery = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.query}`);
   filter = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.filter}`);
+
   if (userQuery !== null && filter !== null) {
     userQuery = userQuery.replaceAll('"', "");
     filter = filter.replaceAll('"', "");
@@ -425,6 +426,31 @@ export async function getShuffledQuotes(
     } else {
       const string = `Invalid filter provided: ${filter}`;
       throw new Error(string);
+    }
+    let tableExists = false;
+    await new Promise<void>((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+          [dbName],
+          (_, result) => {
+            if (result.rows.length > 0) {
+              tableExists = true;
+            }
+            resolve();
+          },
+          (_, error) => {
+            console.error(error);
+            reject(error);
+            return true;
+          },
+        );
+      });
+    });
+
+    if (!tableExists) {
+      console.error("Error: The database or table doesn't exist.");
+      return [];
     }
 
     return await new Promise<QuotationInterface[]>((resolve, reject) => {

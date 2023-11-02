@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Share, TouchableOpacity, View, StyleSheet, Alert } from "react-native";
 import {
   type NavigationInterface,
@@ -28,6 +28,10 @@ export const QuoteButtonBar: React.FC<Props> = ({
 }: Props) => {
   const [isFavorite, setIsFavorite] = useState(quote.favorite);
   const [isDeleted, setIsDeleted] = useState(quote.deleted);
+
+  useEffect(() => {
+    console.log(quote);
+  }, []);
 
   const handleFavoritePress = async (): Promise<void> => {
     logFirebaseEvent(firebaseEventsKeys.pressedFavorite, { quote });

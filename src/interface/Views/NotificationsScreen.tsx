@@ -272,7 +272,6 @@ export const NotificationScreen: React.FC<Props> = ({
                 trackColor={{ false: GRAY_5, true: PRIMARY_GREEN }}
               />
             </View>
-            <AppText style={styles.title}>Notification Timing</AppText>
             <View style={styles.menuOptionContainer}>
               <AppText style={styles.label}>Start Time: </AppText>
               <CustomTimeInput
@@ -307,7 +306,7 @@ export const NotificationScreen: React.FC<Props> = ({
                 </View>
               </View>
             </View>
-            <AppText style={styles.title}>Notification Database</AppText>
+            <AppText style={styles.title}>Subject/Author</AppText>
             <TouchableOpacity
               onPress={() => {
                 navigation.push(strings.screenName.notificationSelectorScreen, {
@@ -386,7 +385,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   label: {
-    fontSize: 16,
+    fontSize: 18,
   },
   title: {
     alignSelf: "center",

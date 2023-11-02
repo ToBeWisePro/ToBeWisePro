@@ -34,6 +34,11 @@ export const AlphabetListSection = ({
 }: Props): JSX.Element => {
   const [subjects, setSubjects] = useState<DataItem[]>([]);
   const [authors, setAuthors] = useState<DataItem[]>([]);
+  const [listKey, setListKey] = useState(Date.now().toString());
+
+  useEffect(() => {
+    setListKey(Date.now().toString());
+  }, []);
 
   const formatDataForAlphabetList = (data: string[]): DataItem[] => {
     if (data.length === 0) return [];
@@ -125,6 +130,7 @@ export const AlphabetListSection = ({
                 const finalData = formatDataForAlphabetList(cleanData);
                 setAuthors(finalData);
                 setFilter(strings.filters.author);
+                setListKey(Date.now().toString());
               } catch (error) {
                 console.error("Error fetching authors:", error);
               }
@@ -144,6 +150,7 @@ export const AlphabetListSection = ({
                 const finalData = formatDataForAlphabetList(cleanData);
                 setSubjects(finalData);
                 setFilter(strings.filters.subject);
+                setListKey(Date.now().toString());
               } catch (error) {
                 console.error("Error fetching subjects:", error);
               }
@@ -152,6 +159,7 @@ export const AlphabetListSection = ({
         />
       </View>
       <AlphabetList
+        key={listKey}
         style={styles.scrollView}
         indexLetterContainerStyle={{ width: 40, height: 17, marginRight: 7 }}
         indexContainerStyle={{ width: 30 }}

@@ -87,10 +87,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
     }
   }, [data]);
 
-  useEffect(() => {
-    console.log("query", query);
-  }, []);
-
   const handlePress = useCallback(
     (quote: QuotationInterface) => {
       const newQuotes: QuotationInterface[] = [quote];
@@ -236,7 +232,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   );
 
   const ListFooterComponent = useCallback(() => {
-    return data.length >= 3 ? (
+    return (
       <AppText style={styles.buttonText}>
         {"The chosen set of " +
           data.length +
@@ -244,7 +240,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
           query +
           " has been fully played out. For more please select *Discover* below and choose a different author/subject."}
       </AppText>
-    ) : null;
+    );
   }, [data.length]);
 
   return (
