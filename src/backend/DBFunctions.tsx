@@ -79,7 +79,12 @@ export async function syncDatabase(): Promise<void> {
   const quotesSnapshot = await firestore().collection("quotes").get();
   console.log("syncDatabase - fetched data from Firestore");
   const quotesArray: QuotationInterface[] = [];
-  const valuesToUpdate: string[] = ["createdAt", "authorLink", "videoLink"];
+  const valuesToUpdate: string[] = [
+    "createdAt",
+    "authorLink",
+    "videoLink",
+    "subjects",
+  ];
 
   // Get the existing columns from the SQLite table
   const existingColumns = await getTableColumns();
@@ -106,6 +111,9 @@ export async function syncDatabase(): Promise<void> {
       favorite: false,
       deleted: false,
     };
+    if (Boolean(quoteData.subjects) && Array.isArray(quoteData.subjects)) {
+      quote.subjects = cleanUpString(quoteData.subjects.join(", "));
+    }
     quotesArray.push(quote);
   }
   console.log("syncDatabase - processed Firestore data");
