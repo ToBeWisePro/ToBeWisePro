@@ -12,6 +12,7 @@ import { convertDateTo24h } from "./src/res/util/BackwardsCompatability";
 import { type NavigationContainerRef } from "@react-navigation/native";
 import { getApps, initializeApp } from "@firebase/app";
 import { firebaseConfig } from "./src/backend/FirebaseConfig";
+import * as Font from "expo-font";
 
 export const navigationRef = React.createRef<NavigationContainerRef<any>>();
 
@@ -21,9 +22,16 @@ export default function App(): JSX.Element {
   );
   const [firstLogin, setFirstLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  const loadFonts = async () => {
+    await Font.loadAsync({
+      TimesNewRoman: require("./assets/fonts/times_new_roman.ttf"),
+    });
+    setFontsLoaded(true);
+  };
 
   useEffect(() => {
-    // Check if the default app is initialized, if not initialize it
     if (getApps().length === 0) {
       initializeApp(firebaseConfig);
     }
@@ -45,7 +53,6 @@ export default function App(): JSX.Element {
           strings.database.defaultFilter,
         );
         await saveDefaultValue(ASYNC_KEYS.spacing, 30);
-        // Make sure this comes after all values have been set up
         await scheduleNotifications();
 
         const { status } = await Notifications.requestPermissionsAsync();
@@ -96,7 +103,6 @@ export default function App(): JSX.Element {
         const quotes = await getShuffledQuotes(false);
         setShuffledQuotes(quotes);
       } catch (error) {
-        // @ts-expect-error 'error' is of type unknown
         Alert.alert("Error", error.message);
       }
     })();
@@ -113,7 +119,11 @@ export default function App(): JSX.Element {
     }
   };
 
-  if (isLoading || shuffledQuotes.length === 0) {
+  useEffect(() => {
+    void loadFonts();
+  }, []);
+
+  if (!fontsLoaded || isLoading || shuffledQuotes.length === 0) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" />

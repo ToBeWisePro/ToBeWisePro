@@ -24,12 +24,15 @@ const SmallQuoteContainer: React.FC<Props> = ({
       testID={testID}
     >
       <View style={styles.quoteContainer}>
-        <AppText style={globalStyles.quoteText} numberOfLines={6}>
+        <AppText
+          style={[globalStyles.quoteText, styles.timesNewRoman]}
+          numberOfLines={6}
+        >
           {passedInQuote.quoteText}
         </AppText>
       </View>
       <View style={styles.authorContainer}>
-        <AppText style={globalStyles.authorText}>
+        <AppText style={[globalStyles.authorText, styles.timesNewRoman]}>
           {passedInQuote.author}
         </AppText>
       </View>
@@ -71,6 +74,9 @@ const styles = StyleSheet.create({
   },
   contributedByText: {
     fontSize: 14,
+  },
+  timesNewRoman: {
+    fontFamily: "TimesNewRoman", // Assuming this is the name you've used for the font in your assets.
   },
 });
 

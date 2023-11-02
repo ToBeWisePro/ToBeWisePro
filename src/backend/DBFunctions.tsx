@@ -14,7 +14,7 @@ export async function createDatabaseAndTable(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       db.transaction((tx) => {
         tx.executeSql(
-          `CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite BOOLEAN, deleted BOOLEAN);`,
+          `CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite BOOLEAN, deleted BOOLEAN, createdAt TEXT);`, // Added createdAt field
           [],
           () => {
             resolve();
@@ -32,33 +32,7 @@ export async function createDatabaseAndTable(): Promise<void> {
   }
 }
 
-export async function populateDatabase(): Promise<void> {
-  // [I'm assuming previous code for setting up SQLite and firestore connections]
-
-  const quotesSnapshot = await firestore().collection("quotes").get();
-  const quotesArray: QuotationInterface[] = [];
-
-  for (const doc of quotesSnapshot.docs) {
-    const quoteData = doc.data();
-    const quote: QuotationInterface = {
-      ...quoteData,
-      favorite: false,
-      deleted: false,
-    };
-    quotesArray.push(quote);
-  }
-
-  // Clean up quotes
-  const cleanedQuotes = cleanUpQuotesData(quotesArray);
-
-  for (const quote of cleanedQuotes) {
-    await saveQuoteToDatabase(quote);
-  }
-
-  // [Close the SQLite connection or any other cleanup tasks if needed]
-}
-
-export async function fetchUpdates(): Promise<void> {
+export async function syncDatabase(): Promise<void> {
   // [I'm assuming previous code for setting up SQLite and firestore connections]
 
   const quotesSnapshot = await firestore().collection("quotes").get();
@@ -84,8 +58,6 @@ export async function fetchUpdates(): Promise<void> {
       await saveQuoteToDatabase(quote);
     }
   }
-
-  // [Close the SQLite connection or any other cleanup tasks if needed]
 }
 
 export async function initDB(): Promise<void> {
@@ -121,37 +93,8 @@ export async function initDB(): Promise<void> {
     await createDatabaseAndTable();
   }
 
-  // Step 2: Check if the database is populated. If not, populate it.
-  let isDbEmpty = true;
-  try {
-    isDbEmpty = await new Promise<boolean>((resolve, reject) => {
-      db.transaction((tx) => {
-        tx.executeSql(
-          `SELECT * FROM ${dbName}`,
-          [],
-          (_, result) => {
-            resolve(result.rows.length === 0);
-          },
-          (_, error) => {
-            console.error(error);
-            reject(error);
-            return true;
-          },
-        );
-      });
-    });
-  } catch (error) {
-    console.error("Error checking if database is empty:", error);
-  }
-
-  if (isDbEmpty) {
-    await populateDatabase();
-  }
-
-  // Step 3: If the database exists and is populated, fetch updates.
-  if (!isDbEmpty) {
-    await fetchUpdates();
-  }
+  // Step 2: Sync the database (which will populate it if empty or fetch updates if not)
+  await syncDatabase();
 }
 
 export function cleanUpQuotesData(
@@ -236,7 +179,7 @@ export async function saveQuoteToDatabase(
   const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
   // Clean up function for subjects and authors
-  const cleanUpString = (str: unknown) => {
+  const cleanUpString = (str: unknown): string => {
     if (typeof str !== "string") {
       console.warn("Expected a string but received:", str);
       return "";

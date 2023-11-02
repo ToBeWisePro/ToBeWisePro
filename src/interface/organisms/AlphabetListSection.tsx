@@ -61,6 +61,7 @@ export const AlphabetListSection = ({
       { key: "b", value: strings.customDiscoverHeaders.addedByMe },
       { key: "d", value: strings.customDiscoverHeaders.favorites },
       { key: "c", value: strings.customDiscoverHeaders.top100 },
+      { key: "f", value: strings.customDiscoverHeaders.recent },
       { key: "e", value: strings.customDiscoverHeaders.deleted },
     ];
 

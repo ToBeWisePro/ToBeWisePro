@@ -29,11 +29,23 @@ const QuoteTextAndAuthor: React.FC<QuoteTextAndAuthorProps> = ({
         style={styles.quoteBox}
         contentContainerStyle={styles.quoteContentContainer}
       >
-        <AppText style={[globalStyles.quoteText, styles.quoteText]}>
+        <AppText
+          style={[
+            globalStyles.quoteText,
+            styles.quoteText,
+            styles.timesNewRoman,
+          ]}
+        >
           {quoteText}
         </AppText>
         <TouchableOpacity onPress={handleAuthorLink} style={styles.authorBox}>
-          <AppText style={[globalStyles.authorText, styles.authorText]}>
+          <AppText
+            style={[
+              globalStyles.authorText,
+              styles.authorText,
+              styles.timesNewRoman,
+            ]}
+          >
             {author}
           </AppText>
         </TouchableOpacity>
@@ -66,6 +78,9 @@ const styles = StyleSheet.create({
   },
   authorText: {
     color: PRIMARY_BLUE,
+  },
+  timesNewRoman: {
+    fontFamily: "TimesNewRoman", // Assuming this is the name you've used for the font in your assets.
   },
 });
 

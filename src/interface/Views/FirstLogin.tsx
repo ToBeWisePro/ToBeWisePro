@@ -34,7 +34,7 @@ export const FirstLogin = ({ navigation }: Props): JSX.Element => {
     console.error("YouTube API key is not defined!");
     return (
       <View>
-        <Text>Error: YouTube API key is missing.</Text>
+        <AppText>Error: YouTube API key is missing.</AppText>
         <TouchableOpacity
           onPress={() => {
             void AsyncStorage.setItem(

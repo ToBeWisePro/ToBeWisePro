@@ -68,6 +68,7 @@ export const strings = new LocalizedStrings({
       deleted: "🗑️ Deleted",
       favorites: "❤️ Favorite Quotations",
       top100: "🏆 Top 100",
+      recent: "🕒 Recently Added",
     },
     settings: {
       notifications: "Schedule Notifications",
