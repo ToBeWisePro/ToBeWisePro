@@ -79,12 +79,7 @@ export async function syncDatabase(): Promise<void> {
   const quotesSnapshot = await firestore().collection("quotes").get();
   console.log("syncDatabase - fetched data from Firestore");
   const quotesArray: QuotationInterface[] = [];
-  const valuesToUpdate: string[] = [
-    "createdAt",
-    "authorLink",
-    "videoLink",
-    "subjects",
-  ];
+  const valuesToUpdate: string[] = ["createdAt", "authorLink", "videoLink"];
 
   // Get the existing columns from the SQLite table
   const existingColumns = await getTableColumns();
