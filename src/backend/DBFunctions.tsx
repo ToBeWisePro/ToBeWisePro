@@ -6,7 +6,6 @@ import * as SQLite from "expo-sqlite";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ASYNC_KEYS } from "../res/constants/Enums";
 import firestore from "@react-native-firebase/firestore";
-import { log } from "console";
 
 export async function createDatabaseAndTable(): Promise<void> {
   const db = SQLite.openDatabase(dbName);
@@ -61,6 +60,12 @@ async function getTableColumns(): Promise<string[]> {
 export async function syncDatabase(): Promise<void> {
   const quotesSnapshot = await firestore().collection("quotes").get();
   const quotesArray: QuotationInterface[] = [];
+  const valuesToUpdate: string[] = [
+    "createdAt",
+    "authorLink",
+    "videoLink",
+    "subjects",
+  ];
 
   // Get the existing columns from the SQLite table
   const existingColumns = await getTableColumns();
@@ -97,8 +102,75 @@ export async function syncDatabase(): Promise<void> {
     const exists = await checkIfQuoteExistsInDatabase(quote);
     if (!exists) {
       await saveQuoteToDatabase(quote);
+    } else {
+      // Fetch the existing quote from the database
+      const existingQuote = await getQuoteFromDatabaseByText(quote.quoteText); // fetching by text
+
+      // Compare the two quotes and check for differences
+      for (const key in quote) {
+        if (quote[key] !== existingQuote[key]) {
+          valuesToUpdate.push(key);
+          // Update the database to match the value in Firebase
+          await updateQuoteInDatabaseByText(quote.quoteText, key, quote[key]); // updating by text
+        }
+      }
     }
   }
+}
+
+// Mocking up methods for getQuoteFromDatabaseByText and updateQuoteInDatabaseByText
+// You'll need to actually implement them for your SQLite setup
+
+async function getQuoteFromDatabaseByText(
+  text: string,
+): Promise<QuotationInterface> {
+  const db = SQLite.openDatabase(dbName);
+
+  return await new Promise<QuotationInterface>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT * FROM ${dbName} WHERE quoteText = ?;`,
+        [text],
+        (_, result) => {
+          if (result.rows.length > 0) {
+            resolve(result.rows.item(0) as QuotationInterface);
+          } else {
+            reject(new Error("No quote found with the given text"));
+          }
+        },
+        (_, error) => {
+          console.error(`Error fetching quote by text:`, error);
+          reject(error);
+          return true;
+        },
+      );
+    });
+  });
+}
+
+async function updateQuoteInDatabaseByText(
+  text: string,
+  key: string,
+  value: any,
+): Promise<void> {
+  const db = SQLite.openDatabase(dbName);
+
+  await new Promise<void>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `UPDATE ${dbName} SET ${key} = ? WHERE quoteText = ?;`,
+        [value, text],
+        () => {
+          resolve();
+        },
+        (_, error) => {
+          console.error(`Error updating quote by text:`, error);
+          reject(error);
+          return true;
+        },
+      );
+    });
+  });
 }
 
 export async function initDB(): Promise<void> {
@@ -310,7 +382,8 @@ export async function getShuffledQuotes(
     } else if (userQuery === strings.customDiscoverHeaders.all) {
       dbQuery += " WHERE deleted = 0 ORDER BY RANDOM()";
     } else if (userQuery === strings.customDiscoverHeaders.recent) {
-      dbQuery += " WHERE deleted = 0 ORDER BY createdAt DESC";
+      dbQuery +=
+        " WHERE deleted = 0 AND createdAt IS NOT NULL ORDER BY createdAt DESC";
     } else if (userQuery === strings.customDiscoverHeaders.top100) {
       dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";
       params = [`%${"Top 100"}%`];
