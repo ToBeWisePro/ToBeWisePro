@@ -1,5 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isNumber } from "lodash";
+import { dbName } from "../constants/Values";
+import * as SQLite from "expo-sqlite";
+import { cleanUpString } from "../../backend/DBFunctions";
 
 export const convertDateTo24h = async (
   key: string,
@@ -22,3 +25,32 @@ export const convertDateTo24h = async (
     console.error("Error converting date to 24h format:", error);
   }
 };
+
+export async function migrateAndCleanOldData(): Promise<void> {
+  const db = SQLite.openDatabase(dbName);
+  await new Promise<void>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT * FROM ${dbName}`,
+        [],
+        (_, result) => {
+          for (let i = 0; i < result.rows.length; i++) {
+            const item = result.rows.item(i);
+            const cleanedSubjects = cleanUpString(item.subjects);
+            // Update the cleaned data back into the database
+            tx.executeSql(`UPDATE ${dbName} SET subjects = ? WHERE id = ?`, [
+              cleanedSubjects,
+              item.id,
+            ]);
+          }
+          resolve();
+        },
+        (_, error) => {
+          console.error(`Error fetching rows:`, error);
+          reject(error);
+          return true;
+        },
+      );
+    });
+  });
+}

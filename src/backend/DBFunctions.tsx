@@ -6,6 +6,7 @@ import * as SQLite from "expo-sqlite";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ASYNC_KEYS } from "../res/constants/Enums";
 import firestore from "@react-native-firebase/firestore";
+import { migrateAndCleanOldData } from "../res/util/BackwardsCompatability";
 
 export async function createDatabaseAndTable(): Promise<void> {
   console.log("createDatabaseAndTable - start");
@@ -73,6 +74,8 @@ async function getTableColumns(): Promise<string[]> {
 
 export async function syncDatabase(): Promise<void> {
   console.log("syncDatabase - start");
+  await migrateAndCleanOldData();
+
   const quotesSnapshot = await firestore().collection("quotes").get();
   console.log("syncDatabase - fetched data from Firestore");
   const quotesArray: QuotationInterface[] = [];
@@ -230,17 +233,18 @@ export async function initDB(): Promise<void> {
   // Then log createdAt values
 }
 
+export const cleanUpString = (str: unknown) => {
+  if (typeof str !== "string") {
+    console.warn("Expected a string but received:", str);
+    return "";
+  }
+  return str.replace(/["()]/g, "").trim();
+};
+
 export function cleanUpQuotesData(
   quotes: QuotationInterface[],
 ): QuotationInterface[] {
   // Clean up function for subjects and authors
-  const cleanUpString = (str: unknown) => {
-    if (typeof str !== "string") {
-      console.warn("Expected a string but received:", str);
-      return "";
-    }
-    return str.replace(/["()]/g, "").trim();
-  };
 
   const seenQuotes = new Set();
 
