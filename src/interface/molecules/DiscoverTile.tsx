@@ -47,6 +47,9 @@ export const DiscoverTile: React.FC<Props> = ({
           strings.customDiscoverHeaders.addedByMe,
         );
         break;
+      case strings.customDiscoverHeaders.recent:
+        void getCountForComponent(query, strings.customDiscoverHeaders.recent);
+        break;
       case strings.customDiscoverHeaders.favorites:
         void getCountForComponent(
           query,

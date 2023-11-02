@@ -6,6 +6,7 @@ import * as SQLite from "expo-sqlite";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ASYNC_KEYS } from "../res/constants/Enums";
 import firestore from "@react-native-firebase/firestore";
+import { log } from "console";
 
 export async function createDatabaseAndTable(): Promise<void> {
   const db = SQLite.openDatabase(dbName);
@@ -32,14 +33,55 @@ export async function createDatabaseAndTable(): Promise<void> {
   }
 }
 
-export async function syncDatabase(): Promise<void> {
-  // [I'm assuming previous code for setting up SQLite and firestore connections]
+async function getTableColumns(): Promise<string[]> {
+  const db = SQLite.openDatabase(dbName);
+  const columns: string[] = [];
 
+  return await new Promise<string[]>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `PRAGMA table_info(${dbName});`,
+        [],
+        (_, result) => {
+          for (let i = 0; i < result.rows.length; i++) {
+            columns.push(result.rows.item(i).name);
+          }
+          resolve(columns);
+        },
+        (_, error) => {
+          console.error(`Error fetching columns:`, error);
+          reject(error);
+          return true;
+        },
+      );
+    });
+  });
+}
+
+export async function syncDatabase(): Promise<void> {
   const quotesSnapshot = await firestore().collection("quotes").get();
   const quotesArray: QuotationInterface[] = [];
 
+  // Get the existing columns from the SQLite table
+  const existingColumns = await getTableColumns();
+
   for (const doc of quotesSnapshot.docs) {
     const quoteData = doc.data();
+
+    // Iterate over the keys in the fetched data to ensure the SQLite table has columns for each key
+    for (const key in quoteData) {
+      if (
+        Object.prototype.hasOwnProperty.call(quoteData, key) &&
+        !existingColumns.includes(key)
+      ) {
+        // For simplicity, we're assuming all dynamic fields are TEXT.
+        await addColumnIfNotExists(key, "TEXT");
+
+        // Add the new column to the existingColumns array
+        existingColumns.push(key);
+      }
+    }
+
     const quote: QuotationInterface = {
       ...quoteData,
       favorite: false,
@@ -52,8 +94,7 @@ export async function syncDatabase(): Promise<void> {
   const cleanedQuotes = cleanUpQuotesData(quotesArray);
 
   for (const quote of cleanedQuotes) {
-    const exists = await checkIfQuoteExistsInDatabase(quote); // Assuming you have this function
-    // If quote does not exist in the local SQLite database, save it
+    const exists = await checkIfQuoteExistsInDatabase(quote);
     if (!exists) {
       await saveQuoteToDatabase(quote);
     }
@@ -93,8 +134,9 @@ export async function initDB(): Promise<void> {
     await createDatabaseAndTable();
   }
 
-  // Step 2: Sync the database (which will populate it if empty or fetch updates if not)
   await syncDatabase();
+
+  // Then log createdAt values
 }
 
 export function cleanUpQuotesData(
@@ -176,7 +218,7 @@ export async function saveQuoteToDatabase(
 ): Promise<void> {
   const db = SQLite.openDatabase(dbName);
 
-  const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+  const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   // Clean up function for subjects and authors
   const cleanUpString = (str: unknown): string => {
@@ -193,7 +235,6 @@ export async function saveQuoteToDatabase(
   }
 
   // Clean up the subjects and author before saving
-
   const cleanedSubjects = cleanUpString(quote.subjects);
   const cleanedAuthor = cleanUpString(quote.author);
 
@@ -210,6 +251,7 @@ export async function saveQuoteToDatabase(
           quote.videoLink,
           quote.favorite ? 1 : 0, // Convert boolean to number
           quote.deleted ? 1 : 0, // Convert boolean to number
+          quote.createdAt, // Include the createdAt field
         ],
         (_, resultSet) => {
           resolve(resultSet.insertId);
@@ -257,10 +299,6 @@ export async function getShuffledQuotes(
   userQuery = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.query}`);
   filter = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.filter}`);
   if (userQuery !== null && filter !== null) {
-    // if (forNotifications === true) {
-    //   console.debug("notificaition userQuery:", userQuery);
-    //   console.debug("notification filter:", filter);
-    // }
     userQuery = userQuery.replaceAll('"', "");
     filter = filter.replaceAll('"', "");
     const db = SQLite.openDatabase(dbName);
@@ -271,6 +309,8 @@ export async function getShuffledQuotes(
       dbQuery += " WHERE deleted = 1 ORDER BY RANDOM()";
     } else if (userQuery === strings.customDiscoverHeaders.all) {
       dbQuery += " WHERE deleted = 0 ORDER BY RANDOM()";
+    } else if (userQuery === strings.customDiscoverHeaders.recent) {
+      dbQuery += " WHERE deleted = 0 ORDER BY createdAt DESC";
     } else if (userQuery === strings.customDiscoverHeaders.top100) {
       dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";
       params = [`%${"Top 100"}%`];
@@ -299,11 +339,6 @@ export async function getShuffledQuotes(
       throw new Error(string);
     }
 
-    // if (forNotifications === true) {
-    //   console.debug("dbQuery:", dbQuery);
-    //   console.debug("params:", params);
-    // }
-
     return await new Promise<QuotationInterface[]>((resolve, reject) => {
       db.transaction((tx) => {
         tx.executeSql(
@@ -328,28 +363,6 @@ export async function getShuffledQuotes(
     console.log("From getShuffledQuotes: ", userQuery, filter);
     throw new Error("Invalid userQuery or filter");
   }
-
-  // } catch (error) {
-  //   // make error into a string
-  //   Alert.alert(
-  //     "An error quote has been generated by the system. If you see it, please share it with Griffin Clark at 760-889-3464",
-  //   );
-  //   // @ts-expect-error error is a string
-  //   const strError = error.toString();
-  //   return [
-  //     {
-  //       quoteText:
-  //         strError + "\n userQuery: " + userQuery + "\n filter: " + filter,
-  //       subjects: "Error",
-  //       author: "Error",
-  //       contributedBy: "Error",
-  //       authorLink: "Error",
-  //       videoLink: "Error",
-  //       favorite: false,
-  //       deleted: false,
-  //     },
-  //   ];
-  // }
 }
 
 export async function getFromDB(key: string): Promise<string[]> {
@@ -468,6 +481,9 @@ export async function getQuoteCount(
       break;
     case strings.customDiscoverHeaders.all:
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0`;
+      break;
+    case strings.customDiscoverHeaders.recent:
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0 AND createdAt IS NOT NULL`;
       break;
     case strings.customDiscoverHeaders.addedByMe:
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE contributedBy = ? AND deleted = 0`;
@@ -601,6 +617,57 @@ export async function checkIfQuoteExistsInDatabase(
           );
           reject(error);
           return true; // abort the transaction
+        },
+      );
+    });
+  });
+}
+export async function debugLogQuotes(): Promise<void> {
+  const db = SQLite.openDatabase(dbName);
+
+  const query = `SELECT quoteText, createdAt FROM ${dbName}`;
+
+  db.transaction((tx) => {
+    tx.executeSql(
+      query,
+      [],
+      (_, result) => {
+        const rows = result.rows;
+        for (let i = 0; i < rows.length; i++) {
+          const quote = rows.item(i);
+          console.log("Quote:", quote.quoteText);
+          console.log("CreatedAt:", quote.createdAt);
+        }
+      },
+      (_, error) => {
+        console.error("Error fetching quotes for debugging:", error);
+        return true;
+      },
+    );
+  });
+}
+
+// Helper to add new columns if they don't exist
+async function addColumnIfNotExists(
+  columnName: string,
+  dataType: string,
+): Promise<void> {
+  const db = SQLite.openDatabase(dbName);
+
+  const alterTableSQL = `ALTER TABLE ${dbName} ADD COLUMN ${columnName} ${dataType};`;
+
+  await new Promise<void>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        alterTableSQL,
+        [],
+        () => {
+          resolve();
+        },
+        (_, error) => {
+          console.error(`Error adding column ${columnName}:`, error);
+          reject(error);
+          return true;
         },
       );
     });
