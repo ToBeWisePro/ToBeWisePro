@@ -24,11 +24,16 @@ export default function App(): JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
-  const loadFonts = async () => {
-    await Font.loadAsync({
-      TimesNewRoman: require("./assets/fonts/times_new_roman.ttf"),
-    });
-    setFontsLoaded(true);
+  const loadFonts = async (): Promise<void> => {
+    try {
+      await Font.loadAsync({
+        TimesNewRoman: require("./assets/fonts/times_new_roman.ttf"),
+      });
+      console.log("Fonts loaded successfully");
+      setFontsLoaded(true);
+    } catch (error) {
+      console.error("Error loading fonts:", error);
+    }
   };
 
   useEffect(() => {
@@ -66,6 +71,8 @@ export default function App(): JSX.Element {
         if (isFirstLogin === null || JSON.parse(isFirstLogin) === true) {
           setFirstLogin(true);
         }
+
+        console.log("Setting isLoading to false");
         setIsLoading(false);
       } catch (error) {
         console.error("Error in useEffect:", error);
@@ -101,6 +108,7 @@ export default function App(): JSX.Element {
       try {
         await initDB();
         const quotes = await getShuffledQuotes(false);
+        console.log("Setting shuffledQuotes:", quotes);
         setShuffledQuotes(quotes);
       } catch (error) {
         Alert.alert("Error", error.message);

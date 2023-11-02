@@ -8,19 +8,32 @@ import { ASYNC_KEYS } from "../res/constants/Enums";
 import firestore from "@react-native-firebase/firestore";
 
 export async function createDatabaseAndTable(): Promise<void> {
+  console.log("createDatabaseAndTable - start");
   const db = SQLite.openDatabase(dbName);
 
   try {
     await new Promise<void>((resolve, reject) => {
       db.transaction((tx) => {
         tx.executeSql(
-          `CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite BOOLEAN, deleted BOOLEAN, createdAt TEXT);`, // Added createdAt field
+          `CREATE TABLE IF NOT EXISTS ${dbName} (
+             id INTEGER PRIMARY KEY,
+             quoteText TEXT,
+             author TEXT,
+             contributedBy TEXT,
+             subjects TEXT,
+             authorLink TEXT,
+             videoLink TEXT,
+             favorite INTEGER,
+             deleted INTEGER,
+             createdAt TEXT
+          )`,
           [],
           () => {
+            console.log("createDatabaseAndTable - table created");
             resolve();
           },
           (_, error) => {
-            console.error(error);
+            console.error("createDatabaseAndTable - SQL error:", error);
             reject(error);
             return true;
           },
@@ -28,8 +41,9 @@ export async function createDatabaseAndTable(): Promise<void> {
       });
     });
   } catch (error) {
-    console.error("Error in createDatabaseAndTable:", error);
+    console.error("createDatabaseAndTable - catch error:", error);
   }
+  console.log("createDatabaseAndTable - end");
 }
 
 async function getTableColumns(): Promise<string[]> {
@@ -58,7 +72,9 @@ async function getTableColumns(): Promise<string[]> {
 }
 
 export async function syncDatabase(): Promise<void> {
+  console.log("syncDatabase - start");
   const quotesSnapshot = await firestore().collection("quotes").get();
+  console.log("syncDatabase - fetched data from Firestore");
   const quotesArray: QuotationInterface[] = [];
   const valuesToUpdate: string[] = [
     "createdAt",
@@ -94,6 +110,7 @@ export async function syncDatabase(): Promise<void> {
     };
     quotesArray.push(quote);
   }
+  console.log("syncDatabase - processed Firestore data");
 
   // Clean up quotes
   const cleanedQuotes = cleanUpQuotesData(quotesArray);
@@ -116,10 +133,8 @@ export async function syncDatabase(): Promise<void> {
       }
     }
   }
+  console.log("syncDatabase - end");
 }
-
-// Mocking up methods for getQuoteFromDatabaseByText and updateQuoteInDatabaseByText
-// You'll need to actually implement them for your SQLite setup
 
 async function getQuoteFromDatabaseByText(
   text: string,
@@ -174,6 +189,8 @@ async function updateQuoteInDatabaseByText(
 }
 
 export async function initDB(): Promise<void> {
+  console.log("initDB - start");
+
   const db = SQLite.openDatabase(dbName);
 
   // Step 1: Check if the database or the table exists. If not, create it.
@@ -205,8 +222,10 @@ export async function initDB(): Promise<void> {
   if (!tableExists) {
     await createDatabaseAndTable();
   }
+  console.log("initDB - about to sync database");
 
   await syncDatabase();
+  console.log("initDB - end");
 
   // Then log createdAt values
 }
@@ -414,6 +433,8 @@ export async function getShuffledQuotes(
 
     return await new Promise<QuotationInterface[]>((resolve, reject) => {
       db.transaction((tx) => {
+        console.log("Executing SQLite query:", dbQuery, "with params:", params);
+
         tx.executeSql(
           dbQuery,
           params,
