@@ -86,6 +86,7 @@ export const strings = new LocalizedStrings({
         support: "https://tobewise.co/feedback/",
         terms: "https://tobewise.co/terms/",
         team: "https://tobewise.co/blog/meet-the-team/",
+        howToGuide: "https://tobewise.co/blog/why-and-how-to-use-tobewise/",
       },
     },
 

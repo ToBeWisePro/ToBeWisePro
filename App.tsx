@@ -139,7 +139,7 @@ export default function App(): JSX.Element {
   }
 
   const initialRoute = firstLogin
-    ? strings.screenName.firstLogin
+    ? strings.screenName.home
     : strings.screenName.home;
   return <RootNavigation initialRoute={initialRoute} />;
 }
