@@ -76,7 +76,7 @@ jobs:
         run: yarn tsc --noEmit
 
   build_ios:
-    needs: install_dependencies
+    needs: [lint_and_test, type_check] # Specify dependencies here
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
