@@ -20,7 +20,6 @@ export default function App(): JSX.Element {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     [],
   );
-  const [firstLogin, setFirstLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [message, setMessage] = useState("");
@@ -34,8 +33,7 @@ export default function App(): JSX.Element {
       setFontsLoaded(true);
       setMessage("Fonts loaded.");
     } catch (error) {
-      // @ts-expect-error error is of type unknown
-      setMessage(`Font loading error: ${error.message}`);
+      setMessage(`Font loading error: ${(error as Error).message}`);
     }
   };
 
@@ -48,9 +46,9 @@ export default function App(): JSX.Element {
       }
       setMessage(`Default value for ${key} set.`);
     } catch (error) {
-      // @ts-expect-error error is of type unknown
-
-      setMessage(`Error setting default value for ${key}: ${error.message}`);
+      setMessage(
+        `Error setting default value for ${key}: ${(error as Error).message}`,
+      );
     }
   };
 
@@ -62,10 +60,11 @@ export default function App(): JSX.Element {
         ASYNC_KEYS.firstTimeLogin,
       );
       if (isFirstLogin === null || JSON.parse(isFirstLogin) === true) {
-        setFirstLogin(true);
+        // set Async key isFirstLogin to false
         setMessage("Initializing database...");
         await initDB();
         setMessage("Database initialized.");
+        await backgroundOperations();
       }
       setMessage("Setting query and filter");
 
@@ -89,11 +88,13 @@ export default function App(): JSX.Element {
 
       setIsLoading(false);
       setMessage("Shuffled quotes fetched.");
+      if (isFirstLogin == null || JSON.parse(isFirstLogin) === true) {
+        await backgroundOperations(); // Running background operations asynchronously if not the first time
+      }
     } catch (error) {
-      // @ts-expect-error error is of type unknown
-
-      setMessage(`Essential initialization error: ${error.message}`);
+      setMessage(`Essential initialization error: ${(error as Error).message}`);
     }
+    void AsyncStorage.setItem(ASYNC_KEYS.firstTimeLogin, JSON.stringify(false));
   };
 
   const backgroundOperations = async (): Promise<void> => {
@@ -124,15 +125,12 @@ export default function App(): JSX.Element {
       setMessage(`Notification permissions status: ${status}`);
       setMessage("Background operations completing.");
     } catch (error) {
-      // @ts-expect-error error is of type unknown
-
-      setMessage(`Background operations error: ${error.message}`);
+      setMessage(`Background operations error: ${(error as Error).message}`);
     }
   };
 
   useEffect(() => {
     void initializeEssentials();
-    void backgroundOperations();
   }, []);
 
   if (!fontsLoaded || isLoading || shuffledQuotes.length === 0) {
@@ -143,11 +141,7 @@ export default function App(): JSX.Element {
       </View>
     );
   }
-
-  const initialRoute = firstLogin
-    ? strings.screenName.home
-    : strings.screenName.home;
-  return <RootNavigation initialRoute={initialRoute} />;
+  return <RootNavigation initialRoute={strings.screenName.home} />;
 }
 
 const styles = StyleSheet.create({
