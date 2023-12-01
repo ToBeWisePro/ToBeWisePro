@@ -12,7 +12,7 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 }));
 
 // Mocking DBFunctions
-jest.mock("../../res/functions/DBFunctions", () => ({
+jest.mock("../../backend/DBFunctions.tsx", () => ({
   getQuoteCount: jest.fn(async () => await Promise.resolve(10)),
 }));
 

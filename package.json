@@ -14,7 +14,7 @@
   "jest": {
     "preset": "jest-expo",
     "setupFiles": [
-      "./__mocks__/@react-native-async-storage/async-storage.js"
+      "<rootDir>/jestSetup.js"
     ],
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|react-clone-referenced-element|@react-native|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*))"

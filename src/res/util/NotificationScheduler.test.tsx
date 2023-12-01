@@ -25,7 +25,7 @@ for (let i = 1; i <= 5; i++) {
   });
 }
 
-jest.mock("../functions/DBFunctions", () => ({
+jest.mock("../../backend/DBFunctions.tsx", () => ({
   getShuffledQuotes: jest.fn().mockResolvedValue(mockQuotes),
 }));
 
