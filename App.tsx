@@ -122,8 +122,7 @@ export default function App(): JSX.Element {
       setMessage("Notifications scheduled.");
       const { status } = await Notifications.requestPermissionsAsync();
       setMessage(`Notification permissions status: ${status}`);
-
-      setMessage("Background operations complete.");
+      setMessage("Background operations completing.");
     } catch (error) {
       // @ts-expect-error error is of type unknown
 
