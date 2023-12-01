@@ -23,7 +23,7 @@ import {
   editQuote,
   getQuoteById,
   saveQuoteToDatabase,
-} from "../../res/functions/DBFunctions";
+} from "../../backend/DBFunctions";
 import { AppText } from "../atoms/AppText";
 import { defaultUsername } from "../../res/constants/Values";
 import { TEST_IDS } from "../../res/constants/TestIDs";

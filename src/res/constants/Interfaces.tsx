@@ -43,6 +43,7 @@ export interface QuotationInterface {
   contributedBy: string;
   favorite: boolean;
   deleted: boolean;
+  createdAt?: string; // Assuming it's stored as an ISO string. Adjust type if needed.
 }
 
 export interface NotificationsMenuOptionProps {

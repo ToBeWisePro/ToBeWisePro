@@ -1,24 +1,210 @@
-import { jsonQuotes } from "../../../data/jsonQuotes";
-import { type QuotationInterface } from "../constants/Interfaces";
-import { strings } from "../constants/Strings";
-import { dbName, defaultUsername } from "../constants/Values";
-import { shuffle } from "./UtilFunctions";
+import { type QuotationInterface } from "../res/constants/Interfaces";
+import { strings } from "../res/constants/Strings";
+import { dbName, defaultUsername } from "../res/constants/Values";
+import { shuffle } from "../res/functions/UtilFunctions";
 import * as SQLite from "expo-sqlite";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ASYNC_KEYS } from "../constants/Enums";
+import { ASYNC_KEYS } from "../res/constants/Enums";
+import firestore from "@react-native-firebase/firestore";
+import { migrateAndCleanOldData } from "../res/util/BackwardsCompatability";
 
-export async function dataImporter(): Promise<void> {
+export async function createDatabaseAndTable(): Promise<void> {
   const db = SQLite.openDatabase(dbName);
 
-  // Use try-catch to handle errors
   try {
-    // Use const for functions that do not change
-    const createTable = new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       db.transaction((tx) => {
         tx.executeSql(
-          `CREATE TABLE IF NOT EXISTS ${dbName} ( _id INTEGER PRIMARY KEY AUTOINCREMENT, quoteText TEXT, author TEXT, contributedBy TEXT, subjects TEXT, authorLink TEXT, videoLink TEXT, favorite BOOLEAN, deleted BOOLEAN);`,
+          `CREATE TABLE IF NOT EXISTS ${dbName} (
+             _id INTEGER PRIMARY KEY,
+             quoteText TEXT,
+             author TEXT,
+             contributedBy TEXT,
+             subjects TEXT,
+             authorLink TEXT,
+             videoLink TEXT,
+             favorite INTEGER,
+             deleted INTEGER,
+             createdAt TEXT
+          )`,
           [],
           () => {
+            resolve();
+          },
+          (_, error) => {
+            console.error("createDatabaseAndTable - SQL error:", error);
+            reject(error);
+            return true;
+          },
+        );
+      });
+    });
+  } catch (error) {
+    console.error("createDatabaseAndTable - catch error:", error);
+  }
+}
+
+async function getTableColumns(): Promise<string[]> {
+  const db = SQLite.openDatabase(dbName);
+  const columns: string[] = [];
+
+  return await new Promise<string[]>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `PRAGMA table_info(${dbName});`,
+        [],
+        (_, result) => {
+          for (let i = 0; i < result.rows.length; i++) {
+            columns.push(result.rows.item(i).name);
+          }
+          resolve(columns);
+        },
+        (_, error) => {
+          console.error(`Error fetching columns:`, error);
+          reject(error);
+          return true;
+        },
+      );
+    });
+  });
+}
+
+export async function syncDatabase(): Promise<void> {
+  await migrateAndCleanOldData();
+
+  const quotesSnapshot = await firestore().collection("quotes").get();
+  const quotesArray: QuotationInterface[] = [];
+  const valuesToUpdate: string[] = [
+    "createdAt",
+    "authorLink",
+    "videoLink",
+    "subjects",
+  ];
+
+  // Get the existing columns from the SQLite table
+  const existingColumns = await getTableColumns();
+
+  for (const doc of quotesSnapshot.docs) {
+    const quoteData = doc.data();
+
+    // Iterate over the keys in the fetched data to ensure the SQLite table has columns for each key
+    for (const key in quoteData) {
+      if (
+        Object.prototype.hasOwnProperty.call(quoteData, key) &&
+        !existingColumns.includes(key)
+      ) {
+        // For simplicity, we're assuming all dynamic fields are TEXT.
+        await addColumnIfNotExists(key, "TEXT");
+
+        // Add the new column to the existingColumns array
+        existingColumns.push(key);
+      }
+    }
+    // @ts-expect-error error is of type unknown
+
+    const quote: QuotationInterface = {
+      ...quoteData,
+      favorite: false,
+      deleted: false,
+    };
+    if (Boolean(quoteData.subjects) && Array.isArray(quoteData.subjects)) {
+      quote.subjects = cleanUpString(quoteData.subjects.join(", "));
+    }
+    quotesArray.push(quote);
+  }
+
+  // Clean up quotes
+  const cleanedQuotes = cleanUpQuotesData(quotesArray);
+  // @ts-expect-error Type 'QuotationInterface' must have a '[Symbol.iterator]()' method that returns an iterator.ts(2488)
+  for (const quote of cleanedQuotes) {
+    const exists = await checkIfQuoteExistsInDatabase(quote);
+    if (!exists) {
+      await saveQuoteToDatabase(quote);
+    } else {
+      // Fetch the existing quote from the database
+      const existingQuote = await getQuoteFromDatabaseByText(quote.quoteText); // fetching by text
+
+      // Compare the two quotes and check for differences
+      for (const key in quote) {
+        // @ts-expect-error error is of type unknown
+
+        if (quote[key] !== existingQuote[key]) {
+          valuesToUpdate.push(key);
+          // Update the database to match the value in Firebase
+          await updateQuoteInDatabaseByText(quote.quoteText, key, quote[key]); // updating by text
+        }
+      }
+    }
+  }
+}
+
+async function getQuoteFromDatabaseByText(
+  text: string,
+): Promise<QuotationInterface> {
+  const db = SQLite.openDatabase(dbName);
+
+  return await new Promise<QuotationInterface>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT * FROM ${dbName} WHERE quoteText = ?;`,
+        [text],
+        (_, result) => {
+          if (result.rows.length > 0) {
+            resolve(result.rows.item(0) as QuotationInterface);
+          } else {
+            reject(new Error("No quote found with the given text"));
+          }
+        },
+        (_, error) => {
+          console.error(`Error fetching quote by text:`, error);
+          reject(error);
+          return true;
+        },
+      );
+    });
+  });
+}
+
+async function updateQuoteInDatabaseByText(
+  text: string,
+  key: string,
+  value: any,
+): Promise<void> {
+  const db = SQLite.openDatabase(dbName);
+
+  await new Promise<void>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `UPDATE ${dbName} SET ${key} = ? WHERE quoteText = ?;`,
+        [value, text],
+        () => {
+          resolve();
+        },
+        (_, error) => {
+          console.error(`Error updating quote by text:`, error);
+          reject(error);
+          return true;
+        },
+      );
+    });
+  });
+}
+
+export async function initDB(): Promise<void> {
+  const db = SQLite.openDatabase(dbName);
+
+  // Step 1: Check if the database or the table exists. If not, create it.
+  let tableExists = true;
+  try {
+    await new Promise<void>((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          `SELECT name FROM sqlite_master WHERE type='table' AND name='${dbName}';`,
+          [],
+          (_, result) => {
+            if (result.rows.length === 0) {
+              tableExists = false;
+            }
             resolve();
           },
           (_, error) => {
@@ -29,40 +215,58 @@ export async function dataImporter(): Promise<void> {
         );
       });
     });
-
-    await createTable;
-
-    const isDbEmpty = await new Promise<boolean>((resolve, reject) => {
-      db.transaction((tx) => {
-        tx.executeSql(
-          `SELECT * FROM ${dbName}`,
-          [],
-          (_, result) => {
-            resolve(result.rows.length === 0);
-          },
-          (_, error) => {
-            console.error(error);
-            reject(error);
-            return true;
-          },
-        );
-      });
-    });
-
-    if (isDbEmpty) {
-      const quotes: QuotationInterface[] = jsonQuotes.map((quote) => ({
-        ...quote,
-        favorite: false,
-        deleted: false,
-      }));
-
-      for (const quote of quotes) {
-        await saveQuoteToDatabase(quote);
-      }
-    }
   } catch (error) {
-    console.error("Error in dataImporter:", error);
+    console.error("Error checking if table exists:", error);
   }
+
+  if (!tableExists) {
+    await createDatabaseAndTable();
+  }
+
+  await syncDatabase();
+
+  // Then log createdAt values
+}
+
+export const cleanUpString = (str: unknown): string => {
+  if (typeof str !== "string") {
+    console.warn("Expected a string but received:", str);
+    return "";
+  }
+  return str.replace(/["()]/g, "").trim();
+};
+
+export function cleanUpQuotesData(
+  quotes: QuotationInterface[],
+): QuotationInterface {
+  // Clean up function for subjects and authors
+
+  const seenQuotes = new Set();
+  // @ts-expect-error error is of type unknown
+  return quotes
+    .map((quote) => {
+      // Clean up subject and author
+      if (Array.isArray(quote.subjects)) {
+        quote.subjects = quote.subjects
+          .map((subject) => cleanUpString(subject))
+          .join(", ");
+      }
+
+      if (typeof quote.author === "string") {
+        quote.author = cleanUpString(quote.author);
+      }
+
+      // Use a combination of quote text and author to check for uniqueness
+      const uniqueKey = `${quote.quoteText}-${quote.author}`;
+
+      // Check if the quote is a duplicate
+      if (seenQuotes.has(uniqueKey)) {
+        return null;
+      }
+      seenQuotes.add(uniqueKey);
+      return quote;
+    })
+    .filter(Boolean); // Filter out any null values (removed duplicates)
 }
 
 export async function editQuote(
@@ -104,10 +308,25 @@ export async function saveQuoteToDatabase(
 ): Promise<void> {
   const db = SQLite.openDatabase(dbName);
 
-  const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+  const insertQuery = `INSERT INTO ${dbName} (quoteText, author, contributedBy, subjects, authorLink, videoLink, favorite, deleted, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  // console.log("Attempting to save quote:", quote);
-  // console.log("Using insert query:", insertQuery);
+  // Clean up function for subjects and authors
+  const cleanUpString = (str: unknown): string => {
+    if (typeof str !== "string") {
+      console.warn("Expected a string but received:", str);
+      return "";
+    }
+    return str.replace(/["()]/g, "").trim();
+  };
+
+  // turn subjects from an array into a comma separated string
+  if (Array.isArray(quote.subjects)) {
+    quote.subjects = quote.subjects.join(", ");
+  }
+
+  // Clean up the subjects and author before saving
+  const cleanedSubjects = cleanUpString(quote.subjects);
+  const cleanedAuthor = cleanUpString(quote.author);
 
   await new Promise((resolve, reject) => {
     db.transaction((tx) => {
@@ -115,13 +334,15 @@ export async function saveQuoteToDatabase(
         insertQuery,
         [
           quote.quoteText,
-          quote.author,
+          cleanedAuthor,
           quote.contributedBy,
-          quote.subjects,
+          cleanedSubjects,
           quote.authorLink,
           quote.videoLink,
           quote.favorite ? 1 : 0, // Convert boolean to number
           quote.deleted ? 1 : 0, // Convert boolean to number
+          // @ts-expect-error Type 'string | undefined' is not assignable to type 'string | number | null'.
+          quote.createdAt, // Include the createdAt field
         ],
         (_, resultSet) => {
           resolve(resultSet.insertId);
@@ -168,11 +389,8 @@ export async function getShuffledQuotes(
 
   userQuery = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.query}`);
   filter = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.filter}`);
+
   if (userQuery !== null && filter !== null) {
-    // if (forNotifications === true) {
-    //   console.debug("notificaition userQuery:", userQuery);
-    //   console.debug("notification filter:", filter);
-    // }
     userQuery = userQuery.replaceAll('"', "");
     filter = filter.replaceAll('"', "");
     const db = SQLite.openDatabase(dbName);
@@ -183,6 +401,9 @@ export async function getShuffledQuotes(
       dbQuery += " WHERE deleted = 1 ORDER BY RANDOM()";
     } else if (userQuery === strings.customDiscoverHeaders.all) {
       dbQuery += " WHERE deleted = 0 ORDER BY RANDOM()";
+    } else if (userQuery === strings.customDiscoverHeaders.recent) {
+      dbQuery +=
+        " WHERE deleted = 0 AND createdAt IS NOT NULL ORDER BY createdAt DESC";
     } else if (userQuery === strings.customDiscoverHeaders.top100) {
       dbQuery += " WHERE subjects LIKE ? AND deleted = 0 ORDER BY RANDOM()";
       params = [`%${"Top 100"}%`];
@@ -210,11 +431,31 @@ export async function getShuffledQuotes(
       const string = `Invalid filter provided: ${filter}`;
       throw new Error(string);
     }
+    let tableExists = false;
+    await new Promise<void>((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+          [dbName],
+          (_, result) => {
+            if (result.rows.length > 0) {
+              tableExists = true;
+            }
+            resolve();
+          },
+          (_, error) => {
+            console.error(error);
+            reject(error);
+            return true;
+          },
+        );
+      });
+    });
 
-    // if (forNotifications === true) {
-    //   console.debug("dbQuery:", dbQuery);
-    //   console.debug("params:", params);
-    // }
+    if (!tableExists) {
+      console.error("Error: The database or table doesn't exist.");
+      return [];
+    }
 
     return await new Promise<QuotationInterface[]>((resolve, reject) => {
       db.transaction((tx) => {
@@ -237,31 +478,8 @@ export async function getShuffledQuotes(
       });
     });
   } else {
-    console.log("From getShuffledQuotes: ", userQuery, filter);
     throw new Error("Invalid userQuery or filter");
   }
-
-  // } catch (error) {
-  //   // make error into a string
-  //   Alert.alert(
-  //     "An error quote has been generated by the system. If you see it, please share it with Griffin Clark at 760-889-3464",
-  //   );
-  //   // @ts-expect-error error is a string
-  //   const strError = error.toString();
-  //   return [
-  //     {
-  //       quoteText:
-  //         strError + "\n userQuery: " + userQuery + "\n filter: " + filter,
-  //       subjects: "Error",
-  //       author: "Error",
-  //       contributedBy: "Error",
-  //       authorLink: "Error",
-  //       videoLink: "Error",
-  //       favorite: false,
-  //       deleted: false,
-  //     },
-  //   ];
-  // }
 }
 
 export async function getFromDB(key: string): Promise<string[]> {
@@ -381,6 +599,9 @@ export async function getQuoteCount(
     case strings.customDiscoverHeaders.all:
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0`;
       break;
+    case strings.customDiscoverHeaders.recent:
+      query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE deleted = 0 AND createdAt IS NOT NULL`;
+      break;
     case strings.customDiscoverHeaders.addedByMe:
       query = `SELECT COUNT(*) AS count FROM ${dbName} WHERE contributedBy = ? AND deleted = 0`;
       params = [defaultUsername]; // ensure the correct username is used here
@@ -481,6 +702,89 @@ export async function markQuoteAsDeleted(
           console.error(error);
           reject(error);
           return true; // abort the transaction
+        },
+      );
+    });
+  });
+}
+
+export async function checkIfQuoteExistsInDatabase(
+  quote: QuotationInterface,
+): Promise<boolean> {
+  const db = SQLite.openDatabase(dbName);
+
+  const trimmedQuoteText = quote.quoteText.trim();
+  const trimmedAuthor = quote.author.trim();
+
+  return await new Promise<boolean>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT COUNT(*) as count FROM ${dbName} WHERE quoteText = ? AND author = ?`,
+        [trimmedQuoteText, trimmedAuthor],
+        (_, result) => {
+          if (result.rows.item(0).count > 0) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        },
+        (_, error) => {
+          console.error(
+            `Error in checkIfQuoteExistsInDatabase: ${JSON.stringify(error)}`,
+          );
+          reject(error);
+          return true; // abort the transaction
+        },
+      );
+    });
+  });
+}
+export async function debugLogQuotes(): Promise<void> {
+  const db = SQLite.openDatabase(dbName);
+
+  const query = `SELECT quoteText, createdAt FROM ${dbName}`;
+
+  db.transaction((tx) => {
+    tx.executeSql(
+      query,
+      [],
+      (_, result) => {
+        const rows = result.rows;
+        for (let i = 0; i < rows.length; i++) {
+          const quote = rows.item(i);
+          console.log("Quote:", quote.quoteText);
+          console.log("CreatedAt:", quote.createdAt);
+        }
+      },
+      (_, error) => {
+        console.error("Error fetching quotes for debugging:", error);
+        return true;
+      },
+    );
+  });
+}
+
+// Helper to add new columns if they don't exist
+async function addColumnIfNotExists(
+  columnName: string,
+  dataType: string,
+): Promise<void> {
+  const db = SQLite.openDatabase(dbName);
+
+  const alterTableSQL = `ALTER TABLE ${dbName} ADD COLUMN ${columnName} ${dataType};`;
+
+  await new Promise<void>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        alterTableSQL,
+        [],
+        () => {
+          resolve();
+        },
+        (_, error) => {
+          console.error(`Error adding column ${columnName}:`, error);
+          reject(error);
+          return true;
         },
       );
     });

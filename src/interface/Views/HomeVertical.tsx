@@ -8,7 +8,7 @@ import {
   type QuotationInterface,
   type RouteInterface,
 } from "../../res/constants/Interfaces";
-import { getShuffledQuotes } from "../../res/functions/DBFunctions";
+import { getShuffledQuotes } from "../../backend/DBFunctions";
 import { strings } from "../../res/constants/Strings";
 import { AutoScrollingQuoteList } from "../animals/AutoScrollingQuoteList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -26,6 +26,7 @@ export const HomeVertical = ({ navigation, route }: Props): JSX.Element => {
   const [backButton, setBackButton] = useState(false);
   const [quotes, setQuotes] = useState<QuotationInterface[]>([]);
   const [playPressed, setPlayPressed] = useState<boolean>(false);
+  const [query, setQuery] = useState<string>("");
 
   const prevQueryRef = useRef<string | null>(null);
   const prevFilterRef = useRef<string | null>(null);
@@ -38,6 +39,7 @@ export const HomeVertical = ({ navigation, route }: Props): JSX.Element => {
           AsyncStorage.getItem(ASYNC_KEYS.filter),
         ]);
 
+        setQuery(savedQuery ?? "Error setting query");
         const retrievedQuery =
           savedQuery != null && savedQuery.length > 0
             ? savedQuery
@@ -89,7 +91,7 @@ export const HomeVertical = ({ navigation, route }: Props): JSX.Element => {
           playPressed={playPressed}
           setPlayPressed={setPlayPressed}
           navigation={navigation}
-          query={""}
+          query={query}
           filter={""}
         />
       </LinearGradient>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Share, TouchableOpacity, View, StyleSheet, Alert } from "react-native";
 import {
   type NavigationInterface,
@@ -8,10 +8,7 @@ import { IconFactory } from "../atoms/IconFactory";
 import { PRIMARY_GREEN, PRIMARY_RED } from "../../../styles/Colors";
 import { AppText } from "../atoms/AppText";
 import { strings } from "../../res/constants/Strings";
-import {
-  markQuoteAsDeleted,
-  updateQuote,
-} from "../../res/functions/DBFunctions";
+import { markQuoteAsDeleted, updateQuote } from "../../backend/DBFunctions";
 import { QuoteContainerButtons } from "../../res/constants/Enums";
 import { openLink } from "../../res/functions/UtilFunctions";
 import ReactHapticFeedback from "react-native-haptic-feedback"; // <-- Import the module
@@ -31,6 +28,10 @@ export const QuoteButtonBar: React.FC<Props> = ({
 }: Props) => {
   const [isFavorite, setIsFavorite] = useState(quote.favorite);
   const [isDeleted, setIsDeleted] = useState(quote.deleted);
+
+  useEffect(() => {
+    console.log(quote);
+  }, []);
 
   const handleFavoritePress = async (): Promise<void> => {
     logFirebaseEvent(firebaseEventsKeys.pressedFavorite, { quote });
@@ -147,8 +148,17 @@ export const QuoteButtonBar: React.FC<Props> = ({
       onPress: async () => {
         logFirebaseEvent(firebaseEventsKeys.pressedVideo, { quote });
 
-        await openLink(quote.videoLink);
+        // Extracting the first subject from the subjects list (assuming subjects are comma-separated)
+        const firstSubject = quote.subjects.split(",")[0].trim();
+
+        const link =
+          quote.videoLink.trim() === ""
+            ? `https://www.ted.com/search?q=${encodeURIComponent(firstSubject)}`
+            : quote.videoLink;
+
+        await openLink(link);
       },
+
       iconName: "movie",
       color: PRIMARY_GREEN,
     },

@@ -113,7 +113,9 @@ export const Settings = ({ navigation }: Props): JSX.Element => {
       icon: "play-circle-filled",
       title: strings.settings.introVideo,
       onPress: () => {
-        navigation.navigate(strings.screenName.firstLogin);
+        void (async () => {
+          await openLink(strings.settings.urls.howToGuide);
+        })();
       },
     },
     {

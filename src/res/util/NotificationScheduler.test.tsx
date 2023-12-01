@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { scheduleNotifications } from "./NotificationScheduler";
-import { getShuffledQuotes } from "../functions/DBFunctions";
+import { getShuffledQuotes } from "../../backend/DBFunctions";
 import { type QuotationInterface } from "../constants/Interfaces";
 
 // Mock required for AsyncStorage
@@ -25,7 +25,7 @@ for (let i = 1; i <= 5; i++) {
   });
 }
 
-jest.mock("../functions/DBFunctions", () => ({
+jest.mock("../../backend/DBFunctions.tsx", () => ({
   getShuffledQuotes: jest.fn().mockResolvedValue(mockQuotes),
 }));
 

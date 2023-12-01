@@ -96,6 +96,7 @@ export const HomeHorizontal = ({ navigation, route }: Props): JSX.Element => {
       </LinearGradient>
       <BottomNav
         navigation={navigation}
+        showLabels={false}
         screen={strings.screenName.home}
         whatToInclude={IncludeInBottomNav.PlayButton}
         setPlayPressed={() => {

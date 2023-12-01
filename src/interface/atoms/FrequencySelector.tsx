@@ -4,6 +4,7 @@ import DateTimePicker, {
   type Event,
 } from "@react-native-community/datetimepicker";
 import { TEST_IDS } from "../../res/constants/TestIDs";
+import { AppText } from "./AppText";
 
 interface FrequencySelectorProps {
   selectedTime: Date | null;
@@ -38,11 +39,11 @@ const FrequencySelector: React.FC<FrequencySelectorProps> = ({
         style={styles.timeDisplay}
         testID={TEST_IDS.selectTimeButton}
       >
-        <Text>
+        <AppText>
           {selectedTime != null
             ? `${selectedTime.getHours()}:${selectedTime.getMinutes()}`
             : "Select Time"}
-        </Text>
+        </AppText>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={onClear}

@@ -10,6 +10,7 @@ import { TEST_IDS } from "../../res/constants/TestIDs";
 interface Props {
   setPlayPressed: ((bool: boolean) => void) | undefined;
   playPressed: boolean | undefined;
+  showLabels?: boolean;
 }
 
 enum ScrollControllerButtons {
@@ -20,6 +21,7 @@ enum ScrollControllerButtons {
 export const PlayButtonBar: React.FC<Props> = ({
   setPlayPressed,
   playPressed,
+  showLabels = true,
 }: Props) => {
   const [buttonToDisplay, setButtonToDisplay] =
     useState<ScrollControllerButtons>(ScrollControllerButtons.Play);
@@ -42,7 +44,11 @@ export const PlayButtonBar: React.FC<Props> = ({
 
   return (
     <View style={styles.container} testID={TEST_IDS.PlayButtonBar}>
-      <AppText style={styles.playPauseText}>{"Slower"}</AppText>
+      {showLabels ? (
+        <AppText style={styles.playPauseText}>{"Slower"}</AppText>
+      ) : (
+        <View style={styles.placeholder}></View>
+      )}
       <View style={styles.playPauseContainer}>
         <TouchableOpacity
           testID={TEST_IDS.playButton}
@@ -64,7 +70,11 @@ export const PlayButtonBar: React.FC<Props> = ({
         </TouchableOpacity>
         <AppText style={styles.playPauseText}>{"Play/Pause"}</AppText>
       </View>
-      <AppText style={styles.playPauseText}>{"Faster"}</AppText>
+      {showLabels ? (
+        <AppText style={styles.playPauseText}>{"Faster"}</AppText>
+      ) : (
+        <View style={styles.placeholder}></View>
+      )}
     </View>
   );
 };
@@ -86,5 +96,8 @@ const styles = StyleSheet.create({
   playPauseContainer: {
     flexDirection: "column",
     justifyContent: "space-around",
+  },
+  placeholder: {
+    height: 20, // Adjust this to match the height of the "Faster" and "Slower" labels.
   },
 });

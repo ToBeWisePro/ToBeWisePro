@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, StyleSheet } from "react-native";
 import { GRAY_3, LIGHT } from "../../../styles/Colors";
 import { AppText } from "../atoms/AppText";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { getQuoteCount } from "../../res/functions/DBFunctions";
+import { getQuoteCount } from "../../backend/DBFunctions";
 import { type NavigationInterface } from "../../res/constants/Interfaces";
 import { strings } from "../../res/constants/Strings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -46,6 +46,9 @@ export const DiscoverTile: React.FC<Props> = ({
           query,
           strings.customDiscoverHeaders.addedByMe,
         );
+        break;
+      case strings.customDiscoverHeaders.recent:
+        void getCountForComponent(query, strings.customDiscoverHeaders.recent);
         break;
       case strings.customDiscoverHeaders.favorites:
         void getCountForComponent(
@@ -116,6 +119,7 @@ const styles = StyleSheet.create({
   },
   title: {
     marginLeft: 6,
+    fontSize: 16,
   },
   count: {
     color: GRAY_3,

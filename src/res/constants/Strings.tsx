@@ -68,6 +68,7 @@ export const strings = new LocalizedStrings({
       deleted: "🗑️ Deleted",
       favorites: "❤️ Favorite Quotations",
       top100: "🏆 Top 100",
+      recent: "🕒 Recently Added",
     },
     settings: {
       notifications: "Schedule Notifications",
@@ -85,6 +86,7 @@ export const strings = new LocalizedStrings({
         support: "https://tobewise.co/feedback/",
         terms: "https://tobewise.co/terms/",
         team: "https://tobewise.co/blog/meet-the-team/",
+        howToGuide: "https://tobewise.co/blog/why-and-how-to-use-tobewise/",
       },
     },
 

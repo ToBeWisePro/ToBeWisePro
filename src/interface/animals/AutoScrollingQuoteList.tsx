@@ -46,7 +46,6 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   const scrollRef = useRef<FlatList>(null);
   const initialDataOrderRef = useRef<QuotationInterface[]>([]);
   const prevDataRef = useRef<QuotationInterface[]>(data); // to store the previous data
-
   const scrollPosition = useSharedValue(0);
   const [scrollSpeed, setScrollSpeed] = useState(0.0275);
   const currentPosition = useRef(0);
@@ -233,7 +232,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
   );
 
   const ListFooterComponent = useCallback(() => {
-    return data.length >= 3 ? (
+    return (
       <AppText style={styles.buttonText}>
         {"The chosen set of " +
           data.length +
@@ -241,7 +240,7 @@ export const AutoScrollingQuoteList: React.FC<Props> = ({
           query +
           " has been fully played out. For more please select *Discover* below and choose a different author/subject."}
       </AppText>
-    ) : null;
+    );
   }, [data.length]);
 
   return (

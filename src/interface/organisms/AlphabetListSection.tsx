@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import { AlphabetList } from "react-native-section-alphabet-list";
 import { strings } from "../../res/constants/Strings";
-import { getFromDB } from "../../res/functions/DBFunctions";
+import { getFromDB } from "../../backend/DBFunctions";
 import { DiscoverSectionHeader } from "../atoms/DiscoverSectionHeader";
 import { DiscoverTile } from "../molecules/DiscoverTile";
 import { maxWindowSize } from "../../res/constants/Values";
@@ -34,15 +34,23 @@ export const AlphabetListSection = ({
 }: Props): JSX.Element => {
   const [subjects, setSubjects] = useState<DataItem[]>([]);
   const [authors, setAuthors] = useState<DataItem[]>([]);
+  const [listKey, setListKey] = useState(Date.now().toString());
+
+  useEffect(() => {
+    setListKey(Date.now().toString());
+  }, []);
 
   const formatDataForAlphabetList = (data: string[]): DataItem[] => {
-    if (data.length === 0) return []; // Updated line
+    if (data.length === 0) return [];
 
     const subjectsSet = new Set<string>();
     data.forEach((string) => {
       const subjectArr = string.split(",");
       subjectArr.forEach((subject) => {
-        subjectsSet.add(subject.trim());
+        const trimmedSubject = subject.trim();
+        if (trimmedSubject.length > 0) {
+          subjectsSet.add(trimmedSubject);
+        }
       });
     });
 
@@ -58,6 +66,7 @@ export const AlphabetListSection = ({
       { key: "b", value: strings.customDiscoverHeaders.addedByMe },
       { key: "d", value: strings.customDiscoverHeaders.favorites },
       { key: "c", value: strings.customDiscoverHeaders.top100 },
+      { key: "f", value: strings.customDiscoverHeaders.recent },
       { key: "e", value: strings.customDiscoverHeaders.deleted },
     ];
 
@@ -68,11 +77,17 @@ export const AlphabetListSection = ({
     const load = async (): Promise<void> => {
       try {
         await getFromDB(strings.filters.subject).then((res) => {
-          const finalData = formatDataForAlphabetList(res);
+          const cleanData = res.filter(
+            (item) => item.length > 0 && item.trim() !== "",
+          );
+          const finalData = formatDataForAlphabetList(cleanData);
           setSubjects(finalData);
         });
         await getFromDB(strings.filters.author).then((res) => {
-          const finalData = formatDataForAlphabetList(res);
+          const cleanData = res.filter(
+            (item) => item.length > 0 && item.trim() !== "",
+          );
+          const finalData = formatDataForAlphabetList(cleanData);
           setAuthors(finalData);
         });
       } catch (error) {
@@ -94,9 +109,11 @@ export const AlphabetListSection = ({
 
   const data =
     filter === strings.filters.author ? filteredAuthors : filteredSubjects;
+
   const getData = (): DataItem[] => {
     return data;
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.dataSelector}>
@@ -106,11 +123,14 @@ export const AlphabetListSection = ({
           onPress={() => {
             void (async () => {
               try {
-                const finalData = await getFromDB(strings.filters.author).then(
-                  (res) => formatDataForAlphabetList(res),
+                const cleanData = await getFromDB(strings.filters.author).then(
+                  (res) =>
+                    res.filter((item) => item.length > 0 && item.trim() !== ""),
                 );
+                const finalData = formatDataForAlphabetList(cleanData);
                 setAuthors(finalData);
                 setFilter(strings.filters.author);
+                setListKey(Date.now().toString());
               } catch (error) {
                 console.error("Error fetching authors:", error);
               }
@@ -123,11 +143,14 @@ export const AlphabetListSection = ({
           onPress={() => {
             void (async () => {
               try {
-                const finalData = await getFromDB(strings.filters.subject).then(
-                  (res) => formatDataForAlphabetList(res),
+                const cleanData = await getFromDB(strings.filters.subject).then(
+                  (res) =>
+                    res.filter((item) => item.length > 0 && item.trim() !== ""),
                 );
+                const finalData = formatDataForAlphabetList(cleanData);
                 setSubjects(finalData);
                 setFilter(strings.filters.subject);
+                setListKey(Date.now().toString());
               } catch (error) {
                 console.error("Error fetching subjects:", error);
               }
@@ -136,6 +159,7 @@ export const AlphabetListSection = ({
         />
       </View>
       <AlphabetList
+        key={listKey}
         style={styles.scrollView}
         indexLetterContainerStyle={{ width: 40, height: 17, marginRight: 7 }}
         indexContainerStyle={{ width: 30 }}

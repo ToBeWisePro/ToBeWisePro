@@ -9,7 +9,7 @@ import { BottomNav } from "../organisms/BottomNav";
 import { type NavigationInterface } from "../../res/constants/Interfaces";
 import { SearchBar } from "../molecules/SearchBar";
 import { ASYNC_KEYS, IncludeInBottomNav } from "../../res/constants/Enums";
-import { getFromDB } from "../../res/functions/DBFunctions";
+import { getFromDB } from "../../backend/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TEST_IDS } from "../../res/constants/TestIDs";

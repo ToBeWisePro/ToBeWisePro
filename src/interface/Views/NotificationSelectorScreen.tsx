@@ -8,7 +8,7 @@ import { GRAY_6, LIGHT, PRIMARY_BLUE } from "../../../styles/Colors";
 import { BottomNav } from "../organisms/BottomNav";
 import { SearchBar } from "../molecules/SearchBar";
 import { IncludeInBottomNav, ASYNC_KEYS } from "../../res/constants/Enums";
-import { getFromDB } from "../../res/functions/DBFunctions";
+import { getFromDB } from "../../backend/DBFunctions";
 import { AlphabetListSection } from "../organisms/AlphabetListSection";
 import { saveSettings } from "./NotificationsScreen";
 import { TEST_IDS } from "../../res/constants/TestIDs";
@@ -170,7 +170,6 @@ const styles = StyleSheet.create({
     height: maxWindowSize - 51 - 32 - 33 - 35 - 115,
     // maxWindowSize - search bar height - data button height - search bar padding - data selector padding - add'l value
   },
-
   searchContainer: {
     height: "100%",
     width: "100%",
