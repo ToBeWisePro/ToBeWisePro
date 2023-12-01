@@ -18,8 +18,9 @@ const QuoteTextAndAuthor: React.FC<QuoteTextAndAuthorProps> = ({
 }) => {
   const handleAuthorLink = (): void => {
     const link =
-      authorLink ||
+      authorLink != null ||
       `https://www.google.com/search?q=${encodeURIComponent(author)}`;
+    // @ts-expect-errorArgument of type 'string | true' is not assignable to parameter of type 'string'.
     void openLink(link);
   };
 

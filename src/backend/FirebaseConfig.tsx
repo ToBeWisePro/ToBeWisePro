@@ -1,4 +1,5 @@
 import { getAnalytics, logEvent } from "@react-native-firebase/analytics";
+// @ts-expect-error Cannot find module '@react-native-firebase/app' or its corresponding type declarations.
 import { getApp } from "@react-native-firebase/app"; // <-- Import this
 
 // Import values from the .env file
@@ -23,7 +24,10 @@ export const firebaseConfig = {
   measurementId: FIREBASE_MEASUREMENT_ID,
 };
 
-export const logFirebaseEvent = (event: string, data: {}): void => {
+export const logFirebaseEvent = (
+  event: string,
+  data: Record<string, unknown>,
+): void => {
   try {
     const appInstance = getApp(); // <-- Get the default app instance
 

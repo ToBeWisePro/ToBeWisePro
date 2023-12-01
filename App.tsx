@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, ActivityIndicator, Alert, Text } from "react-native";
+import { StyleSheet, View, ActivityIndicator, Text } from "react-native";
 import { getShuffledQuotes, initDB } from "./src/backend/DBFunctions";
 import { strings } from "./src/res/constants/Strings";
 import { RootNavigation } from "./src/res/util/RootNavigation";
@@ -34,6 +34,7 @@ export default function App(): JSX.Element {
       setFontsLoaded(true);
       setMessage("Fonts loaded.");
     } catch (error) {
+      // @ts-expect-error error is of type unknown
       setMessage(`Font loading error: ${error.message}`);
     }
   };
@@ -47,6 +48,8 @@ export default function App(): JSX.Element {
       }
       setMessage(`Default value for ${key} set.`);
     } catch (error) {
+      // @ts-expect-error error is of type unknown
+
       setMessage(`Error setting default value for ${key}: ${error.message}`);
     }
   };
@@ -87,6 +90,8 @@ export default function App(): JSX.Element {
       setIsLoading(false);
       setMessage("Shuffled quotes fetched.");
     } catch (error) {
+      // @ts-expect-error error is of type unknown
+
       setMessage(`Essential initialization error: ${error.message}`);
     }
   };
@@ -120,6 +125,8 @@ export default function App(): JSX.Element {
 
       setMessage("Background operations complete.");
     } catch (error) {
+      // @ts-expect-error error is of type unknown
+
       setMessage(`Background operations error: ${error.message}`);
     }
   };
