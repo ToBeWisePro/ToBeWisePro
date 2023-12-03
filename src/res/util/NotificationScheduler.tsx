@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { getShuffledQuotes } from "../../backend/DBFunctions";
 import { ASYNC_KEYS } from "../constants/Enums";
+import { strings } from "../constants/Strings";
 
 export async function scheduleNotifications(
   testQuery?: string,
@@ -81,6 +82,14 @@ export async function scheduleNotifications(
             fireDate.setTime(fireDate.getTime() + spacingInMilliseconds);
           }
 
+          const notificationDate = new Date(fireDate.getTime());
+          if (scheduledNotifications === 0) {
+            console.debug("First notification:", {
+              fireTime: notificationDate.toLocaleString(),
+              body: quote.quoteText,
+            });
+          }
+
           await Notifications.scheduleNotificationAsync({
             content: {
               title: "ToBeWise",
@@ -88,7 +97,8 @@ export async function scheduleNotifications(
               data: { quote },
             },
             trigger: {
-              seconds: (fireDate.getTime() - new Date().getTime()) / 1000,
+              seconds:
+                (notificationDate.getTime() - new Date().getTime()) / 1000,
             },
           });
 
@@ -108,13 +118,20 @@ export async function scheduleNotifications(
 
       // Always add the final notification if there's space
       if (scheduledNotifications < MAX_INTERVALS) {
+        const finalNotificationDate = new Date(fireDate.getTime());
+        console.debug("Final notification:", {
+          fireTime: finalNotificationDate.toLocaleString(),
+          body: strings.copy.finalNotification,
+        });
+
         await Notifications.scheduleNotificationAsync({
           content: {
             title: "ToBeWise",
-            body: "Open ToBeWise To Schedule More Notifications",
+            body: strings.copy.finalNotification,
           },
           trigger: {
-            seconds: (fireDate.getTime() - new Date().getTime()) / 1000,
+            seconds:
+              (finalNotificationDate.getTime() - new Date().getTime()) / 1000,
           },
         });
       }

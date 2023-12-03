@@ -121,9 +121,8 @@ export default function App(): JSX.Element {
       setMessage("Scheduling notifications...");
       await scheduleNotifications();
       setMessage("Notifications scheduled.");
-      const { status } = await Notifications.requestPermissionsAsync();
-      setMessage(`Notification permissions status: ${status}`);
-      setMessage("Background operations completing.");
+      void Notifications.requestPermissionsAsync();
+      setMessage("Background operations completing..");
     } catch (error) {
       setMessage(`Background operations error: ${(error as Error).message}`);
     }

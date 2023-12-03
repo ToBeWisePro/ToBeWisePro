@@ -38,6 +38,7 @@ export const strings = new LocalizedStrings({
     },
     copy: {
       firstLoginHeader: "Welcome to ToBeWise!",
+      finalNotification: "Open ToBeWise To Schedule More Notifications",
       saveNotificationsButton: "Start Notifications Now",
       countZeroErrorText:
         "Please select an author or filter with more than 0 quotes",
