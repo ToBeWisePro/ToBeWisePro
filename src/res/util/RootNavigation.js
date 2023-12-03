@@ -41,7 +41,7 @@ export const RootNavigation = ({ initialRoute }) => {
         const notificationBody = response.notification.request.content.body;
 
         if (notificationBody === strings.copy.finalNotification) {
-          navigationRef.navigate(strings.screenName.home);
+          navigationRef.navigate(strings.screenName.notificationsScreen);
         }
         const quote = response.notification.request.content.data.quote;
         if (quote === null) {

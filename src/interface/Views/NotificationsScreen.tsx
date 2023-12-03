@@ -250,6 +250,33 @@ export const NotificationScreen: React.FC<Props> = ({
     setSpacing(value);
   };
 
+  useEffect(() => {
+    const requestNotificationPermissions = async (): Promise<void> => {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== "granted") {
+        const { status: newStatus } =
+          await Notifications.requestPermissionsAsync();
+        if (newStatus !== "granted") {
+          Alert.alert(
+            "Notification Permission",
+            "Please go to Settings --> Notifications --> ToBeWisePro and enable notifications to receive quotes throughout your day.",
+            [
+              {
+                text: "OK",
+                onPress: () => {
+                  navigation.goBack();
+                }, // This will execute when the user taps "OK"
+              },
+            ],
+            { cancelable: false },
+          );
+        }
+      }
+    };
+
+    void requestNotificationPermissions();
+  }, [navigation]);
+
   return (
     <View style={styles.container}>
       <TopNav
