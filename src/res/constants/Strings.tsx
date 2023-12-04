@@ -77,7 +77,7 @@ export const strings = new LocalizedStrings({
       info: "ToBeWise Website",
       rateUs: "Rate Us On The App Store",
       share: "Tell A Friend",
-      introVideo: "How To ToBeWise",
+      introVideo: "How To Best User ToBeWise",
       shareMessage:
         "Immerse yourself in the wisdom of over 900 of the greatest minds in history with ToBeWise™. This app offers you a curated collection of over 2,000 quotations on almost 200 different topics. ToBeWise™ is more than just an app; it's a treasure trove of wisdom from the greatest minds in history. From Aristotle and Socrates to Elon Musk and Steve Jobs, this app brings their wisdom to your fingertips.\n\n💡 Check Out ToBeWise on iOS: https://tobewise.co/",
       support: "Support",

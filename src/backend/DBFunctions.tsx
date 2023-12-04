@@ -394,7 +394,8 @@ export async function getShuffledQuotes(
   filter = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.filter}`);
 
   if (userQuery !== null && filter !== null) {
-    userQuery = userQuery.replaceAll('"', "");
+    // @ts-expect-error userQuery is of type unknown
+    userQuery = userQuery?.replaceAll('"', "");
     filter = filter.replaceAll('"', "");
     const db = SQLite.openDatabase(dbName);
     let dbQuery = `SELECT * FROM ${dbName}`;
