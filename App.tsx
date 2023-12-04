@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, ActivityIndicator, Text } from "react-native";
+import { StyleSheet, View, Image, Text } from "react-native";
 import { getShuffledQuotes, initDB } from "./src/backend/DBFunctions";
 import { strings } from "./src/res/constants/Strings";
 import { RootNavigation } from "./src/res/util/RootNavigation";
@@ -12,6 +12,8 @@ import { convertDateTo24h } from "./src/res/util/BackwardsCompatability";
 import { type NavigationContainerRef } from "@react-navigation/native";
 import { getApps, initializeApp } from "@firebase/app";
 import { firebaseConfig } from "./src/backend/FirebaseConfig";
+import logo from "./assets/appstore.png"; // Adjust the path if necessary
+
 import * as Font from "expo-font";
 
 export const navigationRef = React.createRef<NavigationContainerRef<any>>();
@@ -61,7 +63,7 @@ export default function App(): JSX.Element {
       );
       if (isFirstLogin === null || JSON.parse(isFirstLogin) === true) {
         // set Async key isFirstLogin to false
-        setMessage("Initializing database...");
+        setMessage("Initializing database (this can take up to 30 seconds)...");
         await initDB();
         setMessage("Database initialized.");
         await backgroundOperations();
@@ -135,7 +137,7 @@ export default function App(): JSX.Element {
   if (!fontsLoaded || isLoading || shuffledQuotes.length === 0) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" />
+        <Image source={logo} style={styles.logo} />
         <Text>{message}</Text>
       </View>
     );
@@ -149,5 +151,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+  },
+  logo: {
+    width: "100%", // Set the width as per your requirement
+    height: "80%", // Set the height as per your requirement
+    resizeMode: "contain", // This will ensure the logo is scaled correctly
   },
 });
