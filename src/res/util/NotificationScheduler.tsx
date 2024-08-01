@@ -17,9 +17,12 @@ export async function scheduleNotifications(
   let allowNotifications = true;
   try {
     const value = await AsyncStorage.getItem(ASYNC_KEYS.allowNotifications);
-    if (value !== null) allowNotifications = JSON.parse(value);
+    if (value !== null) {
+      allowNotifications = JSON.parse(value);
+    }
   } catch (error) {
     console.error("Error loading allowNotifications setting:", error);
+    // In case of error, we'll keep the default value (true)
   }
 
   let startTime = 900;
@@ -49,6 +52,12 @@ export async function scheduleNotifications(
   if (allowNotifications && spacing > 0) {
     try {
       const quotes = await getShuffledQuotes(true);
+
+      if (!Array.isArray(quotes) || quotes.length === 0) {
+        // No quotes available or invalid response, so we don't schedule any notifications
+        return;
+      }
+
       let fireDate = new Date();
 
       const currentTime = fireDate.getHours() * 100 + fireDate.getMinutes();
@@ -77,7 +86,7 @@ export async function scheduleNotifications(
         i++
       ) {
         const quote = quotes[i];
-        if (quote.quoteText.length > 0) {
+        if ((quote?.quoteText).length > 0 && quote.quoteText.length > 0) {
           while (fireDate.getTime() <= new Date().getTime()) {
             fireDate.setTime(fireDate.getTime() + spacingInMilliseconds);
           }
@@ -116,8 +125,11 @@ export async function scheduleNotifications(
         }
       }
 
-      // Always add the final notification if there's space
-      if (scheduledNotifications < MAX_INTERVALS) {
+      // Only add the final notification if we've scheduled at least one quote notification
+      if (
+        scheduledNotifications > 0 &&
+        scheduledNotifications < MAX_INTERVALS
+      ) {
         const finalNotificationDate = new Date(fireDate.getTime());
         console.debug("Final notification:", {
           fireTime: finalNotificationDate.toLocaleString(),
