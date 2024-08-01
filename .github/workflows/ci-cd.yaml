@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "16"
+          node-version: "20.16.0"  # Updated to 20.16.0
 
       - name: Cache Yarn Cache
         uses: actions/cache@v2
@@ -30,7 +30,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          rm -rf node_modules
+          rm yarn.lock
+          yarn install --frozen-lockfile
 
   lint_and_test:
     runs-on: ubuntu-latest
@@ -41,8 +44,16 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20.16.0"  # Added Node.js setup
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Install ESLint Config
-        run: npm install eslint-config-standard-with-typescript --save-dev
+        run: npm install eslint-config-standard-with-typescript --save-dev --legacy-peer-deps
 
       - name: Run ESLint
         run: npx eslint src --ext .js,.jsx,.ts,.tsx --fix
@@ -62,6 +73,11 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20.16.0"  # Added Node.js setup
+
       - name: Cache Yarn Cache
         uses: actions/cache@v2
         with:
@@ -69,6 +85,9 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Install TypeScript
         run: yarn add typescript --dev
 
@@ -76,7 +95,7 @@ jobs:
         run: yarn tsc --noEmit
 
   build_ios:
-    needs: [lint_and_test, type_check] # Specify dependencies here
+    needs: [lint_and_test, type_check]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -87,7 +106,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "16"
+          node-version: "20.16.0"
 
       - name: Cache Yarn Cache
         uses: actions/cache@v2

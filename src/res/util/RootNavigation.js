@@ -38,6 +38,11 @@ export const RootNavigation = ({ initialRoute }) => {
   useEffect(() => {
     Notifications.addNotificationResponseReceivedListener((response) => {
       void (async () => {
+        const notificationBody = response.notification.request.content.body;
+
+        if (notificationBody === strings.copy.finalNotification) {
+          navigationRef.navigate(strings.screenName.notificationsScreen);
+        }
         const quote = response.notification.request.content.data.quote;
         if (quote === null) {
           console.error("Data from notification is not defined");

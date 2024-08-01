@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, ActivityIndicator, Text } from "react-native";
+import { StyleSheet, View, Image, Text } from "react-native";
 import { getShuffledQuotes, initDB } from "./src/backend/DBFunctions";
 import { strings } from "./src/res/constants/Strings";
 import { RootNavigation } from "./src/res/util/RootNavigation";
@@ -12,6 +12,8 @@ import { convertDateTo24h } from "./src/res/util/BackwardsCompatability";
 import { type NavigationContainerRef } from "@react-navigation/native";
 import { getApps, initializeApp } from "@firebase/app";
 import { firebaseConfig } from "./src/backend/FirebaseConfig";
+import logo from "./assets/appstore.png"; // Adjust the path if necessary
+
 import * as Font from "expo-font";
 
 export const navigationRef = React.createRef<NavigationContainerRef<any>>();
@@ -20,7 +22,6 @@ export default function App(): JSX.Element {
   const [shuffledQuotes, setShuffledQuotes] = useState<QuotationInterface[]>(
     [],
   );
-  const [firstLogin, setFirstLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [message, setMessage] = useState("");
@@ -34,8 +35,7 @@ export default function App(): JSX.Element {
       setFontsLoaded(true);
       setMessage("Fonts loaded.");
     } catch (error) {
-      // @ts-expect-error error is of type unknown
-      setMessage(`Font loading error: ${error.message}`);
+      setMessage(`Font loading error: ${(error as Error).message}`);
     }
   };
 
@@ -48,9 +48,9 @@ export default function App(): JSX.Element {
       }
       setMessage(`Default value for ${key} set.`);
     } catch (error) {
-      // @ts-expect-error error is of type unknown
-
-      setMessage(`Error setting default value for ${key}: ${error.message}`);
+      setMessage(
+        `Error setting default value for ${key}: ${(error as Error).message}`,
+      );
     }
   };
 
@@ -62,10 +62,11 @@ export default function App(): JSX.Element {
         ASYNC_KEYS.firstTimeLogin,
       );
       if (isFirstLogin === null || JSON.parse(isFirstLogin) === true) {
-        setFirstLogin(true);
-        setMessage("Initializing database...");
+        // set Async key isFirstLogin to false
+        setMessage("Initializing database (this can take up to 30 seconds)...");
         await initDB();
         setMessage("Database initialized.");
+        await backgroundOperations();
       }
       setMessage("Setting query and filter");
 
@@ -89,11 +90,13 @@ export default function App(): JSX.Element {
 
       setIsLoading(false);
       setMessage("Shuffled quotes fetched.");
+      if (isFirstLogin == null || JSON.parse(isFirstLogin) === true) {
+        await backgroundOperations(); // Running background operations asynchronously if not the first time
+      }
     } catch (error) {
-      // @ts-expect-error error is of type unknown
-
-      setMessage(`Essential initialization error: ${error.message}`);
+      setMessage(`Essential initialization error: ${(error as Error).message}`);
     }
+    void AsyncStorage.setItem(ASYNC_KEYS.firstTimeLogin, JSON.stringify(false));
   };
 
   const backgroundOperations = async (): Promise<void> => {
@@ -120,34 +123,26 @@ export default function App(): JSX.Element {
       setMessage("Scheduling notifications...");
       await scheduleNotifications();
       setMessage("Notifications scheduled.");
-      const { status } = await Notifications.requestPermissionsAsync();
-      setMessage(`Notification permissions status: ${status}`);
-      setMessage("Background operations completing.");
+      void Notifications.requestPermissionsAsync();
+      setMessage("Background operations completing..");
     } catch (error) {
-      // @ts-expect-error error is of type unknown
-
-      setMessage(`Background operations error: ${error.message}`);
+      setMessage(`Background operations error: ${(error as Error).message}`);
     }
   };
 
   useEffect(() => {
     void initializeEssentials();
-    void backgroundOperations();
   }, []);
 
   if (!fontsLoaded || isLoading || shuffledQuotes.length === 0) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" />
+        <Image source={logo} style={styles.logo} />
         <Text>{message}</Text>
       </View>
     );
   }
-
-  const initialRoute = firstLogin
-    ? strings.screenName.home
-    : strings.screenName.home;
-  return <RootNavigation initialRoute={initialRoute} />;
+  return <RootNavigation initialRoute={strings.screenName.home} />;
 }
 
 const styles = StyleSheet.create({
@@ -156,5 +151,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+  },
+  logo: {
+    width: "100%", // Set the width as per your requirement
+    height: "80%", // Set the height as per your requirement
+    resizeMode: "contain", // This will ensure the logo is scaled correctly
   },
 });

@@ -38,9 +38,9 @@ export async function migrateAndCleanOldData(): Promise<void> {
             const item = result.rows.item(i);
             const cleanedSubjects = cleanUpString(item.subjects);
             // Update the cleaned data back into the database
-            tx.executeSql(`UPDATE ${dbName} SET subjects = ? WHERE id = ?`, [
+            tx.executeSql(`UPDATE ${dbName} SET subjects = ? WHERE _id = ?`, [
               cleanedSubjects,
-              item.id,
+              item._id,
             ]);
           }
           resolve();
