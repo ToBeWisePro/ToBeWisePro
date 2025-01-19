@@ -1,0 +1,75 @@
+iOS Fix Script - Sat Jan 11 11:36:35 PST 2025
+Starting iOS Fix Script.
+Step 1: Checking Yarn installation...
+Yarn is installed. Version: 1.22.22
+Step 2: Checking CocoaPods installation...
+CocoaPods is installed. Version: 1.16.2
+Step 3: Clearing CocoaPods cache...
+Step 4: Updating CocoaPods repositories...
+Updating spec repo `trunk`
+Step 5: Navigating to the iOS directory...
+yarn add v1.22.22
+info Merge conflict detected in yarn.lock and successfully merged.
+[1/5] Validating package.json...
+[2/5] Resolving packages...
+[3/5] Fetching packages...
+[4/5] Linking dependencies...
+warning " > @react-native-firebase/firestore@18.9.0" has incorrect peer dependency "@react-native-firebase/app@18.9.0".
+warning "expo-splash-screen > @expo/prebuild-config@6.2.6" has unmet peer dependency "expo-modules-autolinking@>=0.8.1".
+warning " > react-native-dotenv@3.4.11" has unmet peer dependency "@babel/runtime@^7.20.6".
+warning " > react-native-elements@3.4.3" has unmet peer dependency "react-native-vector-icons@>7.0.0".
+warning "react-native-picker-select > @react-native-picker/picker@1.16.8" has incorrect peer dependency "react@16 || 17".
+warning " > react-native-reanimated@3.3.0" has unmet peer dependency "@babel/plugin-proposal-nullish-coalescing-operator@^7.0.0-0".
+warning " > react-native-reanimated@3.3.0" has unmet peer dependency "@babel/plugin-proposal-optional-chaining@^7.0.0-0".
+warning " > react-native-reanimated@3.3.0" has unmet peer dependency "@babel/plugin-transform-arrow-functions@^7.0.0-0".
+warning " > react-native-reanimated@3.3.0" has unmet peer dependency "@babel/plugin-transform-shorthand-properties@^7.0.0-0".
+warning " > react-native-reanimated@3.3.0" has unmet peer dependency "@babel/plugin-transform-template-literals@^7.0.0-0".
+warning " > react-test-renderer@18.3.1" has incorrect peer dependency "react@^18.3.1".
+warning " > @typescript-eslint/eslint-plugin@6.21.0" has unmet peer dependency "@typescript-eslint/parser@^6.0.0 || ^6.0.0-alpha".
+[5/5] Building fresh packages...
+success Saved lockfile.
+success Saved 2 new dependencies.
+info Direct dependencies
+├─ @react-native-firebase/analytics@18.5.0
+└─ @react-native-firebase/app@18.5.0
+info All dependencies
+├─ @react-native-firebase/analytics@18.5.0
+└─ @react-native-firebase/app@18.5.0
+$ patch-package
+patch-package 8.0.0
+Applying patches...
+react-native@0.72.3 ✔
+Done in 13.07s.
+Step 10: Checking Expo installation...
+Expo not installed. Installing Expo CLI...
+yarn global v1.22.22
+[1/4] Resolving packages...
+warning expo-cli@6.3.10: The global Expo CLI has been superseded by 'npx expo' and eas-cli –– Learn more: https://blog.expo.dev/the-new-expo-cli-f4250d8e3421
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+warning "expo-cli > xdl > @expo/webpack-config@18.1.0" has unmet peer dependency "expo@^48.0.17".
+warning "expo-cli > xdl > @expo/webpack-config > expo-pwa@0.0.125" has unmet peer dependency "expo@*".
+[4/4] Building fresh packages...
+success Installed "expo-cli@6.3.10" with binaries:
+      - expo
+      - expo-cli
+Done in 1.24s.
+Step 11: Cleaning Expo cache...
+./troubleshoot_ios.sh: line 14: expo: command not found
+Error: Command 'expo start --clear' failed.
+Step 12: Building the iOS project with Yarn...
+yarn run v1.22.22
+$ expo run:ios
+(node:36054) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+- Installing CocoaPods...
+⚠️  Something went wrong running `pod install` in the `ios` directory.
+Command `pod install` failed.
+└─ Cause: The file `/Users/gr0nk/Documents/GitHub/ToBeWisePro/ios/ToBeWisePro.xcodeproj/project.pbxproj` is in a merge conflict.
+[0m
+
+pod install --repo-update --ansi exited with non-zero code: 1
+Done in 8.86s.
+Step 13: Starting the iOS Simulator...
+No booted simulator found. Starting a new one.
+iOS Fix Script completed successfully!
