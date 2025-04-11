@@ -387,11 +387,15 @@ export async function getShuffledQuotes(
   // try {
   const keyPrefix = forNotifications ?? false ? "notification" : "";
 
-  userQuery = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.query}`);
+  await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.query}`).then((res) => {
+    userQuery = res?.replace(/'/g, "''");
+  });
+
   filter = await AsyncStorage.getItem(`${keyPrefix}${ASYNC_KEYS.filter}`);
 
   if (userQuery !== null && filter !== null) {
-    userQuery = userQuery.replaceAll('"', "");
+    // @ts-expect-error userQuery is of type unknown
+    userQuery = userQuery?.replaceAll('"', "");
     filter = filter.replaceAll('"', "");
     const db = SQLite.openDatabase(dbName);
     let dbQuery = `SELECT * FROM ${dbName}`;
